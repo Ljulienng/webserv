@@ -138,6 +138,7 @@ Location &Location::operator=(const Location &src)
 		_defaultFile = src._defaultFile;
 		_autoindex = src._autoindex;
 		_maxBodySize = src._maxBodySize;
+		_redirections = src._redirections;
 		// to be completed if new attributes
 	}
 	return (*this);

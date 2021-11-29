@@ -22,11 +22,6 @@ class Location
 
 		Location &operator=(const Location &src);
 
-		std::vector<std::string>	&getAcceptedMethod();
-		std::string					&getPath();
-		std::string					&getRoot();
-		bool						&getAutoindex();
-		size_t						&getMaxBodySize();
 
 		// SETTERS
 		void	setLocationsDatas(std::map<std::string, std::string>  mapLocation);
@@ -37,6 +32,13 @@ class Location
 		void	setAutoindex(std::string autoIndex);
 		void	setMaxBodySize(std::string maxBodySize);
 		void	setRedirections(std::string redirection);	
+
+		// GETTERS
+		std::vector<std::string>	&getAcceptedMethod();
+		std::string					&getPath();
+		std::string					&getRoot();
+		bool						&getAutoindex();
+		size_t						&getMaxBodySize();
 };
 
 #endif
