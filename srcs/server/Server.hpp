@@ -1,26 +1,30 @@
-#ifndef SERVER_HPP
-# define SERVER_HPP
+/*
+** UNUSED -> content merged with other Server.hpp file
+*/
 
-#include "webserv.hpp"
+// #ifndef SERVER_HPP
+// # define SERVER_HPP
 
-class Server
-{
-private:
-	// Future variable that'll contain all configurations needed (To be added)
-	struct sockaddr_in _sockaddr;
-	int				_sockfd;
+// #include "webserv.hpp"
 
-	Server();
-public:
-	// Server(const Config &config); Waiting for the struct containing all the configurations
-	Server(const Server &src);
-	~Server();
+// class Server
+// {
+// private:
+// 	// Future variable that'll contain all configurations needed (To be added)
+// 	struct sockaddr_in _sockaddr;
+// 	int				_sockfd;
 
-	Server	&operator=(const Server &src);
-	int 	start();
-	void 	initAddr();
-	int		getSockfd();
-};
+// 	Server();
+// public:
+// 	// Server(const Config &config); Waiting for the struct containing all the configurations
+// 	Server(const Server &src);
+// 	~Server();
+
+// 	Server	&operator=(const Server &src);
+// 	int 	start();
+// 	void 	initAddr();
+// 	int		getSockfd();
+// };
 
 
-#endif
+// #endif

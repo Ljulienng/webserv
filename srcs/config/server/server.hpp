@@ -16,7 +16,8 @@ class Server
 		unsigned short				_port;
 		size_t						_maxBodySize; 
 		std::vector<Location>		_locations;
-
+		struct sockaddr_in 			_sockaddr;
+		int							_sockfd;
     public :
         Server();
 		Server(const Server &src);
@@ -24,7 +25,9 @@ class Server
 
 		Server &operator=(const Server &src);
 
-		void			addLocation(Location location);
+		void	addLocation(Location location);
+		int 	start();
+		void 	initAddr();
 		
 		// SETTERS
 		void	setServerDatas(std::map<std::string, std::string> mapServer);
@@ -34,11 +37,12 @@ class Server
 		void	setMaxBodySize(std::string maxBodySize);
 
 		// GETTERS
-		std::string					&getName();
-		std::string					&getIp();
-		unsigned short				&getPort();
-		std::vector<Location>		&getLocations();
-		size_t						&getMaxBodySize();
+		std::string				&getName();
+		std::string				&getIp();
+		unsigned short			&getPort();
+		std::vector<Location>	&getLocations();
+		size_t					&getMaxBodySize();
+		int						&getSockfd();
 };
 
 #endif

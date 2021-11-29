@@ -1,5 +1,40 @@
 #include "server.hpp"
 
+// Basic socket initialization following the basic steps
+int Server::start()
+{
+	// Socket
+	_sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if (_sockfd == -1)
+	{
+		std::cerr << "Failed to create socket." << std::endl; // Temporary messages
+		return (EXIT_FAILURE);
+	}
+	// Bind
+	initAddr();
+	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, sizeof(_sockaddr)) < 0)
+	{
+		std::cerr << "Failed to bind " << std::endl;
+		return (EXIT_FAILURE);
+	}
+	// Listen
+	if (listen(_sockfd, 100) < 0) // Maximum can be higher, to be tested
+	{
+		std::cerr << "Failed to listen on socket" << std::endl;
+		return (EXIT_FAILURE);  
+	}
+	// Start (Not in this function)
+	return (EXIT_SUCCESS);
+}
+
+// Filling the sockaddr_in variable
+void Server::initAddr()
+{
+	_sockaddr.sin_family = AF_INET;
+	_sockaddr.sin_addr.s_addr = inet_addr(_ip.c_str());
+	_sockaddr.sin_port = htons(_port);
+}
+
 void			Server::addLocation(Location location)
 {
 	_locations.push_back(location);
@@ -90,13 +125,20 @@ std::vector<Location>	&Server::getLocations()
 size_t		&Server::getMaxBodySize()
 { return _maxBodySize; }
 
+int	&Server::getSockfd()
+{
+	return (_sockfd);
+}
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
 Server::Server() : 	_name(),
 					_ip(),
 					_port(),
-					_maxBodySize()
+					_maxBodySize(),
+					_locations(),
+					_sockaddr(),
+					_sockfd()
 					// to be completed if new attributes
 {}
 
@@ -115,6 +157,9 @@ Server &Server::operator=(const Server &src)
 		_ip = src._ip;
 		_port = src._port;
 		_maxBodySize = src._maxBodySize;
+		_locations = src._locations;
+		_sockaddr = src._sockaddr;
+		_sockfd = src._sockfd;
 		// to be completed if new attributes
 	}
 	return (*this);
