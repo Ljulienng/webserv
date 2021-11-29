@@ -7,6 +7,14 @@ bool	File::isRegularFile()
 	return (S_ISREG(_fileStat.st_mode));
 }
 
+
+bool	File::isDirectory()
+{
+	if (stat(_filePath.c_str(), &_fileStat) < 0)
+		return false;
+	return (S_ISDIR(_fileStat.st_mode));
+}
+
 bool	File::canReadFile()
 {
 	std::ifstream	fileStream;
@@ -17,6 +25,17 @@ bool	File::canReadFile()
 	return true;
 }
 
+
+/* GETTERS */
+std::string		&File::getFilePath()
+{
+	return _filePath;
+}
+
+struct stat		&File::getfileStat()
+{
+	return _fileStat;
+}
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 

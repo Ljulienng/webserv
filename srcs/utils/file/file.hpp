@@ -3,6 +3,9 @@
 
 #include "webserv.hpp"
 
+/*
+** useful functions to handle files
+*/
 class File
 {
     private :
@@ -18,8 +21,13 @@ class File
 		File &operator=(const File &src);
 
 		bool		isRegularFile();
+		bool		isDirectory();
 		bool		canReadFile();
+		// ...
 
+		// GETTERS
+		std::string		&getFilePath();
+		struct stat		&getfileStat();
 };
 
 #endif
