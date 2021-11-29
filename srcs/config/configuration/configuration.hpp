@@ -50,4 +50,36 @@ class Configuration
 		std::map<std::string, Server>			&getServers();
 };
 
+// NON MEMBER FUNCTIONS
+bool isValidExpression(std::string expression, const char **validExpressions);
+
+
+static const char* ConfigExpression[] = {
+	"cgi",
+	"max_body_size",
+	"error_pages",
+	"server",
+	0
+};
+
+static const char* ServerExpression[] = {
+	"server_name",
+	"ip",
+	"port",
+	"max_body_size",
+	"location",
+	0
+};
+
+static const char* LocationExpression[] = {
+	"path",
+	"root",
+	"accepted_methods",
+	"redirection",
+	"max_body_size",
+	"default_file",
+	"autoindex",
+	0
+};
+
 #endif

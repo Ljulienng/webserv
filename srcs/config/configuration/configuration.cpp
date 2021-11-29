@@ -37,7 +37,7 @@ void	Configuration::_cleanSpaces(std::string &buf)
 }
 
 /*
-** we find and insert a new pair,string,string> in the map m 
+** we find and insert a new pair<string,string> in the map m 
 */
 size_t	Configuration::_parseNextPair(std::string::iterator it, std::string::iterator ite, std::map<std::string, std::string> &m)
 {
@@ -54,7 +54,7 @@ size_t	Configuration::_parseNextPair(std::string::iterator it, std::string::iter
 		it += 3;
 	}
 	else
-		throw (std::string("Error: config file"));
+		throw (std::string("Error: config file : " + std::string(it, it + 5)));
 	start = it;
 	while (*it != '"' && it != ite)
 		it++;
@@ -62,7 +62,7 @@ size_t	Configuration::_parseNextPair(std::string::iterator it, std::string::iter
 		value = std::string(start, it);
 	m.insert(std::make_pair(key, value));
 	// std::cout << "key = " << key << "  value = " << value << "\n";
-	return (key.size() + value.size() + 5); // valeur cle + value + : + "" ""
+	return (key.size() + value.size() + 5); // key + value + : + "" ""
 }
 
 bool	Configuration::_isBloc(std::string::iterator it, std::string::iterator ite, std::string blocName)	
@@ -82,7 +82,6 @@ size_t	Configuration::_parseErrorPages(std::string::iterator it, std::string::it
 	std::map<std::string, std::string> 	tmp;
 	std::string::iterator				start(it);
 	
-	it += 13; // skip "error_pages"
 	while (*it != '{' && *(it + 1) != '"')
 		it++;
 	it++;
@@ -104,13 +103,14 @@ size_t	Configuration::_parseErrorPages(std::string::iterator it, std::string::it
 	return (std::distance(start, it));
 }
 
+
+
 size_t	Configuration::_parseLocation(std::string::iterator it, std::string::iterator ite, Server &server)
 {
 	Location							location;
 	std::map<std::string, std::string> 	mapLocation;
 	std::string::iterator 				start(it);
 
-	it += 10; // skip "location"
 	while (*it != '}' && it != ite)
 	{
 		if (*it == '"')
@@ -121,8 +121,9 @@ size_t	Configuration::_parseLocation(std::string::iterator it, std::string::iter
 		}
 		it++;
 	}
+	
 	location.setLocationsDatas(mapLocation);
-	server.addLocation(location);
+	server.addLocation(location); // add location to the new server
 	return (std::distance(start, it));
 }
 
@@ -132,13 +133,32 @@ size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterat
 	std::map<std::string, std::string> 	mapServer;
 	std::string::iterator 				start(it);
 
-	it += 8; // skip "server"
 	while (*it != '}' && it != ite)
 	{
 		if (*it == '"')
 		{
 			if (_isBloc(it, ite, "location"))
+			{
+				it += 10; // skip location"
 				it += _parseLocation(it, ite, server);
+				while (*it != ']' && it != ite)
+				{
+					while (*it != '"' && it != ite)
+					{
+						if (*it == ']')
+							break ;
+						it++;
+					}
+					if (*it == '"')
+					{
+						std::string::iterator	end(++it);
+						for (; *end != '"'; end++);
+						if (isValidExpression(std::string(it--, end), LocationExpression)) // si prochain mot fait partie des mots cles (definir enum)
+							it += _parseLocation(it, ite, server);
+						it++;
+					}
+				}
+			}
 			else
 				it += _parseNextPair(it, ite, mapServer);
 			if (*it == '}' || it == ite)
@@ -148,12 +168,9 @@ size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterat
 	}
 	
 	server.setServerDatas(mapServer);
+
+	// add the new server to the array of servers
 	_servers.insert(std::pair<std::string, Server>(server.getName(), server));
-	
-	// add locations to the new server
-	std::vector<Location>::iterator itLoc = server.getLocations().begin();
-	for (; itLoc != server.getLocations().end(); itLoc++)
-		_servers.find(server.getName())->second.addLocation(*itLoc);
 
 	return (std::distance(start, it));
 }
@@ -166,7 +183,7 @@ void	Configuration::parse()
 	std::getline(fileStream, buf, '\0');
 	fileStream.close();
 	_cleanSpaces(buf);
-	// std::cout << "Buffer :\n" << buf << std::endl;
+	std::cout << "Buffer :\n" << buf << std::endl;
 
 	std::map<std::string, std::string> 	mapConfig;
 	std::string::iterator 				it = buf.begin();
@@ -180,9 +197,32 @@ void	Configuration::parse()
 		if (*it == '"')
 		{
 			if (_isBloc(it, ite, "server"))
+			{
+				it += 8; // skip server"
 				it += _parseServer(it, ite);
+				while (*it != ']')
+				{
+					while (*it != '"' && it != ite)
+					{
+						if (*it == ']')
+							break ;
+						it++;
+					}
+					if (*it == '"')
+					{
+						std::string::iterator	end(++it);
+						for (; *end != '"'; end++);
+						if (isValidExpression(std::string(it--, end), ServerExpression)) // si prochain mot fait partie des mots cles (definir enum)
+							it += _parseServer(it, ite);
+						it++;
+					}
+				}
+			}
 			else if(_isBloc(it, ite, "error_pages"))
+			{
+				it += 13; // skip "error_pages"
 				it += _parseErrorPages(it, ite);
+			}
 			else
 				it += _parseNextPair(it, ite, mapConfig);
 			if (it == ite)
@@ -199,9 +239,13 @@ void	Configuration::parse()
 void		Configuration::startSockets()
 {
 	std::map<std::string, Server>::iterator	it = _servers.begin();
-
+	int ret = 0;
 	for ( ; it != _servers.end(); it++)
-		(*it).second.start();
+	{
+		ret = (*it).second.start();
+		if (ret == EXIT_FAILURE)
+			throw(std::string("Error during starting socket of server" + (*it).second.getName()));
+	}
 }
 
 /* SETTERS */
@@ -219,7 +263,7 @@ void	Configuration::setConfigDatas(std::map<std::string, std::string> mapConfig)
 			setMaxBodySize(it->second);
 		// to be continued ...
 		else
-			throw (std::string("Error: unknown expression in configuration file"));
+			throw (std::string("Error: unknown expression in configuration file : " + it->first));
 		it++;
 	}
 }
@@ -242,7 +286,6 @@ void	Configuration::setMaxBodySize(std::string maxBodySize)
 }
 
 
-
 /* GETTERS */
 
 std::pair<std::string, std::string>		&Configuration::getCgi()
@@ -256,6 +299,7 @@ std::map<int, std::string>		&Configuration::getErrorPages()
 
 std::map<std::string, Server>		&Configuration::getServers()
 { return _servers; }
+
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
@@ -294,6 +338,20 @@ Configuration &Configuration::operator=(const Configuration &src)
 	return (*this);
 }
 
+/* NON MEMBER FUNCTIONS */
+
+bool isValidExpression(std::string expression, const char **validExpressions)
+{
+	size_t i = 0;
+
+	while (validExpressions[i])
+	{
+		if (expression == validExpressions[i])
+			return (true);
+		++i;
+	}
+	return (false);
+}
 
 /* DEBUG */
 
