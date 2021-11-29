@@ -11,6 +11,7 @@ class Hub
 {
     private :
 		Configuration		_config;
+		fd_set				_fdSet;	// all fd get thanks to socket()
 		
     public :
 		Hub();
@@ -20,7 +21,8 @@ class Hub
 
 		Hub &operator=(const Hub &src);
 
-		void	_parseConfigFile();
+		void	start();
+		void	process();
 
 		Configuration	&getConfig();
 };

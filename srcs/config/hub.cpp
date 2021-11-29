@@ -1,8 +1,23 @@
 #include "hub.hpp"
 
-void	Hub::_parseConfigFile()
+void	Hub::start()
 {
 	_config.parse();
+	_config.startSockets();
+
+	// store fd of each server in fdSet
+	long fd;
+	std::map<std::string, Server>::iterator it = _config.getServers().begin();
+	for ( ; it != _config.getServers().end(); it++)
+	{
+		fd = (*it).second.getSockfd();
+		FD_SET(fd, &_fdSet);
+	}
+}
+
+void	Hub::process()
+{
+
 }
 
 /* GETTERS */

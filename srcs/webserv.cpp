@@ -25,8 +25,8 @@ int     main(int ac, char **argv, char **env)
         try
         {
 			Hub hub(argv[1]);
-            hub._parseConfigFile();
-			hub.getConfig().startSockets();
+            hub.start(); // parse and setup
+            hub.process();
             hub.getConfig().debug();
 			//hub.suiteduprogramme();
         }
