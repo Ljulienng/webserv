@@ -1,5 +1,5 @@
 //Main file
-// test git
+
 #include <signal.h>
 #include <iostream>
 #include "config/hub.hpp"

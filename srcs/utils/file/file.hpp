@@ -1,12 +1,7 @@
 #ifndef FILE_HPP
 # define FILE_HPP
 
-#include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <iostream>
-#include <fstream>
+#include "webserv.hpp"
 
 class File
 {

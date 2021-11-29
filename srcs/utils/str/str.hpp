@@ -1,9 +1,7 @@
 #ifndef STR_HPP
 # define STR_HPP
 
-#include <vector>
-#include <string>
-#include <sstream>
+#include "webserv.hpp"
 
 class Str
 {

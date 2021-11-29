@@ -1,16 +1,10 @@
 #ifndef CONFIGURATION_HPP
 # define CONFIGURATION_HPP
 
-#include <string>
-#include <string.h>
-#include <vector>
-#include <map>
-#include <ctype.h>
-#include <stdio.h>
-
-#include "../server/server.hpp"
-#include "../../utils/str/str.hpp"
-#include "../../utils/file/file.hpp"
+#include "webserv.hpp"
+#include "server.hpp"
+#include "str.hpp"
+#include "file.hpp"
 
 /*
 ** informations from the configuration file : cgi, bodyMaxSize, a list of server(s) ...

@@ -1,11 +1,8 @@
 #ifndef LOCATION_HPP
 # define LOCATION_HPP
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <map>
-#include "../../utils/str/str.hpp"
+#include "webserv.hpp"
+#include "str.hpp"
 
 class Location
 {

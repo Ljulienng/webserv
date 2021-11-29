@@ -1,12 +1,8 @@
 #ifndef HUB_HPP
 # define HUB_HPP
 
-#include "configuration/configuration.hpp"
-#include <iostream>
-#include <vector>
-#include <map>
-#include <string>
-#include <exception>
+#include "webserv.hpp"
+#include "configuration.hpp"
 
 /*
 ** general class to handle the program

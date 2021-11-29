@@ -1,13 +1,9 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <map>
-#include <algorithm> // count
-#include "../location/location.hpp"
-#include "../../utils/str/str.hpp"
+#include "webserv.hpp"
+#include "location.hpp"
+#include "str.hpp"
 
 /*
 ** information from the configuration file : server_name, ip, port, maxBodySize, a list of location(s) ...
