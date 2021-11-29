@@ -41,7 +41,7 @@ void	Configuration::_cleanSpaces(std::string &buf)
 */
 size_t	Configuration::_parseNextPair(std::string::iterator it, std::string::iterator ite, std::map<std::string, std::string> &m)
 {
-	it++; // on passe le 1er "
+	it++; // skip the first "
 	std::string 						key;
 	std::string 						value;
 	std::string::iterator				start(it);
@@ -110,7 +110,7 @@ size_t	Configuration::_parseLocation(std::string::iterator it, std::string::iter
 	std::map<std::string, std::string> 	mapLocation;
 	std::string::iterator 				start(it);
 
-	it += 10; // on passe "location"
+	it += 10; // skip "location"
 	while (*it != '}' && it != ite)
 	{
 		if (*it == '"')
@@ -150,6 +150,7 @@ size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterat
 	server.setServerDatas(mapServer);
 	_servers.insert(std::pair<std::string, Server>(server.getName(), server));
 	
+	// add locations to the new server
 	std::vector<Location>::iterator itLoc = server.getLocations().begin();
 	for (; itLoc != server.getLocations().end(); itLoc++)
 		_servers.find(server.getName())->second.addLocation(*itLoc);
@@ -171,7 +172,7 @@ void	Configuration::parse()
 	std::string::iterator 				it = buf.begin();
 	std::string::iterator 				ite = buf.end();
 
-	// verifier la coherence syntaxique en 1er ({} [] "")
+	// a faire : verifier la coherence syntaxique en 1er ({} [] "")
 	if (*it++ != '{')
 		throw std::string("Error: bad format : config scope");
 	while (it != ite)
@@ -192,6 +193,16 @@ void	Configuration::parse()
 	setConfigDatas(mapConfig);
 }
 
+/*
+** start socket for each server of the configuration file
+*/
+void		Configuration::startSockets()
+{
+	std::map<std::string, Server>::iterator	it = _servers.begin();
+
+	for ( ; it != _servers.end(); it++)
+		(*it).second.start();
+}
 
 /* SETTERS */
 
@@ -230,6 +241,62 @@ void	Configuration::setMaxBodySize(std::string maxBodySize)
 	_maxBodySize = val.getNum();
 }
 
+
+
+/* GETTERS */
+
+std::pair<std::string, std::string>		&Configuration::getCgi()
+{ return _cgi; }
+
+size_t		&Configuration::getMaxBodySize()
+{ return _maxBodySize; }
+
+std::map<int, std::string>		&Configuration::getErrorPages()
+{ return _errorPages; }
+
+std::map<std::string, Server>		&Configuration::getServers()
+{ return _servers; }
+
+
+/* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
+
+Configuration::Configuration() : 	_configFile(),
+									_cgi(),
+									_maxBodySize(),
+									_errorPages(),
+									_servers()
+									// to be completed if new attributes
+{}
+
+Configuration::Configuration(std::string configFile) : _configFile(configFile)
+{
+	_parseConfigPath();
+}
+
+Configuration::Configuration(const Configuration &src)
+{
+	*this = src;
+}
+
+Configuration::~Configuration() {}
+
+Configuration &Configuration::operator=(const Configuration &src)
+{
+	if (&src != this)
+	{
+		_configFile = src._configFile;
+		_cgi = src._cgi;
+		_maxBodySize = src._maxBodySize;
+		_errorPages = src._errorPages;
+		_servers = src._servers;
+		// to be completed if new attributes
+	}
+	return (*this);
+}
+
+
+/* DEBUG */
+
 void	Configuration::debug()
 {
 	std::cout << "\n***** DEBUG *****\n";
@@ -267,40 +334,4 @@ void	Configuration::debug()
 
 		i++;
 	}
-}
-
-
-/* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-
-Configuration::Configuration() : 	_configFile(),
-									_cgi(),
-									_maxBodySize(),
-									_errorPages(),
-									_servers()
-									// to be completed if new attributes
-{}
-
-Configuration::Configuration(std::string configFile) : _configFile(configFile)
-{
-	_parseConfigPath();
-}
-
-Configuration::Configuration(const Configuration &src)
-{
-	*this = src;
-}
-
-Configuration::~Configuration() {}
-
-Configuration &Configuration::operator=(const Configuration &src)
-{
-	if (&src != this)
-	{
-		_configFile = src._configFile;
-		_servers = src._servers;
-		_cgi = src._cgi;
-		_maxBodySize = src._maxBodySize;
-		// to be completed if new attributes
-	}
-	return (*this);
 }

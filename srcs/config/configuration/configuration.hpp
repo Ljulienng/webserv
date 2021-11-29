@@ -35,12 +35,19 @@ class Configuration
 		Configuration &operator=(const Configuration &src);
 
 		void		parse();
+		void		startSockets();
 		void		debug();
 
 		// SETTERS
 		void		setConfigDatas(std::map<std::string, std::string> mapConfig);
 		void		setCgi(std::string cgi);
 		void		setMaxBodySize(std::string maxBodySize);
+
+		// GETTERS
+		std::pair<std::string, std::string>		&getCgi();
+		size_t									&getMaxBodySize();
+		std::map<int, std::string>				&getErrorPages();
+		std::map<std::string, Server>			&getServers();
 };
 
 #endif

@@ -22,6 +22,7 @@ class Hub
 
 		void	_parseConfigFile();
 
+		Configuration	&getConfig();
 };
 
 #endif

@@ -2,7 +2,7 @@
 
 #include <signal.h>
 #include <iostream>
-#include "config/hub.hpp"
+#include "hub.hpp"
 
 #define RED  "\033[31m"
 
@@ -25,6 +25,8 @@ int     main(int ac, char **argv, char **env)
         {
 			Hub hub(argv[1]);
             hub._parseConfigFile();
+			hub.getConfig().startSockets();
+            hub.getConfig().debug();
 			//hub.suiteduprogramme();
         }
         catch(std::string error)

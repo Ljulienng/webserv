@@ -3,9 +3,14 @@
 void	Hub::_parseConfigFile()
 {
 	_config.parse();
-	_config.debug();
 }
 
+/* GETTERS */
+
+Configuration	&Hub::getConfig()
+{
+	return _config;
+}
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
