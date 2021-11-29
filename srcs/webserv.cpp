@@ -16,6 +16,7 @@ void     sigintHandler(int sig)
 
 int     main(int ac, char **argv, char **env)
 {
+    (void)env; // useful for cgi part
     g_run = true;
 
     signal(SIGINT, sigintHandler);

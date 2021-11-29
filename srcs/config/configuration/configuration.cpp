@@ -77,7 +77,7 @@ bool	Configuration::_isBloc(std::string::iterator it, std::string::iterator ite,
 	return false;
 }
 
-size_t	Configuration::_parseErrorPages(std::string::iterator it, std::string::iterator ite, std::string buf)
+size_t	Configuration::_parseErrorPages(std::string::iterator it, std::string::iterator ite)
 {
 	std::map<std::string, std::string> 	tmp;
 	std::string::iterator				start(it);
@@ -104,7 +104,7 @@ size_t	Configuration::_parseErrorPages(std::string::iterator it, std::string::it
 	return (std::distance(start, it));
 }
 
-size_t	Configuration::_parseLocation(std::string::iterator it, std::string::iterator ite, std::string buf, Server &server)
+size_t	Configuration::_parseLocation(std::string::iterator it, std::string::iterator ite, Server &server)
 {
 	Location							location;
 	std::map<std::string, std::string> 	mapLocation;
@@ -126,7 +126,7 @@ size_t	Configuration::_parseLocation(std::string::iterator it, std::string::iter
 	return (std::distance(start, it));
 }
 
-size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterator ite, std::string buf)
+size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterator ite)
 {
 	Server								server;
 	std::map<std::string, std::string> 	mapServer;
@@ -138,7 +138,7 @@ size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterat
 		if (*it == '"')
 		{
 			if (_isBloc(it, ite, "location"))
-				it += _parseLocation(it, ite, buf, server);
+				it += _parseLocation(it, ite, server);
 			else
 				it += _parseNextPair(it, ite, mapServer);
 			if (*it == '}' || it == ite)
@@ -180,9 +180,9 @@ void	Configuration::parse()
 		if (*it == '"')
 		{
 			if (_isBloc(it, ite, "server"))
-				it += _parseServer(it, ite, buf);
+				it += _parseServer(it, ite);
 			else if(_isBloc(it, ite, "error_pages"))
-				it += _parseErrorPages(it, ite, buf);
+				it += _parseErrorPages(it, ite);
 			else
 				it += _parseNextPair(it, ite, mapConfig);
 			if (it == ite)
@@ -323,7 +323,7 @@ void	Configuration::debug()
 		{
 			std::cout << "\t\tLOCATION[" << j << "] =>\n";
 			std::cout << "\t\t - acceptedMethod = ";
-			for (int k = 0; k < itLoc->getAcceptedMethod().size(); k++)
+			for (size_t k = 0; k < itLoc->getAcceptedMethod().size(); k++)
 				std::cout << itLoc->getAcceptedMethod()[k] << " ";
 			std::cout << "\n\t\t - path = " << itLoc->getPath() << "\n";
 			std::cout << "\t\t - root = " << itLoc->getRoot() << "\n";
