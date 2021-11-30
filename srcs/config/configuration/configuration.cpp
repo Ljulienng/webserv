@@ -143,12 +143,8 @@ size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterat
 				it += _parseLocation(it, ite, server);
 				while (*it != ']' && it != ite)
 				{
-					while (*it != '"' && it != ite)
-					{
-						if (*it == ']')
-							break ;
+					while (*it != '"' && *it != ']' && it != ite)
 						it++;
-					}
 					if (*it == '"')
 					{
 						std::string::iterator	end(++it);
@@ -202,10 +198,10 @@ void	Configuration::parse()
 				it += _parseServer(it, ite);
 				while (*it != ']')
 				{
-					while (*it != '"' && it != ite)
+					while (*it != '"' && *it != ']' && it != ite)
 					{
-						if (*it == ']')
-							break ;
+						// if (*it == ']')
+						// 	break ;
 						it++;
 					}
 					if (*it == '"')
