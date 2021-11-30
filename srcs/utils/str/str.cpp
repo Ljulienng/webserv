@@ -1,20 +1,35 @@
 #include "str.hpp"
 
+bool Str::_isDelim(char c, std::string delimiters)
+{
+	for (size_t i = 0; i < delimiters.size(); i++)
+	{
+		if (delimiters[i] == c)
+			return true;
+	}
+	return false;
+}
+
 /*
 ** split string to get tokens
 */
-void	Str::tokenize()
+
+void	Str::_tokenize(std::string delimiters)
 {
+	// std::cout << "Delimiters = " << delimiters << "\n";
 	for (size_t i = 0; i < _string.size(); i++)
 	{
-		while ((_string[i] == ' ' || _string[i] == '\t' || _string[i] == '\n') && i < _string.size())
+		while (_isDelim(_string[i], delimiters) && i < _string.size())
 			i++;
 		size_t start = i;
-		while (_string[i] != ' ' && _string[i] != '\t' && _string[i] != '\n' && i < _string.size())
+		// std::cout << "find_first_of = " << _string.find_first_of(delimiters) << "    i = " << i << "\n";
+		while (!_isDelim(_string[i], delimiters) && i < _string.size())
 			i++;
+		// std::cout << "start = " << start << "    i = " << i << "   newtoken = " << _string.substr(start, i - start) << "\n";
 		_tokens.push_back(_string.substr(start, i - start));
 	}
 }
+
 
 size_t	Str::getNum()
 {
@@ -42,7 +57,12 @@ Str::Str() : _string("") {}
 
 Str::Str(const std::string &str) : _string(str)
 {
-	tokenize();
+	_tokenize(" \n\t");
+}
+
+Str::Str(const std::string &str, const std::string &sep) : _string(str)
+{
+	_tokenize(sep);
 }
 
 Str::Str(const Str &src)

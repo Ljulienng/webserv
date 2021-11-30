@@ -9,15 +9,18 @@ class Str
 		std::string					_string;
 		std::vector<std::string>	_tokens;
 
+		bool 						_isDelim(char c, std::string delimiters);
+		void						_tokenize(std::string delimiters);
+
     public :
         Str();
 		Str(const std::string &str);
+		Str(const std::string &str, const std::string &sep);
 		Str(const Str &src);
 		~Str();
 
 		Str &operator=(const Str &src);
 
-		void						tokenize();
 		size_t						getNum();
 		std::string					&getStr();
 		std::vector<std::string>	&getTokens();

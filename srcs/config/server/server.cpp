@@ -119,7 +119,7 @@ void	Server::setPort(std::string port)
 void	Server::setMaxBodySize(std::string maxBodySize)
 {
 	Str val(maxBodySize);
-
+	
 	_maxBodySize = val.getNum();
 }
 
