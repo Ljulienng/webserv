@@ -10,8 +10,9 @@ int Server::start()
 		std::cerr << "Failed to create socket." << std::endl; // Temporary messages
 		return (EXIT_FAILURE);
 	}
+	_setSocketOpt();
 	// Bind
-	initAddr();
+	_initAddr();
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, sizeof(_sockaddr)) < 0)
 	{
 		std::cerr << "Failed to bind " << std::endl;
@@ -27,8 +28,23 @@ int Server::start()
 	return (EXIT_SUCCESS);
 }
 
+/*
+** set socket options
+** set that the address is a reusable local address,
+ *  same for port.
+ * 
+ * 	@throw if the options can't be set to the socket.
+ */
+
+void Server::_setSocketOpt()
+{
+	int option = 1;
+	if (setsockopt(this->_sockfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) != 0)
+		throw(std::string("Error: to set socket options"));
+}
+
 // Filling the sockaddr_in variable
-void Server::initAddr()
+void Server::_initAddr()
 {
 	_sockaddr.sin_family = AF_INET;
 	_sockaddr.sin_addr.s_addr = inet_addr(_ip.c_str());

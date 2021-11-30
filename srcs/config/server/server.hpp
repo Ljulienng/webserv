@@ -11,6 +11,7 @@
 class Server
 {
     private :
+
 		std::string					_name;
 		std::string					_ip;
 		unsigned short				_port;
@@ -18,7 +19,13 @@ class Server
 		std::vector<Location>		_locations;
 		struct sockaddr_in 			_sockaddr;
 		int							_sockfd;
+
+		void 	_initAddr();
+		void 	_setSocketOpt();
+
+
     public :
+
         Server();
 		Server(const Server &src);
 		~Server();
@@ -27,8 +34,8 @@ class Server
 
 		void	addLocation(Location location);
 		int 	start();
-		void 	initAddr();
 		
+
 		// SETTERS
 		void	setServerDatas(std::map<std::string, std::string> mapServer);
 		void	setName(std::string name);
