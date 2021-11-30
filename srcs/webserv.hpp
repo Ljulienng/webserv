@@ -31,6 +31,7 @@
 // Streams
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <sys/stat.h>
 
 # define EXIT_SUCCESS 0

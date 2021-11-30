@@ -183,7 +183,7 @@ void	Configuration::parse()
 	std::getline(fileStream, buf, '\0');
 	fileStream.close();
 	_cleanSpaces(buf);
-	std::cout << "Buffer :\n" << buf << std::endl;
+	// std::cout << "Buffer :\n" << buf << std::endl;
 
 	std::map<std::string, std::string> 	mapConfig;
 	std::string::iterator 				it = buf.begin();
@@ -283,6 +283,25 @@ void	Configuration::setMaxBodySize(std::string maxBodySize)
 	Str val(maxBodySize);
 
 	_maxBodySize = val.getNum();
+
+	// the attribute can be present in config, server and location scope
+	// so we need to make a cascade copy if not set in sub scopes
+	std::map<std::string, Server>::iterator itServ = _servers.begin();
+	for ( ; itServ != _servers.end(); itServ++)
+	{
+		if (itServ->second.getMaxBodySize() == 0)
+			itServ->second.setMaxBodySize(maxBodySize);
+		std::vector<Location>::iterator			itLoc = itServ->second.getLocations().begin();
+		for ( ; itLoc != itServ->second.getLocations().end(); itLoc++)
+		{
+			if (itLoc->getMaxBodySize() == 0)
+			{
+				std::stringstream ss;
+				ss << itServ->second.getMaxBodySize();
+				itLoc->setMaxBodySize(ss.str());
+			}
+		}
+	}
 }
 
 
