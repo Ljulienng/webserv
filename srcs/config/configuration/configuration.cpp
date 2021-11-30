@@ -13,7 +13,7 @@ void	Configuration::_parseConfigPath()
 }
 
 /*
-** remove spaces in the configuration file to make parsing easier
+** remove spaces in the configuration file except beetween 2 quotes to make parsing easier
 */
 void	Configuration::_cleanSpaces(std::string &buf)
 {
@@ -37,7 +37,7 @@ void	Configuration::_cleanSpaces(std::string &buf)
 }
 
 /*
-** we find and insert a new pair<string,string> in the map m 
+** we find and insert a new pair<string,string> into the map m 
 */
 size_t	Configuration::_parseNextPair(std::string::iterator it, std::string::iterator ite, std::map<std::string, std::string> &m)
 {
@@ -102,8 +102,6 @@ size_t	Configuration::_parseErrorPages(std::string::iterator it, std::string::it
 	}
 	return (std::distance(start, it));
 }
-
-
 
 size_t	Configuration::_parseLocation(std::string::iterator it, std::string::iterator ite, Server &server)
 {
@@ -199,11 +197,7 @@ void	Configuration::parse()
 				while (*it != ']')
 				{
 					while (*it != '"' && *it != ']' && it != ite)
-					{
-						// if (*it == ']')
-						// 	break ;
 						it++;
-					}
 					if (*it == '"')
 					{
 						std::string::iterator	end(++it);
