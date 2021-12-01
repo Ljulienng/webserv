@@ -49,6 +49,7 @@ class Server
 		unsigned short			&getPort();
 		std::vector<Location>	&getLocations();
 		size_t					&getMaxBodySize();
+		struct sockaddr_in 		&getSockaddr();
 		int						&getSockfd();
 };
 

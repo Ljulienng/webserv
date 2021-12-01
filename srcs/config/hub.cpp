@@ -5,13 +5,11 @@ void	Hub::start()
 	_config.parse();
 	_config.startSockets();
 
-	// store fd of each server in fdSet
-	long fd;
 	std::map<std::string, Server>::iterator it = _config.getServers().begin();
 	for ( ; it != _config.getServers().end(); it++)
 	{
-		fd = (*it).second.getSockfd();
-		FD_SET(fd, &_fdSet);
+		//class socketList qui contiendra toutes nos classes sockets
+		_socketList->addSocket(it->second.getSockfd(), it->second.getSockaddr(), it->first);
 	}
 }
 
@@ -29,24 +27,28 @@ Configuration	&Hub::getConfig()
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
-Hub::Hub() : _config()
+Hub::Hub() : _config(), _socketList(new SocketList())
 			// to be completed if new attributes
 {}
 
-Hub::Hub(std::string configFile) : _config(configFile) {}
+Hub::Hub(std::string configFile) : _config(configFile), _socketList(new SocketList()) {}
 
 Hub::Hub(const Hub &src)
 {
 	*this = src;
 }
 
-Hub::~Hub() {}
+Hub::~Hub()
+{
+	delete _socketList;
+}
 
 Hub &Hub::operator=(const Hub &src)
 {
 	if (&src != this)
 	{
 		_config = src._config;
+		_socketList = src._socketList;
 		// to be completed if new attributes
 	}
 	return (*this);

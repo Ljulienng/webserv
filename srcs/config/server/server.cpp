@@ -141,10 +141,12 @@ std::vector<Location>	&Server::getLocations()
 size_t		&Server::getMaxBodySize()
 { return _maxBodySize; }
 
+struct sockaddr_in 		&Server::getSockaddr()
+{ return _sockaddr; }
+
 int	&Server::getSockfd()
-{
-	return (_sockfd);
-}
+{ return _sockfd; }
+
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 

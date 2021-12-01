@@ -3,6 +3,7 @@
 
 #include "webserv.hpp"
 #include "configuration.hpp"
+#include "socketList.hpp"
 
 /*
 ** general class to handle the program
@@ -11,8 +12,8 @@ class Hub
 {
     private :
 		Configuration		_config;
-		fd_set				_fdSet;	// all fd get thanks to socket()
-		
+		SocketList *		_socketList;
+
     public :
 		Hub();
 		Hub(std::string configFile);
