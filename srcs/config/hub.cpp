@@ -4,13 +4,6 @@ void	Hub::start()
 {
 	_config.parse();
 	_config.startSockets();
-
-	// std::map<std::string, Server>::iterator it = _config.getServers().begin();
-	// for ( ; it != _config.getServers().end(); it++)
-	// {
-	// 	//class socketList qui contiendra toutes nos classes sockets
-	// 	_socketList->addSocket(new Socket(it->second.getSockfd(), it->second.getSockaddr(), it->first));
-	// }
 }
 
 
@@ -24,18 +17,12 @@ bool Hub::_isServerIndex(int i)
 */
 void	Hub::process()
 {
-	// struct pollfd fds[200];
 	// int timeout = 3 * 60 * 1000; // 3 minutes
 	int rc = 1;
-	// size_t nfds = 1;
 	int new_sd = -1;
 	bool end_server = false;
 	
-	// memset(fds, 0, sizeof(fds));
-	// fds[0].fd = _config.getServers().begin()->second.getSockfd(); std::cout << "ERROR ...\n";
-	// fds[0].events = POLLIN;
-	
-	while (end_server == false)
+	do
 	{
 		std::cout << "Waiting on poll() ...\n";
 
@@ -45,14 +32,14 @@ void	Hub::process()
 		rc = poll(_config.getFds(), _config.getNfds(), -1);
 		if (rc < 0)
 		{
-			std::cout << "poll() failed\n";
+			std::cerr << "poll() failed\n";
 			break ;
 		}
 
 		// check to see if the 3 minutes timeout expired
 		if (rc == 0)
 		{
-			std::cout << "poll() timeout\n";
+			std::cerr << "poll() timeout\n";
 			break ;
 		}
 
@@ -66,7 +53,7 @@ void	Hub::process()
 			// if revent is not POLLIN, it's an inexpected result, log and end the server
 			if (_config.getFds()[i].revents != POLLIN)
 			{
-				std::cout << "Error revents = " << _config.getFds()[i].revents << "\n";
+				std::cerr << "Error revents = " << _config.getFds()[i].revents << "\n";
 				end_server = true;
 				break ;
 			}
@@ -80,7 +67,8 @@ void	Hub::process()
 
 				// accept all incoming connections that are queued up on the listening socket before
 				// we loop back and call poll again
-				do {
+				do
+				{
 					// accept each incoming connection
 					// if accept fails with EWOULDBLOCK, then we have accepted all of them.
 					// Any other failure on accept will cause us to end the server
@@ -89,7 +77,7 @@ void	Hub::process()
 					{
 						if (errno != EWOULDBLOCK)
 						{
-							std::cout << "accept() failed\n";
+							std::cerr << "accept() failed\n";
 							end_server = true;
 						}
 						break ;
@@ -100,13 +88,18 @@ void	Hub::process()
 					_config.getFds()[_config.getNfds()].fd = new_sd;
 					_config.getFds()[_config.getNfds()].events = POLLIN;
 					_config.setNfds(_config.getNfds() + 1);
-
 					// loop back up and accept another incoming connection
 
 				} while (new_sd != -1);
 			}
+			else
+			{
+				std::cerr << "it's not a server index = " << i << _config.getNfds() << _config.getTopClient() << " \n"; return ;
+			}
+			
 		}
-	}
+		//std::cerr << "end main loop ...\n"; break ;
+	} while (end_server == false);
 
 }
 
