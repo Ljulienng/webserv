@@ -1,15 +1,14 @@
 #include "socketList.hpp"
 
-
-void	SocketList::addSocket(int sockFd, struct sockaddr_in sockaddr, std::string serverName)
+void	SocketList::addSocket(Socket* newSocket)
 {
-    (void)sockFd;
-    (void)sockaddr;
-    (void)serverName;
+    _sockets.push_back(newSocket);
 }
 
 /* GETTERS */
 
+std::list<Socket*>		SocketList::getSockets()
+{ return _sockets; }
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */

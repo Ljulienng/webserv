@@ -9,13 +9,13 @@ void	Hub::start()
 	for ( ; it != _config.getServers().end(); it++)
 	{
 		//class socketList qui contiendra toutes nos classes sockets
-		_socketList->addSocket(it->second.getSockfd(), it->second.getSockaddr(), it->first);
+		_socketList->addSocket(new Socket(it->second.getSockfd(), it->second.getSockaddr(), it->first));
 	}
 }
 
 void	Hub::process()
 {
-
+	
 }
 
 /* GETTERS */

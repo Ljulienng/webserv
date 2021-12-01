@@ -2,11 +2,12 @@
 # define SOCKETLIST_HPP
 
 #include "webserv.hpp"
+#include "socket.hpp"
 
 class SocketList
 {
     private :
-
+		std::list<Socket*>		_sockets;
 
     public :
 		SocketList();
@@ -15,7 +16,10 @@ class SocketList
 
 		SocketList &operator=(const SocketList &src);
 
-		void	addSocket(int sockFd, struct sockaddr_in sockaddr, std::string serverName);
+		void	addSocket(Socket* newSocket);
+
+		// GETTERS
+		std::list<Socket*>		getSockets();
 
 };
 
