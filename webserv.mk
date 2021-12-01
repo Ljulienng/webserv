@@ -3,8 +3,6 @@ SRC_FILES	= 	webserv.cpp					\
 				location.cpp				\
 				server.cpp					\
 				hub.cpp						\
-				socket.cpp					\
-				socketList.cpp				\
 				file.cpp					\
 				str.cpp	
 
@@ -13,7 +11,5 @@ INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/config/location/location.hpp					\
 				srcs/config/server/server.hpp						\
 				srcs/config/hub.hpp									\
-				srcs/socket/socket.hpp								\
-				srcs/socket/socketList.hpp							\
 				srcs/utils/file/file.hpp							\
 				srcs/utils/str/str.hpp

@@ -5,12 +5,18 @@ void	Hub::start()
 	_config.parse();
 	_config.startSockets();
 
-	std::map<std::string, Server>::iterator it = _config.getServers().begin();
-	for ( ; it != _config.getServers().end(); it++)
-	{
-		//class socketList qui contiendra toutes nos classes sockets
-		_socketList->addSocket(new Socket(it->second.getSockfd(), it->second.getSockaddr(), it->first));
-	}
+	// std::map<std::string, Server>::iterator it = _config.getServers().begin();
+	// for ( ; it != _config.getServers().end(); it++)
+	// {
+	// 	//class socketList qui contiendra toutes nos classes sockets
+	// 	_socketList->addSocket(new Socket(it->second.getSockfd(), it->second.getSockaddr(), it->first));
+	// }
+}
+
+
+bool Hub::_isServerIndex(int i)
+{
+	return (i < _config.getTopClient());
 }
 
 /*
@@ -51,7 +57,7 @@ void	Hub::process()
 		}
 
 		// one or more fd are readable. Need to determine which ones they are
-		for (size_t i = 0; i < _config.getNfds(); i++)
+		for (int i = 0; i < _config.getNfds(); i++)
 		{
 			// loop through to find the fd that returned POLLIN and determine whether it's the listening or the active connection
 			if (_config.getFds()[i].revents == 0)
@@ -65,7 +71,9 @@ void	Hub::process()
 				break ;
 			}
 
-			if (_config.getFds()[i].fd == _config.getServers().begin()->second.getSockfd())
+			// if the current fd is one of our fds
+			if (_isServerIndex(i))
+			// if (_config.getFds()[i].fd == _config.getServers().begin()->second.getSockfd())
 			{
 				// listening descriptor is readable
 				std::cout << "Listening socket is readable\n";
@@ -76,7 +84,7 @@ void	Hub::process()
 					// accept each incoming connection
 					// if accept fails with EWOULDBLOCK, then we have accepted all of them.
 					// Any other failure on accept will cause us to end the server
-					new_sd = accept(_config.getServers().begin()->second.getSockfd(), NULL, NULL);
+					new_sd = accept(_config.getFds()[i].fd, NULL, NULL);
 					if (new_sd < 0)
 					{
 						if (errno != EWOULDBLOCK)
@@ -102,6 +110,7 @@ void	Hub::process()
 
 }
 
+
 /* GETTERS */
 
 Configuration	&Hub::getConfig()
@@ -111,11 +120,11 @@ Configuration	&Hub::getConfig()
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
-Hub::Hub() : _config(), _socketList(new SocketList())
+Hub::Hub() : _config()
 			// to be completed if new attributes
 {}
 
-Hub::Hub(std::string configFile) : _config(configFile), _socketList(new SocketList()) {}
+Hub::Hub(std::string configFile) : _config(configFile) {}
 
 Hub::Hub(const Hub &src)
 {
@@ -124,7 +133,6 @@ Hub::Hub(const Hub &src)
 
 Hub::~Hub()
 {
-	delete _socketList;
 }
 
 Hub &Hub::operator=(const Hub &src)
@@ -132,7 +140,6 @@ Hub &Hub::operator=(const Hub &src)
 	if (&src != this)
 	{
 		_config = src._config;
-		_socketList = src._socketList;
 		// to be completed if new attributes
 	}
 	return (*this);

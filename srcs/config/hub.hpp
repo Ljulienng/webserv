@@ -3,7 +3,7 @@
 
 #include "webserv.hpp"
 #include "configuration.hpp"
-#include "socketList.hpp"
+// #include "socketList.hpp"
 
 /*
 ** general class to handle the program
@@ -12,7 +12,10 @@ class Hub
 {
     private :
 		Configuration		_config;
-		SocketList *		_socketList;
+		// SocketList *		_socketList;
+
+
+		bool _isServerIndex(int i);
 
     public :
 		Hub();

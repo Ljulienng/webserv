@@ -239,6 +239,7 @@ void		Configuration::startSockets()
 		_fds[_nfds].events = POLLIN;
 		_nfds++;		
 	}
+	_topClient = _nfds;
 }
 
 /* SETTERS */
@@ -322,6 +323,8 @@ struct pollfd *		Configuration::getFds()
 int			Configuration::getNfds()
 { return _nfds; }
 
+int			Configuration::getTopClient()
+{ return _topClient; }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
@@ -330,7 +333,8 @@ Configuration::Configuration() : 	_configFile(),
 									_maxBodySize(),
 									_errorPages(),
 									_servers(),
-									_nfds()
+									_nfds(),
+									_topClient()
 									// to be completed if new attributes
 {}
 
@@ -340,7 +344,8 @@ Configuration::Configuration(std::string configFile) :
 									_maxBodySize(),
 									_errorPages(),
 									_servers(),
-									_nfds(0)
+									_nfds(0),
+									_topClient(0)
 									
 									// to be completed if new attributes
 {
