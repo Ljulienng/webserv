@@ -17,6 +17,8 @@ class Configuration
 		size_t								_maxBodySize;
 		std::map<int, std::string>			_errorPages;
 		std::map<std::string, Server>		_servers;
+		struct pollfd						_fds[MAX_CONNECTIONS];
+		int									_nfds;
 
 		void 		_parseConfigPath(); 
 		void		_cleanSpaces(std::string &buf);
@@ -42,12 +44,15 @@ class Configuration
 		void		setConfigDatas(std::map<std::string, std::string> mapConfig);
 		void		setCgi(std::string cgi);
 		void		setMaxBodySize(std::string maxBodySize);
+		void		setNfds(int nfds);
 
 		// GETTERS
 		std::pair<std::string, std::string>		&getCgi();
 		size_t									&getMaxBodySize();
 		std::map<int, std::string>				&getErrorPages();
 		std::map<std::string, Server>			&getServers();
+		struct pollfd *							getFds();
+		int										getNfds();
 };
 
 // NON MEMBER FUNCTIONS

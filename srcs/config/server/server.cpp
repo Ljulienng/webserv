@@ -10,6 +10,12 @@ int Server::start()
 		std::cerr << "Failed to create socket." << std::endl; // Temporary messages
 		return (EXIT_FAILURE);
 	}
+	// set non blocking 
+	if (fcntl(_sockfd, F_SETFL, O_NONBLOCK) == -1)
+	{
+		std::cerr << "Failed to set non blocking connection " << std::endl;
+		return (EXIT_FAILURE);
+	}
 	_setSocketOpt();
 	// Bind
 	_initAddr();
@@ -51,7 +57,7 @@ void Server::_initAddr()
 	_sockaddr.sin_port = htons(_port);
 }
 
-void			Server::addLocation(Location location)
+void	Server::addLocation(Location location)
 {
 	_locations.push_back(location);
 }

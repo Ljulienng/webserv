@@ -27,6 +27,7 @@
 // C functions
 #include <cstring>
 #include <unistd.h>
+#include <fcntl.h>
 
 // Streams
 #include <iostream>
@@ -36,5 +37,6 @@
 
 # define EXIT_SUCCESS 0
 # define EXIT_FAILURE 1
+#define MAX_CONNECTIONS 100
 
 #endif

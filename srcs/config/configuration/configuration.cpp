@@ -232,9 +232,12 @@ void		Configuration::startSockets()
 	int ret = 0;
 	for ( ; it != _servers.end(); it++)
 	{
-		ret = (*it).second.start();
+		ret = it->second.start();
 		if (ret == EXIT_FAILURE)
 			throw(std::string("Error during starting socket of server" + (*it).second.getName()));
+		_fds[_nfds].fd = it->second.getSockfd();
+		_fds[_nfds].events = POLLIN;
+		_nfds++;		
 	}
 }
 
@@ -294,6 +297,10 @@ void	Configuration::setMaxBodySize(std::string maxBodySize)
 	}
 }
 
+void		Configuration::setNfds(int nfds)
+{
+	_nfds = nfds;
+}
 
 /* GETTERS */
 
@@ -309,6 +316,11 @@ std::map<int, std::string>		&Configuration::getErrorPages()
 std::map<std::string, Server>		&Configuration::getServers()
 { return _servers; }
 
+struct pollfd *		Configuration::getFds()
+{ return _fds; }
+
+int			Configuration::getNfds()
+{ return _nfds; }
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
@@ -317,13 +329,23 @@ Configuration::Configuration() : 	_configFile(),
 									_cgi(),
 									_maxBodySize(),
 									_errorPages(),
-									_servers()
+									_servers(),
+									_nfds()
 									// to be completed if new attributes
 {}
 
-Configuration::Configuration(std::string configFile) : _configFile(configFile)
+Configuration::Configuration(std::string configFile) : 
+									_configFile(configFile),
+									_cgi(),
+									_maxBodySize(),
+									_errorPages(),
+									_servers(),
+									_nfds(0)
+									
+									// to be completed if new attributes
 {
 	_parseConfigPath();
+	memset(_fds, 0, sizeof(_fds));
 }
 
 Configuration::Configuration(const Configuration &src)
