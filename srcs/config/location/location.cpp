@@ -1,36 +1,30 @@
 #include "location.hpp"
 
 /* SETTERS */
-
 void	Location::setLocationsDatas(std::map<std::string, std::string> mapLocation)
 {
 	std::map<std::string, std::string>::iterator it = mapLocation.begin();
 	std::map<std::string, std::string>::iterator ite = mapLocation.end();
-	
+	int ret;
+	typedef void (Location::* funcPtr)(std::string);
+	funcPtr setData[7] = {	&Location::setPath,
+							&Location::setRoot,
+							&Location::setMethods,
+							&Location::setDefaultFile,
+							&Location::setAutoindex ,
+							&Location::setMaxBodySize,
+							&Location::setRedirection };
 	while (it != ite)
 	{
-		if (it->first == "path") 
-			setPath(it->second);
-		else if (it->first == "root")
-			setRoot(it->second);
-		else if (it->first == "accepted_methods")
-			setMethods(it->second);
-		else if (it->first == "default_file")
-			setDefaultFile(it->second);
-		else if (it->first == "autoindex")
-			setAutoindex(it->second);
-		else if (it->first == "max_body_size")
-			setMaxBodySize(it->second);
-		else if (it->first == "redirection")
-			setRedirections(it->second);
-		// to be continued ...
+		if ((ret = isValidExpression(it->first, locationExpression)) != -1)
+			(this->*setData[ret])(it->second);
 		else
 			throw (std::string("Error: unknown expression in configuration file"));
 		it++;
 	}
 }
 
-/* SETTERS (en cours) */
+/* SETTERS */
 void	Location::setPath(std::string path)
 {
 	_path = path;
@@ -78,37 +72,51 @@ void	Location::setMaxBodySize(std::string maxBodySize)
 	_maxBodySize = val.getNum();
 }
 
-void	Location::setRedirections(std::string redirection)
+void	Location::setRedirection(std::string redirection)
 {
 	Str	tmp(redirection);
 
+	std::cout << redirection << "  - redirection size = " << tmp.getTokens().size() << "\n";
 	if (tmp.getTokens().size() != 2)
 		throw (std::string("Error: bad redirection format"));
 	int statusCode = atoi(tmp.getTokens()[0].c_str());
 	if (statusCode < 300 || statusCode > 399)
 		throw (std::string("Error: bad redirection format"));
-	_redirections.first = atoi(tmp.getTokens()[0].c_str());
-	_redirections.second = tmp.getTokens()[1];
+	_redirection.first = atoi(tmp.getTokens()[0].c_str());
+	_redirection.second = tmp.getTokens()[1];
 }
 
 /* GETTERS */
 
 std::vector<std::string>	&Location::getAcceptedMethod()
-{ return _acceptedMethod; }
+{ 
+	return _acceptedMethod;
+}
 
 std::string		&Location::getPath()
-{ return _path; }
+{ 
+	return _path;
+}
 
 std::string		&Location::getRoot()
-{ return _root; }
+{ 
+	return _root;
+}
 
 bool	&Location::getAutoindex()
-{ return _autoindex; }
+{
+	return _autoindex;
+}
 
 size_t	&Location::getMaxBodySize()
-{ return _maxBodySize; }
+{
+	return _maxBodySize;
+}
 
-
+std::pair<int, std::string>	&Location::getRedirection()
+{
+	return _redirection;
+}
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
 Location::Location()  : _acceptedMethod(),
@@ -117,7 +125,7 @@ Location::Location()  : _acceptedMethod(),
 						_defaultFile(),
 						_autoindex(),
 						_maxBodySize(),
-						_redirections()
+						_redirection()
 						// to be completed if new attributes
 {}
 
@@ -138,7 +146,7 @@ Location &Location::operator=(const Location &src)
 		_defaultFile = src._defaultFile;
 		_autoindex = src._autoindex;
 		_maxBodySize = src._maxBodySize;
-		_redirections = src._redirections;
+		_redirection = src._redirection;
 		// to be completed if new attributes
 	}
 	return (*this);

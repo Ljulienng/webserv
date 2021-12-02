@@ -57,18 +57,16 @@ void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 {
 	std::map<std::string, std::string>::iterator it = mapServer.begin();
 	std::map<std::string, std::string>::iterator ite = mapServer.end();
-	
+	int ret;
+	typedef void (Server::* funcPtr)(std::string);
+	funcPtr setData[4] = {	&Server::setName,
+							&Server::setIp,
+							&Server::setPort,
+							&Server::setMaxBodySize };
 	while (it != ite)
 	{
-		if (it->first == "server_name") 
-			setName(it->second);
-		else if (it->first == "ip")
-			setIp(it->second);
-		else if (it->first == "port")
-			setPort(it->second);
-		else if (it->first == "max_body_size")
-			setMaxBodySize(it->second);
-		// to be continued ...
+		if ((ret = isValidExpression(it->first, serverExpression)) != -1)
+			(this->*setData[ret])(it->second);
 		else
 			throw (std::string("Error: unknown expression in configuration file"));
 		it++;

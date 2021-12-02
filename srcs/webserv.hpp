@@ -39,4 +39,35 @@
 # define EXIT_FAILURE 1
 #define MAX_CONNECTIONS 100
 
+// NON MEMBER FUNCTIONS
+int isValidExpression(std::string expression, const char **validExpressions);
+
+static const char* configExpression[] = {
+	"cgi",
+	"max_body_size",
+	"error_pages",
+	"server",
+	0
+};
+
+static const char* serverExpression[] = {
+	"server_name",
+	"ip",
+	"port",
+	"max_body_size",
+	"location",
+	0
+};
+
+static const char* locationExpression[] = {
+	"path",
+	"root",
+	"accepted_methods",
+	"default_file",
+	"autoindex",
+	"max_body_size",
+	"redirection",
+	0
+};
+
 #endif

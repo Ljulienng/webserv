@@ -13,7 +13,7 @@ class Location
 		std::string					_defaultFile;
 		bool						_autoindex;
 		size_t						_maxBodySize; 
-		std::pair<int, std::string>	_redirections;
+		std::pair<int, std::string>	_redirection;
 
     public :
         Location();
@@ -31,7 +31,7 @@ class Location
 		void	setDefaultFile(std::string default_file);
 		void	setAutoindex(std::string autoIndex);
 		void	setMaxBodySize(std::string maxBodySize);
-		void	setRedirections(std::string redirection);	
+		void	setRedirection(std::string redirection);	
 
 		// GETTERS
 		std::vector<std::string>	&getAcceptedMethod();
@@ -39,6 +39,7 @@ class Location
 		std::string					&getRoot();
 		bool						&getAutoindex();
 		size_t						&getMaxBodySize();
+		std::pair<int, std::string>	&getRedirection();
 };
 
 #endif

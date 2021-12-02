@@ -147,7 +147,7 @@ size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterat
 					{
 						std::string::iterator	end(++it);
 						for (; *end != '"'; end++);
-						if (isValidExpression(std::string(it--, end), LocationExpression)) // si prochain mot fait partie des mots cles (definir enum)
+						if (isValidExpression(std::string(it--, end), locationExpression) != -1) // si prochain mot fait partie des mots cles (definir enum)
 							it += _parseLocation(it, ite, server);
 						it++;
 					}
@@ -202,7 +202,7 @@ void	Configuration::parse()
 					{
 						std::string::iterator	end(++it);
 						for (; *end != '"'; end++);
-						if (isValidExpression(std::string(it--, end), ServerExpression)) // si prochain mot fait partie des mots cles (definir enum)
+						if (isValidExpression(std::string(it--, end), serverExpression) != -1) // si prochain mot fait partie des mots cles (definir enum)
 							it += _parseServer(it, ite);
 						it++;
 					}
@@ -244,14 +244,14 @@ void	Configuration::setConfigDatas(std::map<std::string, std::string> mapConfig)
 {
 	std::map<std::string, std::string>::iterator it = mapConfig.begin();
 	std::map<std::string, std::string>::iterator ite = mapConfig.end();
-
+	int ret;
+	typedef void (Configuration::* funcPtr)(std::string);
+	funcPtr setData[2] = {	&Configuration::setCgi,
+							&Configuration::setMaxBodySize };
 	while (it != ite)
 	{
-		if (it->first == "cgi")
-			setCgi(it->second);
-		else if (it->first == "max_body_size")
-			setMaxBodySize(it->second);
-		// to be continued ...
+		if ((ret = isValidExpression(it->first, configExpression)) != -1)
+			(this->*setData[ret])(it->second);
 		else
 			throw (std::string("Error: unknown expression in configuration file : " + it->first));
 		it++;
@@ -379,17 +379,17 @@ Configuration &Configuration::operator=(const Configuration &src)
 
 /* NON MEMBER FUNCTIONS */
 
-bool isValidExpression(std::string expression, const char **validExpressions)
+int isValidExpression(std::string expression, const char **validExpressions)
 {
 	size_t i = 0;
 
 	while (validExpressions[i])
 	{
 		if (expression == validExpressions[i])
-			return (true);
+			return (i);
 		++i;
 	}
-	return (false);
+	return (-1);
 }
 
 /* DEBUG */
@@ -425,6 +425,8 @@ void	Configuration::debug()
 			std::cout << "\n\t\t - path = " << itLoc->getPath() << "\n";
 			std::cout << "\t\t - root = " << itLoc->getRoot() << "\n";
 			std::cout << "\t\t - autoindex = " << itLoc->getAutoindex() << "\n";
+			std::cout << "\t\t - methods = " << itLoc->getAcceptedMethod()[0] << "\n";
+			std::cout << "\t\t - redirection = " << itLoc->getRedirection().first << " : " << itLoc->getRedirection().second  << "\n";
 			std::cout << "\t\t - maxBodySize = " << itLoc->getMaxBodySize() << "\n";
 			j++;
 		}
