@@ -59,32 +59,30 @@ void	Hub::process()
 			}
 			else
 			{
-				// receive the request (recv)
-				// parse it
-				// prepare response
+				// RECEIVE THE REQUEST (recv)
+				// PARSE THE REQUEST
+				// PREPARE THE RESPONSE
 			}
 		}
 		else if (_config.getFds()[i].revents == POLLOUT)
 		{
-			// send response
+			// SEND RESPONSE
 		}
 		else
 		{
-			// error quit program
+			// ERROR QUIT PROGRAM
 		}
 	}
 }
 
 
 /* GETTERS */
-
 Configuration	&Hub::getConfig()
 {
 	return _config;
 }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-
 Hub::Hub() : _config()
 			// to be completed if new attributes
 {}
