@@ -28,8 +28,7 @@ int     main(int ac, char **argv, char **env)
             hub.start(); // parse and setup
             while (g_run)
                 hub.process();
-            hub.getConfig().debug();
-			//hub.suiteduprogramme();
+            // hub.getConfig().debug();
         }
         catch(std::string error)
         {

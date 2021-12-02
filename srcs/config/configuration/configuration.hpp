@@ -18,8 +18,7 @@ class Configuration
 		std::map<int, std::string>			_errorPages;
 		std::map<std::string, Server>		_servers;
 		struct pollfd						_fds[MAX_CONNECTIONS];
-		int									_nfds;
-		int									_topClient;
+		size_t								_nfds;
 
 		void 		_parseConfigPath(); 
 		void		_cleanSpaces(std::string &buf);
@@ -53,8 +52,8 @@ class Configuration
 		std::map<int, std::string>				&getErrorPages();
 		std::map<std::string, Server>			&getServers();
 		struct pollfd *							getFds();
-		int										getNfds();
-		int										getTopClient();
+		size_t									getNfds();
+		int										getTopServer();
 };
 
 // NON MEMBER FUNCTIONS

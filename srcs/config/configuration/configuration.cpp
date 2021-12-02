@@ -236,7 +236,6 @@ void		Configuration::startSockets()
 		_fds[_nfds].events = POLLIN;
 		_nfds++;		
 	}
-	_topClient = _nfds;
 }
 
 /* SETTERS */
@@ -303,25 +302,34 @@ void		Configuration::setNfds(int nfds)
 /* GETTERS */
 
 std::pair<std::string, std::string>		&Configuration::getCgi()
-{ return _cgi; }
+{
+	return _cgi;
+}
 
 size_t		&Configuration::getMaxBodySize()
-{ return _maxBodySize; }
+{
+	return _maxBodySize;
+}
 
 std::map<int, std::string>		&Configuration::getErrorPages()
-{ return _errorPages; }
+{
+	return _errorPages;
+}
 
 std::map<std::string, Server>		&Configuration::getServers()
-{ return _servers; }
+{
+	return _servers;
+}
 
 struct pollfd *		Configuration::getFds()
-{ return _fds; }
+{
+	return _fds;
+}
 
-int			Configuration::getNfds()
-{ return _nfds; }
-
-int			Configuration::getTopClient()
-{ return _topClient; }
+size_t		Configuration::getNfds()
+{
+	return _nfds;
+}
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
@@ -330,8 +338,7 @@ Configuration::Configuration() : 	_configFile(),
 									_maxBodySize(),
 									_errorPages(),
 									_servers(),
-									_nfds(),
-									_topClient()
+									_nfds()
 									// to be completed if new attributes
 {}
 
@@ -341,9 +348,7 @@ Configuration::Configuration(std::string configFile) :
 									_maxBodySize(),
 									_errorPages(),
 									_servers(),
-									_nfds(0),
-									_topClient(0)
-									
+									_nfds(0)						
 									// to be completed if new attributes
 {
 	_parseConfigPath();
@@ -366,6 +371,7 @@ Configuration &Configuration::operator=(const Configuration &src)
 		_maxBodySize = src._maxBodySize;
 		_errorPages = src._errorPages;
 		_servers = src._servers;
+		_nfds = src._nfds;
 		// to be completed if new attributes
 	}
 	return (*this);

@@ -25,7 +25,6 @@ void	Server::setNonBlock()
 }
 
 /*
-** set socket options
 ** set that the address is a reusable local address
 ** throw if the options can't be set to the socket.
 */
