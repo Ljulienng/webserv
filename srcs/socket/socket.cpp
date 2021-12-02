@@ -1,15 +1,15 @@
 #include "socket.hpp"
 
 /* GETTERS */
-
 int						&Socket::getFd()
-{ return _fd; }
-
-std::string				&Socket::getServerName()
-{ return _serverName; }
+{
+	return _fd;
+}
 
 struct sockaddr_in 		&Socket::getAddr()
-{ return _addr; }
+{
+	return _addr;
+}
 
 
 /* SETTERS */
@@ -26,18 +26,15 @@ void        Socket::setAddr(int family, const char *ip, unsigned short port)
 }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-
 Socket::Socket() :
 			_fd(),
-			_Addr(),
-			_serverName()
+			_addr()
 			// to be completed if new attributes
 {}
 
-Socket::Socket(int sockFd, struct sockaddr_in sockaddr, std::string serverName) :
+Socket::Socket(int sockFd, struct sockaddr_in sockaddr) :
 			_fd(sockFd),
-			_Addr(sockaddr),
-			_serverName(serverName)
+			_addr(sockaddr)
 			// to be completed if new attributes
 {}
 
@@ -52,7 +49,8 @@ Socket &Socket::operator=(const Socket &src)
 {
 	if (&src != this)
 	{
-	
+		_fd = src.fd;
+		_addr = src._addr;
 		// to be completed if new attributes
 	}
 	return (*this);

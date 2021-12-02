@@ -38,7 +38,8 @@ class Server
 		void	closeSocket();
 		void	bindSocket();
 		void	setSocketOptions();
-		void	setNonBlocking();
+		void	setNonBlock();
+		void	listenSocket();
 
 		// SETTERS
 		void	setServerDatas(std::map<std::string, std::string> mapServer);

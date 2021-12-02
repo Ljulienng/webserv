@@ -4,18 +4,12 @@
 int Server::start()
 {
 	createSocket();
-	setNonBlocking();
+	setNonBlock();
 	setSocketOptions();
 	_socket.setAddr(AF_INET, _ip.c_str(), _port);
 	bindSocket();
+	listenSocket();
 	
-	// Listen
-	if (listen(_sockfd, MAX_CONNECTIONS) < 0) // Maximum can be higher, to be tested
-	{
-		std::cerr << "Failed to listen on socket" << std::endl;
-		return (EXIT_FAILURE);  
-	}
-	// Start (Not in this function)
 	return (EXIT_SUCCESS);
 }
 
@@ -23,13 +17,13 @@ void	Server::createSocket()
 {
 	_socket.setFd(socket(AF_INET, SOCK_STREAM, 0));
 	if (_socket.getFd() == -1)
-		throw(std::string("Failed to create socket"));
+		throw(std::string("Error: Failed to create socket"));
 }
 
-void	Server::setNonBlocking()
+void	Server::setNonBlock()
 {
 	if (fcntl(_socket.getFd(), F_SETFL, O_NONBLOCK) == -1)
-		throw(std::string("Failed to set non blocking connection"));
+		throw(std::string("Error: Failed to set non blocking connection"));
 }
 
 /*
@@ -46,11 +40,14 @@ void Server::setSocketOptions()
 
 void	Server::bindSocket()
 {
-	if (bind(_socket.getFd(), (struct sockaddr *)&_socket.getSockaddr(), sizeof(_sockaddr)) < 0)
-		{
-			std::cerr << "Failed to bind " << std::endl;
-			return (EXIT_FAILURE);
-		}
+	if (bind(_socket.getFd(), (struct sockaddr *)&_socket.getAddr(), sizeof(_socket.getAddr())) < 0)
+			throw(std::string("Error: Failed to bind"));
+}
+
+void	Server::listenSocket()
+{
+	if (listen(_socket.getFd(), MAX_CONNECTIONS) < 0) // Maximum can be higher, to be tested
+		throw(std::string("Error: Failed to listen on socket"));
 }
 
 void	Server::addLocation(Location location)
