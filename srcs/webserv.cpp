@@ -6,7 +6,7 @@
 
 #define RED  "\033[31m"
 
-bool    g_run;
+bool g_run;
 
 void     sigintHandler(int sig)
 {
@@ -26,7 +26,8 @@ int     main(int ac, char **argv, char **env)
         {
 			Hub hub(argv[1]);
             hub.start(); // parse and setup
-            hub.process();
+            while (g_run)
+                hub.process();
             hub.getConfig().debug();
 			//hub.suiteduprogramme();
         }

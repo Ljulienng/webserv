@@ -229,13 +229,10 @@ void	Configuration::parse()
 void		Configuration::startSockets()
 {
 	std::map<std::string, Server>::iterator	it = _servers.begin();
-	int ret = 0;
 	for ( ; it != _servers.end(); it++)
 	{
-		ret = it->second.start();
-		if (ret == EXIT_FAILURE)
-			throw(std::string("Error during starting socket of server" + (*it).second.getName()));
-		_fds[_nfds].fd = it->second.getSockfd();
+		it->second.start();
+		_fds[_nfds].fd = it->second.getSocket().getFd();
 		_fds[_nfds].events = POLLIN;
 		_nfds++;		
 	}

@@ -4,7 +4,7 @@
 #include "webserv.hpp"
 #include "configuration.hpp"
 // #include "socketList.hpp"
-
+extern bool    g_run;
 /*
 ** general class to handle the program
 */

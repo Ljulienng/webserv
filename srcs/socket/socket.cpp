@@ -49,7 +49,7 @@ Socket &Socket::operator=(const Socket &src)
 {
 	if (&src != this)
 	{
-		_fd = src.fd;
+		_fd = src._fd;
 		_addr = src._addr;
 		// to be completed if new attributes
 	}

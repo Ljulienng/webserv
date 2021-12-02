@@ -18,28 +18,23 @@ class Server
 		unsigned short				_port;
 		size_t						_maxBodySize; 
 		std::vector<Location>		_locations;
-
 		Socket						_socket;
-		// struct sockaddr_in 			_sockaddr; 	// include in _socket
-		// int							_sockfd;	// include in _socket
 
     public :
 
         Server();
 		Server(const Server &src);
 		~Server();
-
 		Server &operator=(const Server &src);
 
-		void	addLocation(Location location);
-		int 	start();
-		
+		void 	start();
 		void	createSocket();
 		void	closeSocket();
 		void	bindSocket();
 		void	setSocketOptions();
 		void	setNonBlock();
 		void	listenSocket();
+		void	addLocation(Location location);
 
 		// SETTERS
 		void	setServerDatas(std::map<std::string, std::string> mapServer);
@@ -52,10 +47,9 @@ class Server
 		std::string				&getName();
 		std::string				&getIp();
 		unsigned short			&getPort();
-		std::vector<Location>	&getLocations();
 		size_t					&getMaxBodySize();
-		struct sockaddr_in 		&getSockaddr();
-		int						&getSockfd();
+		std::vector<Location>	&getLocations();
+		Socket 					&getSocket();
 };
 
 #endif

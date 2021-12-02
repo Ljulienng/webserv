@@ -1,7 +1,7 @@
 #include "server.hpp"
 
 // Basic socket initialization following the basic steps
-int Server::start()
+void 	Server::start()
 {
 	createSocket();
 	setNonBlock();
@@ -9,8 +9,6 @@ int Server::start()
 	_socket.setAddr(AF_INET, _ip.c_str(), _port);
 	bindSocket();
 	listenSocket();
-	
-	return (EXIT_SUCCESS);
 }
 
 void	Server::createSocket()
@@ -126,25 +124,34 @@ void	Server::setMaxBodySize(std::string maxBodySize)
 /* GETTERS */
 
 std::string		&Server::getName()
-{ return _name; }
+{
+	return _name;
+}
 
 std::string		&Server::getIp()
-{ return _ip; }
+{
+	return _ip;
+}
 
 unsigned short		&Server::getPort()
-{ return _port; }
+{
+	return _port;
+}
 
 std::vector<Location>	&Server::getLocations()
-{ return _locations; }
+{
+	return _locations;
+}
 
 size_t		&Server::getMaxBodySize()
-{ return _maxBodySize; }
+{
+	return _maxBodySize;
+}
 
-struct sockaddr_in 		&Server::getSockaddr()
-{ return _sockaddr; }
-
-int	&Server::getSockfd()
-{ return _sockfd; }
+Socket 		&Server::getSocket()
+{
+	return _socket;
+}
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
@@ -154,8 +161,7 @@ Server::Server() : 	_name(),
 					_port(),
 					_maxBodySize(),
 					_locations(),
-					_sockaddr(),
-					_sockfd()
+					_socket()
 					// to be completed if new attributes
 {}
 
@@ -175,8 +181,7 @@ Server &Server::operator=(const Server &src)
 		_port = src._port;
 		_maxBodySize = src._maxBodySize;
 		_locations = src._locations;
-		_sockaddr = src._sockaddr;
-		_sockfd = src._sockfd;
+		_socket = src._socket;
 		// to be completed if new attributes
 	}
 	return (*this);
