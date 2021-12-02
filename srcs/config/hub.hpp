@@ -12,10 +12,8 @@ class Hub
 {
     private :
 		Configuration		_config;
-		// SocketList *		_socketList;
 
-
-		bool _isServerIndex(int i);
+		bool _isServer(int i);
 
     public :
 		Hub();

@@ -7,7 +7,7 @@ void	Hub::start()
 }
 
 
-bool Hub::_isServerIndex(int i)
+bool Hub::_isServer(int i)
 {
 	return (i < _config.getTopClient());
 }
@@ -48,46 +48,31 @@ void	Hub::process()
 		// if revent is not POLLIN, it's an inexpected result, log and end the server
 		if (_config.getFds()[i].revents == POLLIN)
 		{
-			// if the current fd is one of our fds
-			if (_isServerIndex(i))
+			// if the current fd is one of our servers, we connect a new client
+			// else it's client and we receive the request (recv), parse it and prepare response
+			if (_isServer(i))
 			{
 				// listening descriptor is readable
-				std::cout << "Listening socket is readable\n";
 				// accept all incoming connections that are queued up on the listening socket before
 				// we loop back and call poll again
-				while (acceptRet != -1)
-				{
-					// accept each incoming connection
-					// if accept fails with EWOULDBLOCK, then we have accepted all of them.
-					// Any other failure on accept will cause us to end the server
-					acceptRet = accept(_config.getFds()[i].fd, NULL, NULL);
-					if (acceptRet < 0)
-					{
-						if (errno != EWOULDBLOCK)
-						{
-							std::cerr << "accept() failed\n";
-							g_run = false;
-						}
-						break ;
-					}
-
-				// 	// add the new incoming connection to the pollfd structure
-				// 	std::cout << "New incoming connection - " << acceptRet << "\n";
-				// 	_config.getFds()[_config.getNfds()].fd = acceptRet;
-				// 	_config.getFds()[_config.getNfds()].events = POLLIN;
-				// 	_config.setNfds(_config.getNfds() + 1);
-				// 	// loop back up and accept another incoming connection
-
-				}
+				// accept each incoming connection
+				// if accept fails with EWOULDBLOCK, then we have accepted all of them.
+				// Any other failure on accept will cause us to end the server
+				acceptRet = accept(_config.getFds()[i].fd, NULL, NULL);
+				if (acceptRet == -1)
+					break ;
+				// add the new incoming connection to the pollfd structure
+				std::cout << "New incoming connection - " << acceptRet << "\n";
+				_config.getFds()[_config.getNfds()].fd = acceptRet;
+				_config.getFds()[_config.getNfds()].events = POLLIN;
+				_config.setNfds(_config.getNfds() + 1);
+				// loop back up and accept another incoming connection
 			}
 			else
 			{
-				std::cerr << "it's not a server index = " << i << _config.getNfds() << _config.getTopClient() << " \n"; return ;
+				// create a client : receive the request (recv), parse it and prepare response
 			}
 		}
-
-
-		
 	}
 }
 
