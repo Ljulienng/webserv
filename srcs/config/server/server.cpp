@@ -28,7 +28,7 @@ void	Server::setNonBlock()
 ** set that the address is a reusable local address
 ** throw if the options can't be set to the socket.
 */
-void Server::setSocketOptions()
+void 	Server::setSocketOptions()
 {
 	int option = 1;
 	if (setsockopt(_socket.getFd(), SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) != 0)
