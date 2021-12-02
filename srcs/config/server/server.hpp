@@ -4,6 +4,7 @@
 #include "webserv.hpp"
 #include "location.hpp"
 #include "str.hpp"
+#include "socket.hpp"
 
 /*
 ** information from the configuration file : server_name, ip, port, maxBodySize, a list of location(s) ...
@@ -17,12 +18,10 @@ class Server
 		unsigned short				_port;
 		size_t						_maxBodySize; 
 		std::vector<Location>		_locations;
-		struct sockaddr_in 			_sockaddr;
-		int							_sockfd;
 
-		void 	_initAddr();
-		void 	_setSocketOpt();
-
+		Socket						_socket;
+		// struct sockaddr_in 			_sockaddr; 	// include in _socket
+		// int							_sockfd;	// include in _socket
 
     public :
 
@@ -35,6 +34,11 @@ class Server
 		void	addLocation(Location location);
 		int 	start();
 		
+		void	createSocket();
+		void	closeSocket();
+		void	bindSocket();
+		void	setSocketOptions();
+		void	setNonBlocking();
 
 		// SETTERS
 		void	setServerDatas(std::map<std::string, std::string> mapServer);

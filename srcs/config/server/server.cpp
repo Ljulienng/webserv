@@ -3,29 +3,14 @@
 // Basic socket initialization following the basic steps
 int Server::start()
 {
-	// Socket
-	_sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (_sockfd == -1)
-	{
-		std::cerr << "Failed to create socket." << std::endl; // Temporary messages
-		return (EXIT_FAILURE);
-	}
-	// set non blocking 
-	if (fcntl(_sockfd, F_SETFL, O_NONBLOCK) == -1)
-	{
-		std::cerr << "Failed to set non blocking connection " << std::endl;
-		return (EXIT_FAILURE);
-	}
-	_setSocketOpt();
-	// Bind
-	_initAddr();
-	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, sizeof(_sockaddr)) < 0)
-	{
-		std::cerr << "Failed to bind " << std::endl;
-		return (EXIT_FAILURE);
-	}
+	createSocket();
+	setNonBlocking();
+	setSocketOptions();
+	_socket.setAddr(AF_INET, _ip.c_str(), _port);
+	bindSocket();
+	
 	// Listen
-	if (listen(_sockfd, 100) < 0) // Maximum can be higher, to be tested
+	if (listen(_sockfd, MAX_CONNECTIONS) < 0) // Maximum can be higher, to be tested
 	{
 		std::cerr << "Failed to listen on socket" << std::endl;
 		return (EXIT_FAILURE);  
@@ -34,27 +19,38 @@ int Server::start()
 	return (EXIT_SUCCESS);
 }
 
+void	Server::createSocket()
+{
+	_socket.setFd(socket(AF_INET, SOCK_STREAM, 0));
+	if (_socket.getFd() == -1)
+		throw(std::string("Failed to create socket"));
+}
+
+void	Server::setNonBlocking()
+{
+	if (fcntl(_socket.getFd(), F_SETFL, O_NONBLOCK) == -1)
+		throw(std::string("Failed to set non blocking connection"));
+}
+
 /*
 ** set socket options
-** set that the address is a reusable local address,
- *  same for port.
- * 
- * 	@throw if the options can't be set to the socket.
- */
-
-void Server::_setSocketOpt()
+** set that the address is a reusable local address
+** throw if the options can't be set to the socket.
+*/
+void Server::setSocketOptions()
 {
 	int option = 1;
-	if (setsockopt(this->_sockfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) != 0)
+	if (setsockopt(_socket.getFd(), SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) != 0)
 		throw(std::string("Error: to set socket options"));
 }
 
-// Filling the sockaddr_in variable
-void Server::_initAddr()
+void	Server::bindSocket()
 {
-	_sockaddr.sin_family = AF_INET;
-	_sockaddr.sin_addr.s_addr = inet_addr(_ip.c_str());
-	_sockaddr.sin_port = htons(_port);
+	if (bind(_socket.getFd(), (struct sockaddr *)&_socket.getSockaddr(), sizeof(_sockaddr)) < 0)
+		{
+			std::cerr << "Failed to bind " << std::endl;
+			return (EXIT_FAILURE);
+		}
 }
 
 void	Server::addLocation(Location location)
