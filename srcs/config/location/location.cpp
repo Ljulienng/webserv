@@ -76,7 +76,6 @@ void	Location::setRedirection(std::string redirection)
 {
 	Str	tmp(redirection);
 
-	std::cout << redirection << "  - redirection size = " << tmp.getTokens().size() << "\n";
 	if (tmp.getTokens().size() != 2)
 		throw (std::string("Error: bad redirection format"));
 	int statusCode = atoi(tmp.getTokens()[0].c_str());

@@ -16,18 +16,8 @@ void	Hub::process()
 		
 	// call poll and wait an infinite time
 	pollRet = poll(_config.getFds(), _config.getNfds(), -1);
-	if (pollRet < 0)
-	{
-		std::cerr << "poll() failed\n";
+	if (pollRet < 0) // poll() failed
 		return ;
-	}
-
-	// check to see if the 3 minutes timeout expired
-	if (pollRet == 0)
-	{
-		std::cerr << "poll() timeout\n";
-		return ;
-	}
 
 	// one or more fd are readable. Need to determine which ones they are
 	for (size_t i = 0; i < _config.getNfds(); i++)
@@ -40,23 +30,27 @@ void	Hub::process()
 		if (_config.getFds()[i].revents == POLLIN)
 		{
 			// if the current fd is one of our servers, we connect a new client
-			// else it's client and we receive the request (recv), parse it and prepare response
+			// listening descriptor is readable
 			if (i <= _config.getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
 			{
-				// to do : create and push_back a new Client 
-				// listening descriptor is readable
 				// accept all incoming connections that are queued up on the listening socket before
 				// accept each incoming connection
-				acceptRet = accept(_config.getFds()[i].fd, NULL, NULL);
-				if (acceptRet == -1)
-					break ;
-				// add the new incoming connection to the pollfd structure
-				std::cout << "New incoming connection - fd : " << acceptRet << "\n";
-				_config.getFds()[_config.getNfds()].fd = acceptRet;
-				_config.getFds()[_config.getNfds()].events = POLLIN;
-				_config.setNfds(_config.getNfds() + 1);
-				// loop back up and accept another incoming connection
+				while (42)
+				{
+					// TO DO : create and push_back a new Client 
+					acceptRet = accept(_config.getFds()[i].fd, NULL, NULL);
+					if (acceptRet == -1) // no connection is present in the queue
+						break ;
+					// add the new incoming connection to the pollfd structure
+					std::cout << "New incoming connection - fd : " << acceptRet << "\n";
+					_config.getFds()[_config.getNfds()].fd = acceptRet;
+					_config.getFds()[_config.getNfds()].events = POLLIN;
+					_config.setNfds(_config.getNfds() + 1);
+					// loop back up and accept another incoming connection
+				}
 			}
+			// it's not a listening socket (server), therefore an existing connection must be readable (client)
+			// it's a client so we need to receive the request (recv), parse it and prepare response
 			else
 			{
 				// RECEIVE THE REQUEST (recv)
