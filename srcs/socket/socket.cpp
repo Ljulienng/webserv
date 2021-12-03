@@ -1,16 +1,5 @@
 #include "socket.hpp"
 
-/* GETTERS */
-int						&Socket::getFd()
-{
-	return _fd;
-}
-
-struct sockaddr_in 		&Socket::getAddr()
-{
-	return _addr;
-}
-
 
 /* SETTERS */
 void        Socket::setFd(int fd)
@@ -23,6 +12,17 @@ void        Socket::setAddr(int family, const char *ip, unsigned short port)
 	_addr.sin_family = family;
 	_addr.sin_addr.s_addr = inet_addr(ip);
 	_addr.sin_port = htons(port);
+}
+
+/* GETTERS */
+int						&Socket::getFd()
+{
+	return _fd;
+}
+
+struct sockaddr_in 		&Socket::getAddr()
+{
+	return _addr;
 }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */

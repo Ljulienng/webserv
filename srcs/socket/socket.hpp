@@ -5,7 +5,7 @@
 
 class Socket
 {
-    private :
+    protected :
         int             _fd;;
         sockaddr_in     _addr;
 
@@ -13,8 +13,7 @@ class Socket
 		Socket();
         Socket(int fd, struct sockaddr_in addr);
 		Socket(const Socket &src);
-		~Socket();		
-
+		virtual ~Socket();		
 		Socket &operator=(const Socket &src);
 
         // SETTERS

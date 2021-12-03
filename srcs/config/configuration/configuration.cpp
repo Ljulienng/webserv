@@ -164,7 +164,8 @@ size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterat
 	server.setServerDatas(mapServer);
 
 	// add the new server to the array of servers
-	_servers.insert(std::pair<std::string, Server>(server.getName(), server));
+	static size_t indexServer = 0;
+	_servers.insert(std::pair<size_t/*std::string*/, Server>(indexServer++/*server.getName()*/, server));
 
 	return (std::distance(start, it));
 }
@@ -228,7 +229,7 @@ void	Configuration::parse()
 */
 void		Configuration::startSockets()
 {
-	std::map<std::string, Server>::iterator	it = _servers.begin();
+	std::map<size_t/*std::string*/, Server>::iterator	it = _servers.begin();
 	for ( ; it != _servers.end(); it++)
 	{
 		it->second.start();
@@ -276,7 +277,7 @@ void	Configuration::setMaxBodySize(std::string maxBodySize)
 
 	// the attribute can be present in config, server and location scope
 	// so we need to make a cascade copy if not set in sub scopes
-	std::map<std::string, Server>::iterator itServ = _servers.begin();
+	std::map<size_t/*std::string*/, Server>::iterator itServ = _servers.begin();
 	for ( ; itServ != _servers.end(); itServ++)
 	{
 		if (itServ->second.getMaxBodySize() == 0)
@@ -316,9 +317,14 @@ std::map<int, std::string>		&Configuration::getErrorPages()
 	return _errorPages;
 }
 
-std::map<std::string, Server>		&Configuration::getServers()
+std::map<size_t/*std::string*/, Server>		&Configuration::getServers()
 {
 	return _servers;
+}
+
+std::map<size_t, ClientSocket>	&Configuration::getClients()
+{
+	return _clients;
 }
 
 struct pollfd *		Configuration::getFds()
@@ -338,6 +344,7 @@ Configuration::Configuration() : 	_configFile(),
 									_maxBodySize(),
 									_errorPages(),
 									_servers(),
+									_clients(),
 									_nfds()
 									// to be completed if new attributes
 {}
@@ -348,6 +355,7 @@ Configuration::Configuration(std::string configFile) :
 									_maxBodySize(),
 									_errorPages(),
 									_servers(),
+									_clients(),
 									_nfds(0)						
 									// to be completed if new attributes
 {
@@ -404,7 +412,7 @@ void	Configuration::debug()
 	for (; itErr != _errorPages.end(); itErr++)
 		std::cout << " - errorPages = " << itErr->first << ":" << itErr->second << "\n";
 	
-	std::map<std::string, Server>::iterator itServ = _servers.begin();
+	std::map<size_t/*std::string*/, Server>::iterator itServ = _servers.begin();
 	int i = 0;
 	for (; itServ != _servers.end(); itServ++)
 	{

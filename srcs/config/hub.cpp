@@ -37,10 +37,14 @@ void	Hub::process()
 				// accept each incoming connection
 				while (42)
 				{
-					// TO DO : create and push_back a new Client 
+					// TO DO : create and push_back a new Client
 					acceptRet = accept(_config.getFds()[i].fd, NULL, NULL);
 					if (acceptRet == -1) // no connection is present in the queue
 						break ;
+					ClientSocket client;
+					client.setFd(acceptRet);
+					client.setPort(_config.getServers()[i].getPort());
+					_config.getClients().insert(std::pair<size_t, ClientSocket>(i, client));
 					// add the new incoming connection to the pollfd structure
 					std::cout << "New incoming connection - fd : " << acceptRet << "\n";
 					_config.getFds()[_config.getNfds()].fd = acceptRet;

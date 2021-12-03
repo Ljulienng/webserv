@@ -5,6 +5,7 @@
 #include "server.hpp"
 #include "str.hpp"
 #include "file.hpp"
+#include "clientSocket.hpp"
 
 /*
 ** informations from the configuration file : cgi, bodyMaxSize, a list of server(s) ...
@@ -16,7 +17,8 @@ class Configuration
 		std::pair<std::string, std::string>	_cgi;
 		size_t								_maxBodySize;
 		std::map<int, std::string>			_errorPages;
-		std::map<std::string, Server>		_servers;
+		std::map<size_t/*std::string*/, Server>		_servers; // test to have an index instead of the server name
+		std::map<size_t, ClientSocket>		_clients; // test index+client connectes (size_t = index pour matcher dans les _fds apres les serveurs)
 		struct pollfd						_fds[MAX_CONNECTIONS];
 		size_t								_nfds;
 
@@ -50,7 +52,8 @@ class Configuration
 		std::pair<std::string, std::string>		&getCgi();
 		size_t									&getMaxBodySize();
 		std::map<int, std::string>				&getErrorPages();
-		std::map<std::string, Server>			&getServers();
+		std::map<size_t/*std::string*/, Server>			&getServers();
+		std::map<size_t, ClientSocket>			&getClients();
 		struct pollfd *							getFds();
 		size_t									getNfds();
 		int										getTopServer();

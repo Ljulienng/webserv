@@ -13,8 +13,6 @@ class Hub
     private :
 		Configuration		_config;
 
-		bool _isServer(int i);
-
     public :
 		Hub();
 		Hub(std::string configFile);
