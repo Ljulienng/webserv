@@ -7,6 +7,7 @@ class ClientSocket : public Socket
 {
     private :
         unsigned short _port;
+        // class Buffer
 
     public :
 		ClientSocket();

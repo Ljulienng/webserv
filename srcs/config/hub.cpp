@@ -37,7 +37,6 @@ void	Hub::process()
 				// accept each incoming connection
 				while (42)
 				{
-					// TO DO : create and push_back a new Client
 					acceptRet = accept(_config.getFds()[i].fd, NULL, NULL);
 					if (acceptRet == -1) // no connection is present in the queue
 						break ;
