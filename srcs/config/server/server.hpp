@@ -19,6 +19,7 @@ class Server
 		size_t						_maxBodySize; 
 		std::vector<Location>		_locations;
 		Socket						_socket;
+		
 
     public :
 
