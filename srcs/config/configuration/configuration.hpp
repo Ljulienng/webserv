@@ -12,6 +12,9 @@
 */
 class Configuration
 {
+	public :
+		typedef std::string::iterator	str_ite;
+
     private :
 		std::string							_configFile;
 		std::pair<std::string, std::string>	_cgi;
@@ -24,11 +27,12 @@ class Configuration
 
 		void 		_parseConfigPath(); 
 		void		_cleanSpaces(std::string &buf);
-		size_t		_parseServer(std::string::iterator it, std::string::iterator ite);
-		size_t		_parseErrorPages(std::string::iterator it, std::string::iterator ite);
-		size_t		_parseLocation(std::string::iterator it, std::string::iterator ite, Server &server);
-		size_t		_parseNextPair(std::string::iterator it, std::string::iterator ite, std::map<std::string, std::string> &m);
-		bool		_isBloc(std::string::iterator it, std::string::iterator ite, std::string blocName);	
+		size_t		_parseServer(str_ite it, str_ite ite);
+		size_t		_parseErrorPages(str_ite it, str_ite ite);
+		size_t		_parseLocation(str_ite it, str_ite ite, Server &server);
+		size_t		_parseNextPair(str_ite it, str_ite ite, std::map<std::string, std::string> &m);
+		bool		_isBloc(str_ite it, str_ite ite, std::string blocName);	
+		bool		_checkConfigScope(str_ite it, str_ite ite);
 
     public :       
 		Configuration();
