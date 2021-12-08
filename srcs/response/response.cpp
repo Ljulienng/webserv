@@ -5,6 +5,26 @@
 
 /* GETTERS */
 
+std::string         &Response::getHttpVersion()
+{
+    return  _httpVersion;
+}
+
+HttpStatus          &Response::getHttpStatus()
+{
+    return _httpStatus;
+}
+
+std::string         &Response::getContentType()
+{
+    return  _contentType;
+}
+
+size_t              &Response::getContentLength()
+{
+    return  _contentLength;
+}
+
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 Response::Response() :

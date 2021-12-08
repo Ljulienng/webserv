@@ -22,6 +22,10 @@ class Response
 
 
         // GETTERS
+        std::string                     &getHttpVersion();
+        HttpStatus                      &getHttpStatus();
+        std::string                     &getContentType();
+        size_t                          &getContentLength();
 };
 
 #endif

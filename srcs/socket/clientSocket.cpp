@@ -1,7 +1,12 @@
 #include "clientSocket.hpp"
 
+void		ClientSocket::addResponse(Response response)
+{
+	_responses.push(response);
+}
+
 /* SETTERS */ 
-void            ClientSocket::setPort(unsigned short port)
+void 		ClientSocket::setPort(unsigned short port)
 {
     _port = port;
 }
@@ -12,8 +17,13 @@ unsigned short     &ClientSocket::getPort()
     return _port;
 }
 
+std::queue<Response>    &ClientSocket::getResponses()
+{
+	return		_responses;
+}
+
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-ClientSocket::ClientSocket() : Socket()
+ClientSocket::ClientSocket() : Socket(), _port(), _responses()
 			// to be completed if new attributes
 {}
 
