@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <sys/types.h>
 #include <errno.h>
+#include "utils/str/str.hpp"
 
 // C sockets/network
 #include <netinet/in.h>
@@ -35,8 +36,9 @@
 #include <sstream>
 #include <sys/stat.h>
 
-# define EXIT_SUCCESS 0
-# define EXIT_FAILURE 1
+#define MAX_BUF_LEN 4096
+#define EXIT_SUCCESS 0
+#define EXIT_FAILURE 1
 #define MAX_CONNECTIONS 100
 
 // NON MEMBER FUNCTIONS

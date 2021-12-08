@@ -1,5 +1,12 @@
 #include "str.hpp"
 
+// std::string capitalizeString(std::string str)
+// {
+//     std::transform(str.begin(), str.end(), str.begin(),
+//                    [](unsigned char c){ return toupper(c); });
+//     return str;
+// }
+
 bool Str::_isDelim(char c, std::string delimiters)
 {
 	for (size_t i = 0; i < delimiters.size(); i++)

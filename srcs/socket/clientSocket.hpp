@@ -6,8 +6,8 @@
 class ClientSocket : public Socket
 {
     private :
-        unsigned short _port;
-        // class Buffer
+        unsigned short      _port;
+        std::string         _buffer;
 
     public :
 		ClientSocket();
@@ -18,9 +18,12 @@ class ClientSocket : public Socket
 
         // SETTERS
         void            setPort(unsigned short port);
+        void            setBuffer(std::string buffer);
 
         // GETTERS
-        unsigned short     &getPort();
+        unsigned short      &getPort();
+        std::string         &getBuffer();
+
         
 
 		

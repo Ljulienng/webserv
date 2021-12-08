@@ -6,14 +6,26 @@ void            ClientSocket::setPort(unsigned short port)
     _port = port;
 }
 
+void            ClientSocket::setBuffer(std::string buffer)
+{
+    _buffer = buffer;
+}
+
 /* GETTERS */ 
-unsigned short     &ClientSocket::getPort()
+unsigned short		&ClientSocket::getPort()
 {
     return _port;
 }
 
+std::string  		&ClientSocket::getBuffer()
+{
+    return _buffer;
+}
+
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-ClientSocket::ClientSocket() : Socket()
+ClientSocket::ClientSocket() : 
+					Socket(),
+					_buffer("") 
 			// to be completed if new attributes
 {}
 
@@ -33,5 +45,6 @@ ClientSocket &ClientSocket::operator=(const ClientSocket &src)
 
 		// to be completed if new attributes
 	}
+	_buffer = src._buffer;
 	return (*this);
 }
