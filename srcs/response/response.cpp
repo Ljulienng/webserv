@@ -11,7 +11,7 @@ Response::Response() :
         _httpVersion(),
         _httpStatus(),
         _contentType(),
-        _contentLength()
+        _contentLength(0)
 			// to be completed if new attributes
 {
     (void)_contentLength;
