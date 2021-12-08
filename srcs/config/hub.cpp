@@ -31,7 +31,7 @@ void	Hub::process()
 		{
 			// if the current fd is one of our servers, we connect a new client
 			// listening descriptor is readable
-			if (i <= _config.getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
+			if (i < _config.getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
 			{
 				// accept all incoming connections that are queued up on the listening socket before
 				// accept each incoming connection
@@ -57,13 +57,23 @@ void	Hub::process()
 			else
 			{
 				// RECEIVE THE REQUEST (recv)
-				// PARSE THE REQUEST
-				// PREPARE THE RESPONSE
+
+				// PARSE THE REQUEST :
+						// - push de la requete dans le SocketClient
+				
+				// PREPARE THE RESPONSE :
+						// - recupere la derniere requete (top)
+						// - verifie erreurs
+						// - construit reponse
+						// - push reponse dans le socketClient
+						// - supprime requete(pop)
 			}
 		}
 		else if (_config.getFds()[i].revents == POLLOUT)
 		{
-			// SEND RESPONSE
+			// SEND RESPONSE :
+						// - recupere la derniere reponse (top)
+						// - on l'envoie et on la supprime (pop)
 		}
 		else
 		{
