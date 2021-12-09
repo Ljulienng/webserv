@@ -42,7 +42,7 @@ void	Hub::process()
 						break ;
 					ClientSocket client;
 					client.setFd(acceptRet);
-					client.setPort(_config.getServers()[i].getPort());
+					client.setPort(_config.getServers()[i].getPort()); // A MODIFIER, C'EST UNE MAP PAS UN VECTOR !!!
 					_config.getClients().insert(std::pair<size_t, ClientSocket>(i, client));
 					// add the new incoming connection to the pollfd structure
 					std::cout << "New incoming connection - fd : " << acceptRet << "\n";
@@ -71,9 +71,52 @@ void	Hub::process()
 		}
 		else if (_config.getFds()[i].revents == POLLOUT)
 		{
-			// SEND RESPONSE :
-						// - recupere la derniere reponse (top)
-						// - on l'envoie et on la supprime (pop)
+			// SEND RESPONSE [ get responses queue of the client, send them and delete them ]
+			
+			std::map<size_t, ClientSocket>::iterator	client = _config.getClients().find(i);
+			std::queue<Response>    					responses = client->second.getResponses();
+			std::string									buffer/* = client->second.getBuffer()*/;
+		
+			// we process the responses one by one and append them to the client buffer
+			// then delete the response until the queue is empty
+			while (responses.empty() == false)
+			{
+				// process in FIFO order, we process the oldest element first
+				Response response = responses.front();
+
+				// then have to check header and status of the response
+				// ...
+
+				// transform and put into a string the response
+				// to implement it in Response class ?
+				std::string		message = response.getMessage();
+				// append it to the client buffer
+				buffer.insert(buffer.end(), message.begin(), message.end());
+
+				// delete the response
+				responses.pop();
+			}
+
+			if (buffer.empty() == false)
+			{
+				// we can use send() ( without flag parameter, send is equivalent to write() )
+				// so write into the _fds[i].fd the content of buffer
+				// int bytes = send(_config.getFds()[i].fd, &buffer[0], buffer.size(), 0);
+				// ou ...
+				int bytes = write(_config.getFds()[i].fd, &buffer[0], buffer.size());
+
+				if (bytes <= 0)
+				{
+					// disconnect each sockets (server and clients) and exit
+					exit(EXIT_FAILURE);
+				}
+				// clear the buffer
+				// ok the response is sent !!!
+
+				// we finished to write so we are now waiting for reading
+				_config.getFds()[i].events = POLLIN;
+			}
+		
 		}
 		else
 		{

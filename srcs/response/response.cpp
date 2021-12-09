@@ -1,9 +1,32 @@
 #include "response.hpp"
 
+void            Response::_updateMessage()
+{
+    // append version
+    _message = _httpVersion + " ";
 
-/* SETTERS */
+    // append http status
+    std::stringstream   ss;
+    ss << _httpStatus.getCode();
+    _message += ss.str() + " " + _httpStatus.getMessage() + "\r\n";;
+
+    // append headers
+    std::map<std::string, std::string>::iterator headerIterator = _headers.begin();
+    for ( ; headerIterator != _headers.end(); headerIterator++)
+        _message += headerIterator->first + ": " + headerIterator->second + "\r\n";
+    _message += "\r\n";
+    
+    // append content
+    _message += _content;
+}
 
 /* GETTERS */
+
+std::map<std::string, std::string>         &Response::getHeaders()
+{
+    return  _headers;
+}
+
 
 std::string         &Response::getHttpVersion()
 {
@@ -15,27 +38,26 @@ HttpStatus          &Response::getHttpStatus()
     return _httpStatus;
 }
 
-std::string         &Response::getContentType()
+std::string         &Response::getContent()
 {
-    return  _contentType;
+    return  _content;
 }
 
-size_t              &Response::getContentLength()
+std::string         &Response::getMessage()
 {
-    return  _contentLength;
+    _updateMessage();
+    return  _message;
 }
-
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 Response::Response() :
+        _headers(),
         _httpVersion(),
         _httpStatus(),
-        _contentType(),
-        _contentLength(0)
+        _content(),
+        _message()
 			// to be completed if new attributes
-{
-    (void)_contentLength;
-}
+{}
 
 Response::Response(const Response &src)
 {
