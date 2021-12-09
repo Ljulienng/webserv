@@ -39,7 +39,7 @@ void	Hub::process()
 				while (42)
 				{
 					acceptRet = accept(_config.getFds()[i].fd, NULL, NULL);
-					if (acceptRet == -1) // no connection is present in the queue
+					if (acceptRet == -1) // no connection is present
 						break ;
 					ClientSocket client;
 					client.setFd(acceptRet);
@@ -85,6 +85,7 @@ void	Hub::process()
 						// - construit reponse
 						// - push reponse dans le socketClient
 						// - supprime requete(pop)
+						
 				/********** TEST A SUPPR AVANT PUSH ***************/
 				Response resp;
 				// resp.setContent("ENVOI DE LA REPONSE DANS LA SOCKET CLIENT !!!!!!!!!!!!!!!!!!!!!!");
@@ -93,6 +94,7 @@ void	Hub::process()
 				if (_config.getClients().find(i) != _config.getClients().end())
 				{
 					_config.getClients().find(i)->second.getResponses().push(resp);
+					// the socket is now ready to write in addition to reading because we have added a response
 					if (_config.getClients().find(i)->second.getResponses().empty() == false)
 						_config.getFds()[i].events = POLLIN | POLLOUT;
 				}
