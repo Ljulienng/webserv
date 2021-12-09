@@ -21,7 +21,7 @@ OBJ 			= 	$(addprefix $(OBJ_DIR)/, $(OBJ_FILES))
 
 CC				= 	clang++
 
-CFLAGS			=   -Wall -Wextra -Werror --std=c++98 -g
+CFLAGS			=   -Wall -Wextra -Werror --std=c++98
 IFLAGS			=	$(foreach path, $(INC_DIR), -I$(path))
 
 ##### RULES

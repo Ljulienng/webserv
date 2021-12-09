@@ -71,12 +71,13 @@ void	Hub::process()
 		}
 		else if (_config.getFds()[i].revents == POLLOUT)
 		{
+			std::cout << "SEND RESPONSE\n";
 			// SEND RESPONSE [ get responses queue of the client, send them and delete them ]
 			
 			std::map<size_t, ClientSocket>::iterator	client = _config.getClients().find(i);
 			std::queue<Response>    					responses = client->second.getResponses();
 			std::string									buffer/* = client->second.getBuffer()*/;
-		
+
 			// we process the responses one by one and append them to the client buffer
 			// then delete the response until the queue is empty
 			while (responses.empty() == false)
@@ -87,8 +88,7 @@ void	Hub::process()
 				// then have to check header and status of the response
 				// ...
 
-				// transform and put into a string the response
-				// to implement it in Response class ?
+				// put into a string the response
 				std::string		message = response.getMessage();
 				// append it to the client buffer
 				buffer.insert(buffer.end(), message.begin(), message.end());
@@ -111,6 +111,7 @@ void	Hub::process()
 					exit(EXIT_FAILURE);
 				}
 				// clear the buffer
+				buffer.erase(buffer.begin(), buffer.begin() + bytes);
 				// ok the response is sent !!!
 
 				// we finished to write so we are now waiting for reading
