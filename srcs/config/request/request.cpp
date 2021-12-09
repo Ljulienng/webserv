@@ -162,7 +162,6 @@ void		Request::storeKeyValue(const std::string &line)
 	key.erase(remove(key.begin(), key.end(), ' '), key.end());
 	value.erase(remove(value.begin(), value.end(), ' '), value.end());
 
-	std::cout << "key = " << key << " value = " << value << std::endl;
 	// Assigning value to the right key
 	if (_headers.count(key))
 		_headers[key] = value;
@@ -200,7 +199,7 @@ int			Request::parse(const std::string &request)
 	tmp.assign(request, i, std::string::npos);
 	i = tmp.find_first_of('\n') + 1;
 	parseHeader(tmp, i);
-	debug();
+	// debug();
 	return (_ret);
 }
 

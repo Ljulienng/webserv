@@ -25,6 +25,13 @@ bool	File::canReadFile()
 	return true;
 }
 
+std::string	File::findContentType(std::string extension)
+{
+	Mime mime;
+
+	return (mime.findMime(extension));
+}
+
 
 /* GETTERS */
 std::string		&File::getFilePath()

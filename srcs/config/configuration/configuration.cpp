@@ -17,8 +17,8 @@ void	Configuration::_parseConfigPath()
 */
 void	Configuration::_cleanSpaces(std::string &buf)
 {
-	std::string::iterator it = buf.begin();
-	std::string::iterator ite = buf.end();
+	str_ite it = buf.begin();
+	str_ite ite = buf.end();
 
 	while (it != ite)
 	{
@@ -39,12 +39,12 @@ void	Configuration::_cleanSpaces(std::string &buf)
 /*
 ** we find and insert a new pair<string,string> into the map m 
 */
-size_t	Configuration::_parseNextPair(std::string::iterator it, std::string::iterator ite, std::map<std::string, std::string> &m)
+size_t	Configuration::_parseNextPair(str_ite it, str_ite ite, std::map<std::string, std::string> &m)
 {
 	it++; // skip the first "
-	std::string 						key;
-	std::string 						value;
-	std::string::iterator				start(it);
+	std::string 		key;
+	std::string 		value;
+	str_ite				start(it);
 
 	while (*it != '"' && it != ite)
 		it++;
@@ -65,10 +65,10 @@ size_t	Configuration::_parseNextPair(std::string::iterator it, std::string::iter
 	return (key.size() + value.size() + 5); // key + value + : + "" ""
 }
 
-bool	Configuration::_isBloc(std::string::iterator it, std::string::iterator ite, std::string blocName)	
+bool	Configuration::_isBloc(str_ite it, str_ite ite, std::string blocName)	
 {
 	it++;
-	std::string::iterator 	start(it);
+	str_ite 	start(it);
 	
 	while (*it != '"' && it != ite)
 		it++;
@@ -77,10 +77,10 @@ bool	Configuration::_isBloc(std::string::iterator it, std::string::iterator ite,
 	return false;
 }
 
-size_t	Configuration::_parseErrorPages(std::string::iterator it, std::string::iterator ite)
+size_t	Configuration::_parseErrorPages(str_ite it, str_ite ite)
 {
 	std::map<std::string, std::string> 	tmp;
-	std::string::iterator				start(it);
+	str_ite				start(it);
 	
 	while (*it != '{' && *(it + 1) != '"')
 		it++;
@@ -103,11 +103,11 @@ size_t	Configuration::_parseErrorPages(std::string::iterator it, std::string::it
 	return (std::distance(start, it));
 }
 
-size_t	Configuration::_parseLocation(std::string::iterator it, std::string::iterator ite, Server &server)
+size_t	Configuration::_parseLocation(str_ite it, str_ite ite, Server &server)
 {
 	Location							location;
 	std::map<std::string, std::string> 	mapLocation;
-	std::string::iterator 				start(it);
+	str_ite 							start(it);
 
 	while (*it != '}' && it != ite)
 	{
@@ -125,11 +125,11 @@ size_t	Configuration::_parseLocation(std::string::iterator it, std::string::iter
 	return (std::distance(start, it));
 }
 
-size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterator ite)
+size_t	Configuration::_parseServer(str_ite it, str_ite ite)
 {
 	Server								server;
 	std::map<std::string, std::string> 	mapServer;
-	std::string::iterator 				start(it);
+	str_ite 							start(it);
 
 	while (*it != '}' && it != ite)
 	{
@@ -145,7 +145,7 @@ size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterat
 						it++;
 					if (*it == '"')
 					{
-						std::string::iterator	end(++it);
+						str_ite	end(++it);
 						for (; *end != '"'; end++);
 						if (isValidExpression(std::string(it--, end), locationExpression) != -1) // si prochain mot fait partie des mots cles (definir enum)
 							it += _parseLocation(it, ite, server);
@@ -170,6 +170,19 @@ size_t	Configuration::_parseServer(std::string::iterator it, std::string::iterat
 	return (std::distance(start, it));
 }
 
+bool	Configuration::_checkConfigScope(str_ite it, str_ite ite)
+{
+	size_t	openCurlyBracket = std::count(it, ite, '{');
+	size_t	closeCurlyBracket = std::count(it, ite, '}');
+	size_t	openSquareBracket = std::count(it, ite, '[');
+	size_t	closeSquareBracket = std::count(it, ite, ']');
+	size_t	dbQuote = std::count(it, ite, '"');
+
+	if (openCurlyBracket != closeCurlyBracket || openSquareBracket != closeSquareBracket || dbQuote % 2 != 0)
+		return false;
+	return true;
+}
+
 void	Configuration::parse()
 {
 	std::ifstream 	fileStream(_configFile.c_str());
@@ -181,10 +194,11 @@ void	Configuration::parse()
 	// std::cout << "Buffer :\n" << buf << std::endl;
 
 	std::map<std::string, std::string> 	mapConfig;
-	std::string::iterator 				it = buf.begin();
-	std::string::iterator 				ite = buf.end();
+	str_ite 							it = buf.begin();
+	str_ite 							ite = buf.end();
 
-	// a faire : verifier la coherence syntaxique en 1er ({} [] "")
+	if (!_checkConfigScope(it, ite))
+		throw std::string("Error: bad format : config scope");
 	if (*it++ != '{')
 		throw std::string("Error: bad format : config scope");
 	while (it != ite)
@@ -201,7 +215,7 @@ void	Configuration::parse()
 						it++;
 					if (*it == '"')
 					{
-						std::string::iterator	end(++it);
+						str_ite		end(++it);
 						for (; *end != '"'; end++);
 						if (isValidExpression(std::string(it--, end), serverExpression) != -1) // si prochain mot fait partie des mots cles (definir enum)
 							it += _parseServer(it, ite);

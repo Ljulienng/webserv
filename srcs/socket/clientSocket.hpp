@@ -3,6 +3,7 @@
 
 #include "socket.hpp"
 #include "request.hpp"
+#include "response.hpp"
 
 class ClientSocket : public Socket
 {
@@ -11,6 +12,8 @@ class ClientSocket : public Socket
         std::string             _buffer;
 
         std::queue<Request>     _requests;
+        // class Buffer
+        std::queue<Response>    _responses;
 
     public :
 		ClientSocket();
@@ -19,6 +22,7 @@ class ClientSocket : public Socket
 
 		ClientSocket    &operator=(const ClientSocket &src);
         void            addRequest();
+        void                    addResponse(Response response);
         // SETTERS
         void            setPort(unsigned short port);
         void            setBuffer(std::string buffer);
@@ -27,7 +31,8 @@ class ClientSocket : public Socket
         unsigned short      &getPort();
         std::string         &getBuffer();
         std::queue<Request>	&getRequests();
-		
+        std::queue<Response>    &getResponses();
+
 };
 
 #endif

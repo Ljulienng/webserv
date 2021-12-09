@@ -2,6 +2,7 @@
 # define FILE_HPP
 
 #include "webserv.hpp"
+#include "mime.hpp"
 
 /*
 ** useful functions to handle files
@@ -23,6 +24,7 @@ class File
 		bool		isRegularFile();
 		bool		isDirectory();
 		bool		canReadFile();
+		std::string	findContentType(std::string extension);
 		// ...
 
 		// GETTERS

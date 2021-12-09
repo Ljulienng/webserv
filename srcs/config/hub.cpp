@@ -96,7 +96,6 @@ void	Hub::process()
 						else
 							_config.getClients()[i].getBuffer().append(buffer.begin(), buffer.end());
 					}
-					std::cout << _config.getClients()[i].getBuffer() << std::endl;
 				}
 				else
 					bytes = 0;
@@ -107,7 +106,9 @@ void	Hub::process()
 		}
 		else if (_config.getFds()[i].revents == POLLOUT)
 		{
-			// SEND RESPONSE
+			// SEND RESPONSE :
+						// - recupere la derniere reponse (top)
+						// - on l'envoie et on la supprime (pop)
 		}
 		else
 		{

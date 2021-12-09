@@ -9,8 +9,13 @@ void            ClientSocket::addRequest()
 }
 
 
+void		ClientSocket::addResponse(Response response)
+{
+	_responses.push(response);
+}
+
 /* SETTERS */ 
-void            ClientSocket::setPort(unsigned short port)
+void 		ClientSocket::setPort(unsigned short port)
 {
     _port = port;
 }
@@ -41,10 +46,13 @@ std::queue<Request>	&ClientSocket::getRequests()
 	return _requests;
 }
 
+std::queue<Response>    &ClientSocket::getResponses()
+{
+	return		_responses;
+}
+
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-ClientSocket::ClientSocket() : 
-					Socket(),
-					_buffer("")
+ClientSocket::ClientSocket() : Socket(), _port(), _responses()
 			// to be completed if new attributes
 {}
 
