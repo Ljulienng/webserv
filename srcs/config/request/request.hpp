@@ -2,11 +2,13 @@
 # define REQUEST_HPP
 
 #include "webserv.hpp"
+#include "str.hpp"
+
 
 class Request
 {
 private:
-	const std::string 	&_rawRequest;
+	// const std::string 	&_rawRequest;
 
 	std::string							_method;
 	std::string							_path;
@@ -16,12 +18,13 @@ private:
 	int									_port;
 	int									_ret;
 
-	Request();
-	Request(const Request &obj);
 public: 
+	Request();
 	Request(const std::string &request);
+	Request(const Request &obj);
 	~Request();
 
+	Request			&operator=(const Request &obj);
 	/* PARSING */
 	void			initHeaders();
 	int				verifArg();
@@ -34,12 +37,16 @@ public:
 
 	/* GETTERS */
 
-	const std::string	&getRawRequest();
-	std::string			&getMethod();
-	std::string			&getPath();
-	std::string			&getVersion();
-	std::string			&getBody();
-	int					getPort();
+	// const std::string	&getRawRequest();
+	std::string							&getMethod();
+	std::string							&getPath();
+	std::string							&getVersion();
+	std::map<std::string, std::string>	&getHeaders();
+	std::string							&getBody();
+	int									getPort();
+
+	/* DEBUG */
+	void								debug();
 
 };
 

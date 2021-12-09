@@ -56,10 +56,15 @@ int		Request::verifArg()
 	std::string methodsArr[] = {"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"};
 	std::vector<std::string> methods(methodsArr, methodsArr + sizeof(methodsArr)/sizeof(std::string));
 
+	// TRIM ALL WHITESPACE ETC
+	trimChar(_method);
+	trimChar(_path);
+	trimChar(_version);
+
 	// CHECKING VERSION
 	if (_version.compare(0, 5, "HTTP/") == 0)
-		_version.assign(_version, 5, std::string::npos);
-	if (_version != "1.0" || _version != "1.1")
+		_version.assign(_version, 5, std::string::npos - 1);
+	if (_version != "1.1" && _version != "1.0")
 	{
 		std::cerr << "Bad HTTP version" << std::endl;
 		return ((_ret = 400));
@@ -75,12 +80,13 @@ int		Request::verifArg()
 
 int		Request::parseFirstLine(std::string line)
 {
-	size_t i, j = 0, count = 0;
+	size_t i;
 	std::string arg;
 
 
 	// ASSIGNING METHOD
 	i = line.find_first_of(' ');
+	i++;
 	arg.assign(line, 0, i);
 	line.assign(line, i, std::string::npos);
 	if (i == std::string::npos)
@@ -93,6 +99,7 @@ int		Request::parseFirstLine(std::string line)
 
 	// ASSIGNING PATH
 	i = line.find_first_of(' ');
+	i++;
 	arg.assign(line, 0, i);
 	line.assign(line, i, std::string::npos);
 	if (i == std::string::npos)
@@ -105,8 +112,8 @@ int		Request::parseFirstLine(std::string line)
 
 	// ASSIGNING VERSION
 	i = line.find_first_of('\n');
+	i--;
 	arg.assign(line, 0, i);
-	line.assign(line, i, std::string::npos);
 	if (i == std::string::npos)
 	{
 		std::cerr << "No HTTP version" << std::endl;
@@ -118,16 +125,19 @@ int		Request::parseFirstLine(std::string line)
 	return (_ret);
 }
 
-//str.resize(str.size() - 1);
-
 std::string	Request::nextLine(const std::string &request, size_t &i)
 {
 	std::string	line;
 	size_t		j = request.find_first_of("\n", i);
 
-	line.assign(request, i, j);
+	for (size_t k = i; k < j; k++)
+		line.push_back(request[k]);
+	// line.assign(request, i, j);
 	if (line[line.size() - 1] == '\r')
+	{
 		line.resize(line.size() - 1);
+	}
+
 	if (j == std::string::npos)
 		i = j;
 	else
@@ -142,15 +152,17 @@ void		Request::storeKeyValue(const std::string &line)
 	size_t i;
 
 	i = line.find_first_of(':');
-	key.assign(line, 0, i - 1);
+	key.assign(line, 0, i);
+	// debug();
 	capitalizeString(key);
-	i = line.find_first_not_of(' ', i + 1)
+	i = line.find_first_not_of(' ', i + 1);
 	if (i != std::string::npos)
-		value.assign(line, i, std::string::npos)
+		value.assign(line, i, std::string::npos);
 	// Removing all trailing spaces
 	key.erase(remove(key.begin(), key.end(), ' '), key.end());
 	value.erase(remove(value.begin(), value.end(), ' '), value.end());
 
+	std::cout << "key = " << key << " value = " << value << std::endl;
 	// Assigning value to the right key
 	if (_headers.count(key))
 		_headers[key] = value;
@@ -162,11 +174,12 @@ int			Request::parseHeader(const std::string &request, size_t &i)
 	std::string line;
 
 	line = nextLine(request, i);
-	while (request.size() != 0 && _ret != 400 && line != "\r")
+	while (request.size() != 0 && _ret != 400 && line != "\r" && line.size())
 	{
 		storeKeyValue(line);
 		line = nextLine(request, i);
 	}
+	return (_ret);
 }
 
 void		Request::parsebody(const std::string &request)
@@ -180,32 +193,35 @@ int			Request::parse(const std::string &request)
 	std::string tmp;
 	size_t 		i = 0;
 
+	initHeaders();
 	i = request.find_first_of('\n');
 	line = request.substr(0, i);
 	_ret = parseFirstLine(line);
 	tmp.assign(request, i, std::string::npos);
-	i = 0;
-	parseHeader(request, i)
+	i = tmp.find_first_of('\n') + 1;
+	parseHeader(tmp, i);
+	debug();
+	return (_ret);
 }
 
 /* GETTERS */
 
-const std::string	&Request::getRawRequest()
-{ return (_raw); }
-
-std::string			&Request::getMethod()
+std::string							&Request::getMethod()
 { return (_method); }
 
-std::string			&Request::getPath()
+std::string							&Request::getPath()
 { return (_path); }
 
-std::string			&Request::getVersion()
+std::string							&Request::getVersion()
 { return (_version); }
 
-std::string			&Request::getBody()
+std::map<std::string, std::string>	&Request::getHeaders()
+{ return (_headers); }
+
+std::string							&Request::getBody()
 { return (_body); }
 
-int					Request::getPort()
+int									Request::getPort()
 { return (_port); }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
@@ -225,11 +241,46 @@ int					Request::getPort()
 */
 
 Request::Request(const std::string &request) :
-	_rawRequest(request), _method(""), _version(""), _headers(""), _body(""), _port(80), _ret(0)
+	_method(""), _version(""), _headers(), _body(""), _port(8080), _ret(0)
 {
+	parse(request);
 }
+
+Request::Request(const Request &obj) :
+	_method(obj._method), _version(obj._version), _headers(obj._headers), _body(obj._body), _port(8080), _ret(obj._ret)
+{}
 
 Request::~Request()
+{}
+
+Request			&Request::operator=(const Request &obj)
 {
+	_method = obj._method;
+	_path = obj._path;
+	_version = obj._version;
+	_headers = obj._headers;
+	_body = obj._body;
+	_port = obj._port;
+	return (*this);
 }
 
+/* DEBUG */
+
+void			Request::debug()
+{
+	std::map<std::string, std::string>::iterator it;
+
+	std::cout << "\n***** DEBUG *****\n";
+	std::cout << "_METHOD = " << _method << std::endl;
+	std::cout << "_PATH = " << _path << std::endl;
+	std::cout << "_version = " << _version << std::endl;
+	std::cout << "_body = " << _body << std::endl;
+	std::cout << "_port = " << _port << std::endl;
+	std::cout << "_ret = " << _ret << std::endl;
+
+	std::cout << "\n***** HEADERS KEY = VALUE *****\n";
+	for (it = _headers.begin(); it != _headers.end(); it++)
+		std::cout << it->first << " = " << it->second << std::endl;
+	std::cout << "\n***** END OF DEBUG *****\n";
+	
+}

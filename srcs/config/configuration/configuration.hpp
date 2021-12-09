@@ -52,7 +52,7 @@ class Configuration
 		std::pair<std::string, std::string>		&getCgi();
 		size_t									&getMaxBodySize();
 		std::map<int, std::string>				&getErrorPages();
-		std::map<size_t/*std::string*/, Server>			&getServers();
+		std::map<size_t/*std::string*/, Server>	&getServers();
 		std::map<size_t, ClientSocket>			&getClients();
 		struct pollfd *							getFds();
 		size_t									getNfds();

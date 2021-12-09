@@ -59,39 +59,48 @@ void	Hub::process()
 			else
 			{
 				// RECEIVE THE REQUEST (recv)
-				int 				bytes = 0;
-				std::vector<char>	buffer(MAX_BUF_LEN);
-
-
-				while (bytes == MAX_BUF_LEN) // Loop to get all the data into the buffer MAX_BUF_LEN at a time
-				{
-					bytes = recv(_config.getFds()[i].fd, &buffer[0], MAX_BUF_LEN, 0);
-					if (bytes == -1)
-						throw std::string("Error: can't receive client request");
-					else
-						_config.getClients()[i].getBuffer().append(buffer.begin(), buffer.end());
-				}
-				// std::cout << _config.getClients()[j].getBuffer() << std::endl;
-				for (int i = 0; i < bytes; i++)
-					std::cout << buffer[i];
-				buffer.clear();
-				bytes = 0;
-				// std::cout << "Went in else" << std::endl;
-				// // RECEIVE THE REQUEST (recv)
 				// int 				bytes = 0;
 				// std::vector<char>	buffer(MAX_BUF_LEN);
 
-				// bytes = recv(_config.getFds()[i].fd, &buffer[0], MAX_BUF_LEN, 0);
-				// if (bytes < 0)
-				// 	throw std::string("Error: can't receive client request");
-				// else if (bytes > 0)
+
+				// while (bytes == MAX_BUF_LEN) // Loop to get all the data into the buffer MAX_BUF_LEN at a time
 				// {
-				// 	for (int i = 0; i < bytes; i++)
-				// 		std::cout << buffer[i];
-				// 	std::cout << std::endl;
+				// 	bytes = recv(_config.getFds()[i].fd, &buffer[0], MAX_BUF_LEN, 0);
+				// 	if (bytes == -1)
+				// 		throw std::string("Error: can't receive client request");
+				// 	else
+				// 		_config.getClients()[i].getBuffer().append(buffer.begin(), buffer.end());
 				// }
-				// else
-				// 	bytes = 0;
+				// // std::cout << _config.getClients()[j].getBuffer() << std::endl;
+				// for (int i = 0; i < bytes; i++)
+				// 	std::cout << buffer[i];
+				// buffer.clear();
+				// bytes = 0;	
+				// std::cout << "Went in else" << std::endl;
+				// // RECEIVE THE REQUEST (recv)
+				int 				bytes = 0;
+				std::vector<char>	buffer(MAX_BUF_LEN);
+
+				bytes = recv(_config.getFds()[i].fd, &buffer[0], MAX_BUF_LEN, 0);
+				if (bytes < 0)
+					throw std::string("Error: can't receive client request");
+				else if (bytes > 0)
+				{
+					_config.getClients()[i].getBuffer().append(buffer.begin(), buffer.end());
+					while (bytes == MAX_BUF_LEN)
+					{
+						buffer.clear();
+						bytes = recv(_config.getFds()[i].fd, &buffer[0], MAX_BUF_LEN, 0);
+						if (bytes < 0)
+							throw std::string("Error: can't receive client request");
+						else
+							_config.getClients()[i].getBuffer().append(buffer.begin(), buffer.end());
+					}
+					std::cout << _config.getClients()[i].getBuffer() << std::endl;
+				}
+				else
+					bytes = 0;
+				_config.getClients()[i].addRequest();
 				// PARSE THE REQUEST
 				// PREPARE THE RESPONSE
 			}

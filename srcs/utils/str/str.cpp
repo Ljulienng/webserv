@@ -1,11 +1,32 @@
 #include "str.hpp"
 
-// std::string capitalizeString(std::string str)
-// {
-//     std::transform(str.begin(), str.end(), str.begin(),
-//                    [](unsigned char c){ return toupper(c); });
-//     return str;
-// }
+void			capitalizeString(std::string &str)
+{
+	size_t i = 0;
+
+	str[i] = toupper(str[i]);
+	// while (i != std::string::npos)
+	// {
+	// 	for (; str[i] != '-' ; i++);
+	// 	str[i] = toupper(str[i]);
+	// 	i++;
+	// }
+}
+
+std::string		&removeChar(std::string &str, char c)
+{
+	str.erase(remove(str.begin(), str.end(), c), str.end());
+	return str;
+}
+
+std::string		&trimChar(std::string &str)
+{
+	str = removeChar(str, ' ');
+	str = removeChar(str, '\n');
+	str = removeChar(str, '\r');
+	return str;
+}
+
 
 bool Str::_isDelim(char c, std::string delimiters)
 {
@@ -36,7 +57,6 @@ void	Str::_tokenize(std::string delimiters)
 		_tokens.push_back(_string.substr(start, i - start));
 	}
 }
-
 
 size_t	Str::getNum()
 {

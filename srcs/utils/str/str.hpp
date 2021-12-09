@@ -29,4 +29,10 @@ class Str
 
 };
 
+void			capitalizeString(std::string &str);
+std::string		&removeChar(std::string &str, char c);
+std::string		&trimChar(std::string &str);
+
+
+
 #endif
