@@ -29,6 +29,7 @@ void	Hub::process()
 		// if revent is POLLIN, there is data waiting to be read
 		if (_config.getFds()[i].revents == POLLIN)
 		{
+			std::cout << i <<  " POLLIN\n";
 			// if the current fd is one of our servers, we connect a new client
 			// listening descriptor is readable
 			if (i < _config.getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
@@ -42,10 +43,12 @@ void	Hub::process()
 						break ;
 					ClientSocket client;
 					client.setFd(acceptRet);
-					client.setPort(_config.getServers()[i].getPort()); // A MODIFIER, C'EST UNE MAP PAS UN VECTOR !!!
-					_config.getClients().insert(std::pair<size_t, ClientSocket>(i, client));
+					client.setPort(_config.getServers().find(i)->second.getPort());
+					// insert new client at index 'i + nb of servers' to find it easily
+					_config.getClients().insert(std::pair<size_t, ClientSocket>(i + _config.getServers().size(), client));
 					// add the new incoming connection to the pollfd structure
 					std::cout << "New incoming connection - fd : " << acceptRet << "\n";
+					std::cout << "nfds = " << _config.getNfds()<< "\n";
 					_config.getFds()[_config.getNfds()].fd = acceptRet;
 					_config.getFds()[_config.getNfds()].events = POLLIN;
 					_config.setNfds(_config.getNfds() + 1);
@@ -57,21 +60,48 @@ void	Hub::process()
 			else
 			{
 				// RECEIVE THE REQUEST (recv)
+				/********** TEST A SUPPR AVANT PUSH ***************/
+				std::vector<char>	bufRequest(2048);
+				int bytesRequest = recv(_config.getFds()[i].fd, &bufRequest[0], 2048, 0);
+				
+				if (bytesRequest < 0)
+					exit(EXIT_FAILURE);
+				// else if (bytesRequest > 0)
+				// {
+				// 	for (int i = 0; i < bytesRequest; i++)
+				// 		std::cout << bufRequest[i];
+				// }
+				/*************************************************/
+					
 
 				// PARSE THE REQUEST :
 						// - push de la requete dans le SocketClient
-				
+
+						
+
 				// PREPARE THE RESPONSE :
 						// - recupere la derniere requete (top)
 						// - verifie erreurs
 						// - construit reponse
 						// - push reponse dans le socketClient
 						// - supprime requete(pop)
+				/********** TEST A SUPPR AVANT PUSH ***************/
+				Response resp;
+				// resp.setContent("ENVOI DE LA REPONSE DANS LA SOCKET CLIENT !!!!!!!!!!!!!!!!!!!!!!");
+				resp.setContent(std::string(bufRequest.begin(), bufRequest.end()));
+				// std::cout << "nb of client= "<< _config.getClients().size() << " i=" << i << " SEG1\n";
+				if (_config.getClients().find(i) != _config.getClients().end())
+				{
+					_config.getClients().find(i)->second.getResponses().push(resp);
+					if (_config.getClients().find(i)->second.getResponses().empty() == false)
+						_config.getFds()[i].events = POLLIN | POLLOUT;
+				}
+				/*************************************************/		
 			}
 		}
 		else if (_config.getFds()[i].revents == POLLOUT)
 		{
-			std::cout << "SEND RESPONSE\n";
+			std::cout << i <<  " POLLOUT\n";
 			// SEND RESPONSE [ get responses queue of the client, send them and delete them ]
 			
 			std::map<size_t, ClientSocket>::iterator	client = _config.getClients().find(i);
@@ -90,6 +120,7 @@ void	Hub::process()
 
 				// put into a string the response
 				std::string		message = response.getMessage();
+				std::cout << "message to write in socket : \n" << message << "\n";
 				// append it to the client buffer
 				buffer.insert(buffer.end(), message.begin(), message.end());
 

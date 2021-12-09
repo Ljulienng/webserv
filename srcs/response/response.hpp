@@ -21,6 +21,9 @@ class Response
 		Response(const Response &src);
 		~Response();		
 
+        // SETTERS
+        void                                setContent(std::string content);
+
         // GETTERS
         std::map<std::string, std::string>  &getHeaders();
         std::string                         &getHttpVersion();

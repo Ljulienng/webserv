@@ -20,6 +20,15 @@ void            Response::_updateMessage()
     _message += _content;
 }
 
+/* SETTERS */
+
+void        Response::setContent(std::string content)
+{
+    _content = content;
+}
+
+
+
 /* GETTERS */
 
 std::map<std::string, std::string>         &Response::getHeaders()
