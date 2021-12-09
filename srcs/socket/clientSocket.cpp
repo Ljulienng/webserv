@@ -1,5 +1,14 @@
 #include "clientSocket.hpp"
 
+void            ClientSocket::addRequest()
+{
+	Request newRequest(_buffer);
+
+	_requests.push(newRequest);
+	_buffer.clear();
+}
+
+
 void		ClientSocket::addResponse(Response response)
 {
 	_responses.push(response);
@@ -11,10 +20,30 @@ void 		ClientSocket::setPort(unsigned short port)
     _port = port;
 }
 
+void            ClientSocket::setBuffer(std::string buffer)
+{
+    _buffer = buffer;
+}
+
+void			ClientSocket::setRequests(std::queue<Request> requests)
+{
+	_requests = requests;
+}
+
 /* GETTERS */ 
-unsigned short     &ClientSocket::getPort()
+unsigned short		&ClientSocket::getPort()
 {
     return _port;
+}
+
+std::string  		&ClientSocket::getBuffer()
+{
+    return _buffer;
+}
+
+std::queue<Request>	&ClientSocket::getRequests()
+{
+	return _requests;
 }
 
 std::queue<Response>    &ClientSocket::getResponses()
@@ -43,5 +72,6 @@ ClientSocket &ClientSocket::operator=(const ClientSocket &src)
 
 		// to be completed if new attributes
 	}
+	_buffer = src._buffer;
 	return (*this);
 }

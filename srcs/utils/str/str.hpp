@@ -25,6 +25,14 @@ class Str
 		std::string					&getStr();
 		std::vector<std::string>	&getTokens();
 		void						setStr(const std::string &str);
+		// std::string 				capitalizeString(std::string &str);
+
 };
+
+void			capitalizeString(std::string &str);
+std::string		&removeChar(std::string &str, char c);
+std::string		&trimChar(std::string &str);
+
+
 
 #endif

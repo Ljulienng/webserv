@@ -3,6 +3,7 @@ SRC_FILES	= 	webserv.cpp					\
 				location.cpp				\
 				server.cpp					\
 				hub.cpp						\
+				request.cpp					\
 				response.cpp				\
 				clientSocket.cpp			\
 				socket.cpp					\

@@ -11,14 +11,15 @@ void	Hub::start()
 */
 void	Hub::process()
 {
-	int pollRet = 1;
-	int acceptRet = 0;
+	int 				pollRet = 1;
+	int 				acceptRet = 0;
+	// size_t				j = 0;
 		
 	// call poll and wait an infinite time
+
 	pollRet = poll(_config.getFds(), _config.getNfds(), -1);
 	if (pollRet < 0) // poll() failed
 		return ;
-
 	// one or more fd are readable. Need to determine which ones they are
 	for (size_t i = 0; i < _config.getNfds(); i++)
 	{
@@ -35,6 +36,7 @@ void	Hub::process()
 			{
 				// accept all incoming connections that are queued up on the listening socket before
 				// accept each incoming connection
+				std::cout << "i =  " << i << " size = " << _config.getServers().size() << std::endl;
 				while (42)
 				{
 					acceptRet = accept(_config.getFds()[i].fd, NULL, NULL);
@@ -57,16 +59,49 @@ void	Hub::process()
 			else
 			{
 				// RECEIVE THE REQUEST (recv)
+				// int 				bytes = 0;
+				// std::vector<char>	buffer(MAX_BUF_LEN);
 
-				// PARSE THE REQUEST :
-						// - push de la requete dans le SocketClient
-				
-				// PREPARE THE RESPONSE :
-						// - recupere la derniere requete (top)
-						// - verifie erreurs
-						// - construit reponse
-						// - push reponse dans le socketClient
-						// - supprime requete(pop)
+
+				// while (bytes == MAX_BUF_LEN) // Loop to get all the data into the buffer MAX_BUF_LEN at a time
+				// {
+				// 	bytes = recv(_config.getFds()[i].fd, &buffer[0], MAX_BUF_LEN, 0);
+				// 	if (bytes == -1)
+				// 		throw std::string("Error: can't receive client request");
+				// 	else
+				// 		_config.getClients()[i].getBuffer().append(buffer.begin(), buffer.end());
+				// }
+				// // std::cout << _config.getClients()[j].getBuffer() << std::endl;
+				// for (int i = 0; i < bytes; i++)
+				// 	std::cout << buffer[i];
+				// buffer.clear();
+				// bytes = 0;	
+				// std::cout << "Went in else" << std::endl;
+				// // RECEIVE THE REQUEST (recv)
+				int 				bytes = 0;
+				std::vector<char>	buffer(MAX_BUF_LEN);
+
+				bytes = recv(_config.getFds()[i].fd, &buffer[0], MAX_BUF_LEN, 0);
+				if (bytes < 0)
+					throw std::string("Error: can't receive client request");
+				else if (bytes > 0)
+				{
+					_config.getClients()[i].getBuffer().append(buffer.begin(), buffer.end());
+					while (bytes == MAX_BUF_LEN)
+					{
+						buffer.clear();
+						bytes = recv(_config.getFds()[i].fd, &buffer[0], MAX_BUF_LEN, 0);
+						if (bytes < 0)
+							throw std::string("Error: can't receive client request");
+						else
+							_config.getClients()[i].getBuffer().append(buffer.begin(), buffer.end());
+					}
+				}
+				else
+					bytes = 0;
+				_config.getClients()[i].addRequest();
+				// PARSE THE REQUEST
+				// PREPARE THE RESPONSE
 			}
 		}
 		else if (_config.getFds()[i].revents == POLLOUT)
