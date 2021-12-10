@@ -62,7 +62,6 @@ void	Hub::process()
 				// RECEIVE THE REQUEST (recv)
 				int 				bytes = 0;
 				std::vector<char>	buffer(MAX_BUF_LEN);
-
 				bytes = recv(_config.getFds()[i].fd, &buffer[0], MAX_BUF_LEN, 0);
 				if (bytes < 0)
 					throw std::string("Error: can't receive client request");
@@ -137,7 +136,7 @@ void	Hub::process()
 
 				// put into a string the response
 				std::string		message = response.getMessage();
-				std::cout << "message to write in socket : \n" << message << "\n";
+				// std::cout << "message to write in socket : \n" << message << "\n";
 				// append it to the client buffer
 				buffer.insert(buffer.end(), message.begin(), message.end());
 

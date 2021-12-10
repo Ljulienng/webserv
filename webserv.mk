@@ -3,6 +3,7 @@ SRC_FILES	= 	webserv.cpp					\
 				location.cpp				\
 				server.cpp					\
 				hub.cpp						\
+				request.cpp					\
 				response.cpp				\
 				clientSocket.cpp			\
 				socket.cpp					\
@@ -16,6 +17,7 @@ INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/config/location/location.hpp					\
 				srcs/config/server/server.hpp						\
 				srcs/config/hub.hpp									\
+				srcs/config/request/request.hpp						\
 				srcs/response/response.hpp							\
 				srcs/socket/clientSocket.hpp						\
 				srcs/socket/socket.hpp								\
