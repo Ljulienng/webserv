@@ -37,6 +37,7 @@
 #include <sstream>
 #include <sys/stat.h>
 
+#define MAX_BUF_LEN 4096
 # define EXIT_SUCCESS 0
 # define EXIT_FAILURE 1
 #define MAX_CONNECTIONS 100

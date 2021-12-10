@@ -60,24 +60,41 @@ void	Hub::process()
 			else
 			{
 				// RECEIVE THE REQUEST (recv)
+				int 				bytes = 0;
+				std::vector<char>	buffer(MAX_BUF_LEN);
+
+				bytes = recv(_config.getFds()[i].fd, &buffer[0], MAX_BUF_LEN, 0);
+				if (bytes < 0)
+					throw std::string("Error: can't receive client request");
+				else if (bytes > 0)
+				{
+					_config.getClients().find(i)->second.getBuffer().append(buffer.begin(), buffer.end()); // modif access map ELIE
+					while (bytes == MAX_BUF_LEN)
+					{
+						buffer.clear();
+						bytes = recv(_config.getFds()[i].fd, &buffer[0], MAX_BUF_LEN, 0);
+						if (bytes < 0)
+							throw std::string("Error: can't receive client request");
+						else
+							_config.getClients().find(i)->second.getBuffer().append(buffer.begin(), buffer.end()); // modif access map ELIE
+					}
+				}
+				else
+					bytes = 0;
+				_config.getClients()[i].addRequest();
+
+
 				/********** TEST A SUPPR AVANT PUSH ***************/
-				std::vector<char>	bufRequest(2048);
-				int bytesRequest = recv(_config.getFds()[i].fd, &bufRequest[0], 2048, 0);
+				// std::vector<char>	bufRequest(2048);
+				// int bytesRequest = recv(_config.getFds()[i].fd, &bufRequest[0], 2048, 0);
 				
-				if (bytesRequest < 0)
-					exit(EXIT_FAILURE);
-				// else if (bytesRequest > 0)
-				// {
-				// 	for (int i = 0; i < bytesRequest; i++)
-				// 		std::cout << bufRequest[i];
-				// }
+				// if (bytesRequest < 0)
+				// 	exit(EXIT_FAILURE);
 				/*************************************************/
 					
 
 				// PARSE THE REQUEST :
 						// - push de la requete dans le SocketClient
-
-						
 
 				// PREPARE THE RESPONSE :
 						// - recupere la derniere requete (top)
@@ -88,9 +105,7 @@ void	Hub::process()
 						
 				/********** TEST A SUPPR AVANT PUSH ***************/
 				Response resp;
-				// resp.setContent("ENVOI DE LA REPONSE DANS LA SOCKET CLIENT !!!!!!!!!!!!!!!!!!!!!!");
-				resp.setContent(std::string(bufRequest.begin(), bufRequest.end()));
-				// std::cout << "nb of client= "<< _config.getClients().size() << " i=" << i << " SEG1\n";
+				resp.setContent("TEST"); // recuperer le buffer du client
 				if (_config.getClients().find(i) != _config.getClients().end())
 				{
 					_config.getClients().find(i)->second.getResponses().push(resp);
