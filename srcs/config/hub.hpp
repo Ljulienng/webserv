@@ -13,6 +13,10 @@ class Hub
     private :
 		Configuration		_config;
 
+		void				_acceptIncomingConnections(size_t index);
+		void				_prepareResponse(size_t index);
+		void 				_sendResponse(size_t index);
+
     public :
 		Hub();
 		Hub(std::string configFile);

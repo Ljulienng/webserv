@@ -8,7 +8,6 @@ void            ClientSocket::addRequest()
 	_buffer.clear();
 }
 
-
 void		ClientSocket::addResponse(Response response)
 {
 	_responses.push(response);
@@ -69,7 +68,7 @@ ClientSocket &ClientSocket::operator=(const ClientSocket &src)
 	if (&src != this)
 	{
         Socket::operator=(src);
-
+		
 		// to be completed if new attributes
 	}
 	_buffer = src._buffer;

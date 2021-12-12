@@ -17,6 +17,7 @@ INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/config/location/location.hpp					\
 				srcs/config/server/server.hpp						\
 				srcs/config/hub.hpp									\
+				srcs/config/request/request.hpp						\
 				srcs/response/response.hpp							\
 				srcs/socket/clientSocket.hpp						\
 				srcs/socket/socket.hpp								\
