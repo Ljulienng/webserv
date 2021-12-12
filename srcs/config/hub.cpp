@@ -112,7 +112,8 @@ void		Hub::_acceptIncomingConnections(size_t index)
 
 /*
 ** prepare response :
-**	- get the last request
+**	- get the requests of the client
+**  - loop to get requests one by one
 **  - check errors
 **  - build the response
 **  - add the response in socketClient
@@ -120,14 +121,24 @@ void		Hub::_acceptIncomingConnections(size_t index)
 */
 void		Hub::_prepareResponse(size_t index)
 {
-	Response resp;
-	resp.setContent("TEST"); // recuperer le buffer du client
-	if (_config.getClients().find(index) != _config.getClients().end())
+	std::queue<Request>		requests = _config.getClients().find(index)->second.getRequests();
+	
+	while (requests.empty() == false)
 	{
-		_config.getClients().find(index)->second.getResponses().push(resp);
-		// the socket is now ready to write in addition to reading because we have added a response
-		if (_config.getClients().find(index)->second.getResponses().empty() == false)
-			_config.getFds()[index].events = POLLIN | POLLOUT;
+		Request req = requests.front();
+		Response resp;
+
+		// check errors and build response
+		resp.setContent("TEST"); // get the buffer of the client
+		requests.pop();
+		if (_config.getClients().find(index) != _config.getClients().end())
+		{
+			_config.getClients().find(index)->second.getResponses().push(resp);
+			// the socket is now ready to write in addition to reading because we have added a response
+			if (_config.getClients().find(index)->second.getResponses().empty() == false)
+				_config.getFds()[index].events = POLLIN | POLLOUT;
+		}
+
 	}
 }
 
