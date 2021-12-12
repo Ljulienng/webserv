@@ -3,6 +3,7 @@
 
 #include "webserv.hpp"
 #include "httpStatus.hpp"
+#include "request.hpp"
 
 class Response
 {
@@ -18,6 +19,7 @@ class Response
 
     public :
 		Response();
+        Response(Request &request);
 		Response(const Response &src);
 		~Response();		
 

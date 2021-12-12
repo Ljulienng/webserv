@@ -68,6 +68,14 @@ Response::Response() :
 			// to be completed if new attributes
 {}
 
+Response::Response(Request &request) : 
+        _headers(),
+        _httpVersion(request.getVersion()),
+        _httpStatus(),
+        _content(),
+        _message()
+{}
+
 Response::Response(const Response &src)
 {
 	*this = src;
