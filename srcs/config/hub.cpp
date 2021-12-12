@@ -83,7 +83,9 @@ void	Hub::process()
 
 /*
 ** accept client :
-** accept all incoming connections that are queued up on the listening socket before
+**   - accept all incoming connections on the listening socket (server host:port)
+**   - create a client
+**   - increment the nb of fds with the return of accept (fd of the new socketClient)
 */
 void		Hub::_acceptIncomingConnections(size_t index)
 {
@@ -125,11 +127,14 @@ void		Hub::_prepareResponse(size_t index)
 	
 	while (requests.empty() == false)
 	{
-		Request req = requests.front();
-		Response resp;
+		Request 	req = requests.front();
+		Response 	resp;
 
 		// check errors and build response
-		resp.setContent("TEST"); // get the buffer of the client
+		// build resp thanks to req elements
+		// ...
+		resp.setContent("TEST"); 
+
 		requests.pop();
 		if (_config.getClients().find(index) != _config.getClients().end())
 		{
@@ -138,10 +143,18 @@ void		Hub::_prepareResponse(size_t index)
 			if (_config.getClients().find(index)->second.getResponses().empty() == false)
 				_config.getFds()[index].events = POLLIN | POLLOUT;
 		}
-
 	}
 }
 
+/*
+** send response :
+**	- get the responses of the client
+**  - loop to get responses one by one
+**  - check errors
+**  - extract elements of the responses and get into a string
+**  - append each response in a buffer
+**  - write/send in the buffer the response 
+*/
 void 		Hub::_sendResponse(size_t index)
 {
 	// SEND RESPONSE [ get responses queue of the client, send them and delete them ]
