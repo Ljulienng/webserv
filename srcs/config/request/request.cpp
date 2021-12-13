@@ -281,5 +281,4 @@ void			Request::debug()
 	for (it = _headers.begin(); it != _headers.end(); it++)
 		std::cout << it->first << " = " << it->second << std::endl;
 	std::cout << "\n***** END OF DEBUG *****\n";
-	
 }

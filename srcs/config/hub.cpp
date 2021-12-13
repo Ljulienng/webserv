@@ -27,7 +27,7 @@ void	Hub::process()
 		// if revent is POLLIN, there is data waiting to be read
 		if (_config.getFds()[i].revents == POLLIN)
 		{
-			std::cout << i <<  " POLLIN\n";
+			std::cout /*<< i */<<  " POLLIN\n";
 			// if the current fd is one of our servers, we connect a new client (listening descriptor is readable)
 			if (i < _config.getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
 			{
@@ -89,7 +89,7 @@ void	Hub::process()
 		}
 		else if (_config.getFds()[i].revents == POLLOUT)
 		{
-			std::cout << i <<  " POLLOUT\n";
+			std::cout /*<< i */<<  " POLLOUT\n";
 			_sendResponse(i);
 		}
 		else
@@ -149,7 +149,7 @@ void		Hub::_prepareResponse(size_t index)
 		while (requests.empty() == false)
 		{
 			Request 	req = requests.front();
-			//req.debug();
+			// req.debug();
 			Response 	resp(req); // check errors and build response (thanks to req elements)
 
 			// test a supprimer
