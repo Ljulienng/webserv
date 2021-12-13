@@ -73,7 +73,7 @@ std::string         &Response::getMessage()
 Response::Response() :
         _headers(),
         _httpVersion(),
-        _httpStatus(),
+        _httpStatus(200),
         _content(),
         _message()
 			// to be completed if new attributes
@@ -82,10 +82,20 @@ Response::Response() :
 Response::Response(Request &request) : 
         _headers(),
         _httpVersion(request.getVersion()),
-        _httpStatus(),
+        _httpStatus(200),
         _content(),
         _message()
-{}
+{
+    // build the response thanks to the request
+
+    // need to get the uri store in the request
+    // get the location bloc concerned
+    // get the method -> if no method -> set status and print error
+    // choose the execution beetween : 
+    //      - need cgi ?  if yes -> exec cgi
+    //      - redirection
+    //      - method get, post or delete
+}
 
 Response::Response(const Response &src)
 {

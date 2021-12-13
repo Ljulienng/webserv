@@ -109,9 +109,10 @@ HttpStatus::HttpStatus() : _code(), _message()
 	_setExistingStatus();
 }
 
-HttpStatus::HttpStatus(size_t code, std::string message) : _code(code), _message(message)
+HttpStatus::HttpStatus(size_t code) : _code(code)
 {
 	_setExistingStatus();
+	_message = findStatusMessage(_code);
 }
 
 HttpStatus::HttpStatus(const HttpStatus &src)

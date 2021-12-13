@@ -80,6 +80,7 @@ void	Hub::process()
 				else
 					bytes = 0;
 				_config.getClients()[i].addRequest();
+
 				// PARSE THE REQUEST
 
 				// PREPARE THE RESPONSE
@@ -121,8 +122,8 @@ void		Hub::_acceptIncomingConnections(size_t index)
 		_config.getClients().insert(std::pair<size_t, ClientSocket>(index + _config.getServers().size(), client));
 		
 		// add the new incoming connection to the pollfd structure
-		std::cout << "New incoming connection - fd : " << acceptRet << "\n";
-		std::cout << "nfds = " << _config.getNfds()<< "\n";
+		_output("New incoming connection", acceptRet);
+		// std::cout << "nfds = " << _config.getNfds()<< "\n";
 		_config.getFds()[_config.getNfds()].fd = acceptRet;
 		_config.getFds()[_config.getNfds()].events = POLLIN;
 		_config.setNfds(_config.getNfds() + 1);
@@ -141,19 +142,21 @@ void		Hub::_acceptIncomingConnections(size_t index)
 */
 void		Hub::_prepareResponse(size_t index)
 {
-	std::queue<Request>		requests = _config.getClients().find(index)->second.getRequests();
-	
-	while (requests.empty() == false)
+	if (_config.getClients().find(index) != _config.getClients().end())
 	{
-		Request 	req = requests.front();
-		Response 	resp(req); // check errors and build response (thanks to req elements)
-
-		// test a supprimer
-		resp.setContent("TEST"); 
-
-		requests.pop();
-		if (_config.getClients().find(index) != _config.getClients().end())
+		std::queue<Request>		&requests = _config.getClients()[index].getRequests();
+		
+		while (requests.empty() == false)
 		{
+			Request 	req = requests.front();
+			// req.debug();
+			Response 	resp(req); // check errors and build response (thanks to req elements)
+
+			// test a supprimer
+			resp.setContent("TEST"); 
+
+			requests.pop();
+
 			_config.getClients().find(index)->second.getResponses().push(resp);
 			// the socket is now ready to write in addition to reading because we have added a response
 			if (_config.getClients().find(index)->second.getResponses().empty() == false)
@@ -174,39 +177,48 @@ void		Hub::_prepareResponse(size_t index)
 void 		Hub::_sendResponse(size_t index)
 {
 	// SEND RESPONSE [ get responses queue of the client, send them and delete them ]
-	std::map<size_t, ClientSocket>::iterator	client = _config.getClients().find(index);
-	std::queue<Response>    					responses = client->second.getResponses();
-	std::string									buffer/* = client->second.getBuffer()*/;
-
-	// we process the responses one by one and append them to the client buffer
-	// then delete the response until the queue is empty
-	while (responses.empty() == false)
+	if (_config.getClients().find(index) != _config.getClients().end())
 	{
-		// process in FIFO order, we process the oldest element first
-		Response response = responses.front();
+		std::map<size_t, ClientSocket>::iterator	client = _config.getClients().find(index);
+		std::queue<Response>    					responses = client->second.getResponses();
+		std::string									buffer/* = client->second.getBuffer()*/;
 
-		// then have to check header and status of the response
-		// ...
+		// we process the responses one by one and append them to the client buffer
+		// then delete the response until the queue is empty
+		while (responses.empty() == false)
+		{
+			// process in FIFO order, we process the oldest element first
+			Response response = responses.front();
 
-		std::string		message = response.getMessage(); // put into a string the response
-		buffer.insert(buffer.end(), message.begin(), message.end()); // append it to the client buffer
+			// then have to check header and status of the response
+			// ...
 
-		responses.pop(); // delete the response
+			std::string		message = response.getMessage(); // put into a string the response
+			buffer.insert(buffer.end(), message.begin(), message.end()); // append it to the client buffer
+			_output("Response sent", _config.getClients().find(index)->second.getFd());
+			responses.pop(); // delete the response
+		}
+
+		if (buffer.empty() == false)
+		{
+			// we can use send() ( without flag parameter, send is equivalent to write() )
+			// so write into the _fds[i].fd the content of buffer
+			int bytes = write(_config.getFds()[index].fd, &buffer[0], buffer.size());
+
+			if (bytes <= 0)
+				exit(EXIT_FAILURE); // disconnect each sockets (server and clients) and exit
+			buffer.erase(buffer.begin(), buffer.begin() + bytes); // clear the buffer
+
+			// finished to write so we are now waiting for reading
+			_config.getFds()[index].events = POLLIN;
+		}
 	}
+}
 
-	if (buffer.empty() == false)
-	{
-		// we can use send() ( without flag parameter, send is equivalent to write() )
-		// so write into the _fds[i].fd the content of buffer
-		int bytes = write(_config.getFds()[index].fd, &buffer[0], buffer.size());
 
-		if (bytes <= 0)
-			exit(EXIT_FAILURE); // disconnect each sockets (server and clients) and exit
-		buffer.erase(buffer.begin(), buffer.begin() + bytes); // clear the buffer
-
-		// finished to write so we are now waiting for reading
-		_config.getFds()[index].events = POLLIN;
-	}
+void			Hub::_output(std::string msg, int fd)
+{
+	std::cout << " [ " << fd << " ]  " << ORG << msg  << RESET << std::endl;
 }
 
 /* GETTERS */

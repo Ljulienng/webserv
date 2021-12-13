@@ -30,7 +30,7 @@ class ClientSocket : public Socket
         // GETTERS
         unsigned short          &getPort();
         std::string             &getBuffer();
-        std::queue<Request>	&getRequests();
+        std::queue<Request>	    &getRequests();
         std::queue<Response>    &getResponses();
 
 };

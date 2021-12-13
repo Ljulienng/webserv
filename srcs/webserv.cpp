@@ -4,8 +4,6 @@
 #include <iostream>
 #include "hub.hpp"
 
-#define RED  "\033[31m"
-
 bool g_run;
 
 void     sigintHandler(int sig)
