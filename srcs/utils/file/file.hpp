@@ -18,7 +18,6 @@ class File
 		File(std::string filepath);
 		File(const File &src);
 		~File();
-
 		File &operator=(const File &src);
 
 		bool		isRegularFile();

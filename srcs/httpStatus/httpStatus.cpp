@@ -114,4 +114,22 @@ HttpStatus::HttpStatus(size_t code, std::string message) : _code(code), _message
 	_setExistingStatus();
 }
 
+HttpStatus::HttpStatus(const HttpStatus &src)
+{
+	*this = src;
+}
+
 HttpStatus::~HttpStatus() {}
+
+
+HttpStatus &HttpStatus::operator=(const HttpStatus &src)
+{
+	if (&src != this)
+	{
+		_existingStatus = src._existingStatus;
+		_code = src._code;
+		_message = src._message;
+		// to be completed if new attributes
+	}
+	return (*this);
+}

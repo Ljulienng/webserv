@@ -16,7 +16,9 @@ class HttpStatus
     public :
         HttpStatus();
         HttpStatus(size_t code, std::string message);
-        ~HttpStatus();		
+        HttpStatus(const HttpStatus &src);
+        ~HttpStatus();
+        HttpStatus &operator=(const HttpStatus &src);	
 
         std::string     findStatusMessage(size_t code);
 

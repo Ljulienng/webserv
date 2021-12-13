@@ -18,7 +18,6 @@ class Str
 		Str(const std::string &str, const std::string &sep);
 		Str(const Str &src);
 		~Str();
-
 		Str &operator=(const Str &src);
 
 		size_t						getNum();

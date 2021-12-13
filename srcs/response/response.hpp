@@ -21,13 +21,16 @@ class Response
 		Response();
         Response(Request &request);
 		Response(const Response &src);
-		~Response();		
+		~Response();
+        Response &operator=(const Response &src);	
 
         // SETTERS
+        void                                setStatus(HttpStatus status);
         void                                setContent(std::string content);
 
         // GETTERS
         std::map<std::string, std::string>  &getHeaders();
+        std::string                         getHeader(std::string key);
         std::string                         &getHttpVersion();
         HttpStatus                          &getHttpStatus();
         std::string                         &getContent();

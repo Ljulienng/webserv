@@ -27,15 +27,26 @@ void        Response::setContent(std::string content)
     _content = content;
 }
 
-
+void        Response::setStatus(HttpStatus status)
+{
+    _httpStatus = status;
+}
 
 /* GETTERS */
 
+/* get all headers */
 std::map<std::string, std::string>         &Response::getHeaders()
 {
     return  _headers;
 }
 
+/* get one header value thanks to its key */
+std::string         Response::getHeader(std::string key)
+{
+    if (this->getHeaders().find(key) != this->getHeaders().end())
+        return (this->getHeaders().find(key)->second);
+    return (NULL);
+}
 
 std::string         &Response::getHttpVersion()
 {
@@ -82,3 +93,17 @@ Response::Response(const Response &src)
 }
 
 Response::~Response() {}
+
+Response &Response::operator=(const Response &src)
+{
+	if (&src != this)
+	{
+		_headers = src._headers;
+        _httpVersion = src._httpVersion;
+        _httpStatus = src._httpStatus;
+        _content = src._content;
+        _message = src._message;
+		// to be completed if new attributes
+	}
+	return (*this);
+}

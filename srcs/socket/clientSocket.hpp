@@ -15,9 +15,9 @@ class ClientSocket : public Socket
 
     public :
         ClientSocket();
-	ClientSocket(const ClientSocket &src);
-	virtual ~ClientSocket();		
-	ClientSocket    &operator=(const ClientSocket &src);
+        ClientSocket(const ClientSocket &src);
+        virtual ~ClientSocket();		
+        ClientSocket    &operator=(const ClientSocket &src);
         
         void            addRequest();
         void            addResponse(Response response);

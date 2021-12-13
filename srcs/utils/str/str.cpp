@@ -103,6 +103,8 @@ Str &Str::operator=(const Str &src)
 {
 	if (&src != this)
 	{
+		_string = src._string;
+		_tokens = src._tokens;
 		// to be completed
 	}
 	return (*this);

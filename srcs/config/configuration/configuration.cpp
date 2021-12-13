@@ -370,7 +370,7 @@ Configuration::Configuration(std::string configFile) :
 									_errorPages(),
 									_servers(),
 									_clients(),
-									_nfds(0)						
+									_nfds()						
 									// to be completed if new attributes
 {
 	_parseConfigPath();
@@ -393,6 +393,7 @@ Configuration &Configuration::operator=(const Configuration &src)
 		_maxBodySize = src._maxBodySize;
 		_errorPages = src._errorPages;
 		_servers = src._servers;
+		_clients = src._clients;
 		_nfds = src._nfds;
 		// to be completed if new attributes
 	}

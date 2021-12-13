@@ -22,7 +22,6 @@ class Hub
 		Hub(std::string configFile);
 		Hub(const Hub &src);
 		~Hub();		
-
 		Hub &operator=(const Hub &src);
 
 		void	start();
