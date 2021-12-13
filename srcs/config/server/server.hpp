@@ -28,6 +28,7 @@ class Server
 		~Server();
 		Server &operator=(const Server &src);
 
+		void	debug(size_t index);
 		void 	start();
 		void	createSocket();
 		void	closeSocket();

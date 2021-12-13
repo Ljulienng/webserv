@@ -150,3 +150,19 @@ Location &Location::operator=(const Location &src)
 	}
 	return (*this);
 }
+
+/* DEBUG */
+
+void	Location::debug(size_t index)
+{
+	std::cout << "\t\tLOCATION[" << index << "] =>\n";
+	std::cout << "\t\t - acceptedMethod = ";
+	for (size_t i = 0; i < _acceptedMethod.size(); i++)
+		std::cout << _acceptedMethod[i] << " ";
+	std::cout << "\n\t\t - path = " << _path << "\n";
+	std::cout << "\t\t - root = " << _root << "\n";
+	std::cout << "\t\t - default file = " << _defaultFile << "\n";
+	std::cout << "\t\t - autoindex = " << _autoindex << "\n";
+	std::cout << "\t\t - maxBodySize = " << _maxBodySize << "\n";
+	std::cout << "\t\t - redirection = " << _redirection.first << " : " << _redirection.second  << "\n";
+}

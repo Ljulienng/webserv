@@ -149,7 +149,7 @@ void		Hub::_prepareResponse(size_t index)
 		while (requests.empty() == false)
 		{
 			Request 	req = requests.front();
-			// req.debug();
+			//req.debug();
 			Response 	resp(req); // check errors and build response (thanks to req elements)
 
 			// test a supprimer
