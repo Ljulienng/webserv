@@ -10,14 +10,23 @@ void            Response::_updateMessage()
     ss << _httpStatus.getCode();
     _message += ss.str() + " " + _httpStatus.getMessage() + "\r\n";;
 
-    // append headers
-    std::map<std::string, std::string>::iterator headerIterator = _headers.begin();
-    for ( ; headerIterator != _headers.end(); headerIterator++)
-        _message += headerIterator->first + ": " + headerIterator->second + "\r\n";
-    _message += "\r\n";
+    // // append headers
+    // std::map<std::string, std::string>::iterator headerIterator = _headers.begin();
+    // for ( ; headerIterator != _headers.end(); headerIterator++)
+    //     _message += headerIterator->first + ": " + headerIterator->second + "\r\n";
+    // _message += "\r\n";
     
-    // append content
-    _message += _content;
+    // // append content
+    // _message += _content;
+
+    // TEST minimum content-->>   
+    _message += "Connection: keep-alive\r\n";
+    _message += "Content-length: 49\r\n";
+    _message += "Content-Type: text/html; charset=UTF-8\r\n";
+    _message += "Date: \r\n";
+    _message += "Server: Webserv\r\n";
+    _message += "\r\n";
+    _message += "<html><body><h1>Hello world !</h1></body></html>";
 }
 
 /* SETTERS */
@@ -81,11 +90,12 @@ Response::Response() :
 
 Response::Response(Request &request) : 
         _headers(),
-        _httpVersion(request.getVersion()),
+        _httpVersion("HTTP/1.1"),
         _httpStatus(200),
         _content(),
         _message()
 {
+    (void)request;
     // build the response thanks to the request
 
     // need to get the uri store in the request

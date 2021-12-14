@@ -7,13 +7,14 @@
 class Location
 {
     private :
-		std::vector<std::string>	_acceptedMethod; // GET POST DELETE
+		std::vector<std::string>	_acceptedMethod;
 		std::string					_path;
 		std::string					_root;
 		std::string					_defaultFile;
 		bool						_autoindex;
 		size_t						_maxBodySize; 
 		std::pair<int, std::string>	_redirection;
+		// need to set the type of action : cgi, redirection or nothing
 
     public :
         Location();

@@ -149,19 +149,19 @@ void		Hub::_prepareResponse(size_t index)
 		while (requests.empty() == false)
 		{
 			Request 	req = requests.front();
-			// req.debug();
+			//req.debug();
 			Response 	resp(req); // check errors and build response (thanks to req elements)
 
 			// test a supprimer
-			resp.setContent("TEST"); 
+			//resp.setContent("TEST"); 
 
 			requests.pop();
 
 			_config.getClients().find(index)->second.getResponses().push(resp);
-			// the socket is now ready to write in addition to reading because we have added a response
-			if (_config.getClients().find(index)->second.getResponses().empty() == false)
-				_config.getFds()[index].events = POLLIN | POLLOUT;
 		}
+		// the socket is now ready to write in addition to reading because we have added a response
+		if (_config.getClients().find(index)->second.getResponses().empty() == false)
+			_config.getFds()[index].events = POLLIN | POLLOUT;
 	}
 }
 
