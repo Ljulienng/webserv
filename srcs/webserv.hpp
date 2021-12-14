@@ -30,6 +30,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdlib.h>
 
 // Streams
 #include <iostream>
@@ -41,6 +42,13 @@
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 #define MAX_CONNECTIONS 100
+
+// colors
+#define RED  	"\033[31m"
+#define GRN  	"\033[32m"
+#define ORG 	"\033[33m"
+#define BLU  	"\033[34m"
+#define RESET 	"\033[0m"
 
 // NON MEMBER FUNCTIONS
 int isValidExpression(std::string expression, const char **validExpressions);

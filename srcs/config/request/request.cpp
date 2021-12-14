@@ -239,13 +239,13 @@ int									Request::getPort()
 */
 
 Request::Request(const std::string &request) :
-	_method(""), _version(""), _headers(), _body(""), _port(8080), _ret(0)
+	_method(""), _path(""), _version(""), _headers(), _body(""), _port(8080), _ret(0)
 {
 	parse(request);
 }
 
 Request::Request(const Request &obj) :
-	_method(obj._method), _version(obj._version), _headers(obj._headers), _body(obj._body), _port(8080), _ret(obj._ret)
+	_method(obj._method), _path(obj._path), _version(obj._version), _headers(obj._headers), _body(obj._body), _port(8080), _ret(obj._ret)
 {}
 
 Request::~Request()
@@ -280,5 +280,4 @@ void			Request::debug()
 		std::cout << it->first << " = " << it->second << std::endl;
 	std::cout << "_body = \n" << _body << std::endl;
 	std::cout << "\n***** END OF DEBUG *****\n";
-	
 }

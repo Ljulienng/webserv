@@ -8,7 +8,6 @@ void            ClientSocket::addRequest()
 	_buffer.clear();
 }
 
-
 void		ClientSocket::addResponse(Response response)
 {
 	_responses.push(response);
@@ -52,7 +51,7 @@ std::queue<Response>    &ClientSocket::getResponses()
 }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-ClientSocket::ClientSocket() : Socket(), _port(), _responses()
+ClientSocket::ClientSocket() : Socket(), _port(), _buffer(), _requests(), _responses()
 			// to be completed if new attributes
 {}
 
@@ -69,9 +68,11 @@ ClientSocket &ClientSocket::operator=(const ClientSocket &src)
 	if (&src != this)
 	{
         Socket::operator=(src);
-
+		_port = src._port;
+		_buffer = src._buffer;
+		_requests = src._requests;
+		_responses = src._responses;
 		// to be completed if new attributes
 	}
-	_buffer = src._buffer;
 	return (*this);
 }

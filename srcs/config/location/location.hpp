@@ -22,6 +22,7 @@ class Location
 
 		Location &operator=(const Location &src);
 
+		void	debug(size_t index);
 
 		// SETTERS
 		void	setLocationsDatas(std::map<std::string, std::string>  mapLocation);

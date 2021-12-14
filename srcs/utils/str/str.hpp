@@ -18,7 +18,6 @@ class Str
 		Str(const std::string &str, const std::string &sep);
 		Str(const Str &src);
 		~Str();
-
 		Str &operator=(const Str &src);
 
 		size_t						getNum();
@@ -26,13 +25,10 @@ class Str
 		std::vector<std::string>	&getTokens();
 		void						setStr(const std::string &str);
 		// std::string 				capitalizeString(std::string &str);
-
 };
 
 void			capitalizeString(std::string &str);
 std::string		&removeChar(std::string &str, char c);
 std::string		&trimChar(std::string &str);
-
-
 
 #endif

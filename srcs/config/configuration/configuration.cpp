@@ -370,7 +370,7 @@ Configuration::Configuration(std::string configFile) :
 									_errorPages(),
 									_servers(),
 									_clients(),
-									_nfds(0)						
+									_nfds()						
 									// to be completed if new attributes
 {
 	_parseConfigPath();
@@ -393,6 +393,7 @@ Configuration &Configuration::operator=(const Configuration &src)
 		_maxBodySize = src._maxBodySize;
 		_errorPages = src._errorPages;
 		_servers = src._servers;
+		_clients = src._clients;
 		_nfds = src._nfds;
 		// to be completed if new attributes
 	}
@@ -426,33 +427,7 @@ void	Configuration::debug()
 	for (; itErr != _errorPages.end(); itErr++)
 		std::cout << " - errorPages = " << itErr->first << ":" << itErr->second << "\n";
 	
-	std::map<size_t/*std::string*/, Server>::iterator itServ = _servers.begin();
-	int i = 0;
-	for (; itServ != _servers.end(); itServ++)
-	{
-		std::cout << "\tSERVER[" << i << "] =>\n";
-		std::cout << "\t - name = " << itServ->second.getName() << "\n";
-		std::cout << "\t - ip = " << itServ->second.getIp() << "\n";
-		std::cout << "\t - port = " << itServ->second.getPort() << "\n";
-		std::cout << "\t - maxBodySize = " << itServ->second.getMaxBodySize() << "\n";
-
-		std::vector<Location>::iterator itLoc = itServ->second.getLocations().begin();
-		int j = 0;
-		for (; itLoc != itServ->second.getLocations().end(); itLoc++)
-		{
-			std::cout << "\t\tLOCATION[" << j << "] =>\n";
-			std::cout << "\t\t - acceptedMethod = ";
-			for (size_t k = 0; k < itLoc->getAcceptedMethod().size(); k++)
-				std::cout << itLoc->getAcceptedMethod()[k] << " ";
-			std::cout << "\n\t\t - path = " << itLoc->getPath() << "\n";
-			std::cout << "\t\t - root = " << itLoc->getRoot() << "\n";
-			std::cout << "\t\t - autoindex = " << itLoc->getAutoindex() << "\n";
-			std::cout << "\t\t - methods = " << itLoc->getAcceptedMethod()[0] << "\n";
-			std::cout << "\t\t - redirection = " << itLoc->getRedirection().first << " : " << itLoc->getRedirection().second  << "\n";
-			std::cout << "\t\t - maxBodySize = " << itLoc->getMaxBodySize() << "\n";
-			j++;
-		}
-
-		i++;
-	}
+	std::map<size_t, Server>::iterator itServ = _servers.begin();
+	for (size_t i = 0; itServ != _servers.end(); itServ++, i++)
+		itServ->second.debug(i);
 }

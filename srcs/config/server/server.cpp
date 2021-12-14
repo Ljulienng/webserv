@@ -183,3 +183,17 @@ Server &Server::operator=(const Server &src)
 	}
 	return (*this);
 }
+
+void	Server::debug(size_t index)
+{
+	std::cout << "\tSERVER[" << index << "] =>\n";
+	std::cout << "\t - name = " << _name << "\n";
+	std::cout << "\t - ip = " << _ip << "\n";
+	std::cout << "\t - port = " << _port << "\n";
+	std::cout << "\t - maxBodySize = " << _maxBodySize << "\n";
+	std::cout << "\t - fd socket = " << _socket.getFd() << "\n";
+
+	std::vector<Location>::iterator itLoc = _locations.begin();
+	for (size_t i = 0; itLoc != _locations.end(); itLoc++, i++)
+		itLoc->debug(i);
+}
