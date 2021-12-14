@@ -56,7 +56,7 @@ int		Request::verifArg()
 	std::string methodsArr[] = {"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"};
 	std::vector<std::string> methods(methodsArr, methodsArr + sizeof(methodsArr)/sizeof(std::string));
 
-	// TRIM ALL WHITESPACE ETC
+	// TRIM ALL WHITESPACE NEWLINE ETC
 	trimChar(_method);
 	trimChar(_path);
 	trimChar(_version);
@@ -122,6 +122,7 @@ int		Request::parseFirstLine(std::string line)
 	return (_ret);
 }
 
+// Function to iterate on each line of the header
 std::string	Request::nextLine(const std::string &request, size_t &i)
 {
 	std::string	line;
@@ -130,11 +131,9 @@ std::string	Request::nextLine(const std::string &request, size_t &i)
 	for (size_t k = i; k < j; k++)
 		line.push_back(request[k]);
 	// line.assign(request, i, j);
+	// Removing carriage return if there is one at the end of the line
 	if (line[line.size() - 1] == '\r')
-	{
 		line.resize(line.size() - 1);
-	}
-
 	if (j == std::string::npos)
 		i = j;
 	else
@@ -142,6 +141,7 @@ std::string	Request::nextLine(const std::string &request, size_t &i)
 	return (line);
 }
 
+// Function to store values into the header's map of the class using the right keys
 void		Request::storeKeyValue(const std::string &line)
 {
 	std::string key;
@@ -180,7 +180,11 @@ int			Request::parseHeader(const std::string &request, size_t &i)
 
 void		Request::parsebody(const std::string &request)
 {
-	_body.assign(request);
+	size_t j = 0;
+
+	// Looking for the line that separates the header and the body of the http request
+	j = request.find_first_of("\r\n\r\n");
+	_body.assign(request, j + 3, std::string::npos);
 }
 
 int			Request::parse(const std::string &request)
@@ -192,9 +196,11 @@ int			Request::parse(const std::string &request)
 	initHeaders();
 	i = request.find_first_of('\n');
 	line = request.substr(0, i);
+	// Store the first line to get the Method, Path and Version
 	_ret = parseFirstLine(line);
 	tmp.assign(request, i, std::string::npos);
 	i = tmp.find_first_of('\n') + 1;
+	// Parsing each line of the header assigning values to the corresponding keys
 	parseHeader(tmp, i);
 	parsebody(tmp.assign(request, i, std::string::npos));
 	// debug();
