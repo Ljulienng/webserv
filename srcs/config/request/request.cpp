@@ -95,7 +95,6 @@ int		Request::parseFirstLine(std::string line)
 		return ((_ret = 400));
 	}
 	_method.assign(arg);
-	arg.clear();
 
 	// ASSIGNING PATH
 	i = line.find_first_of(' ');
@@ -108,7 +107,6 @@ int		Request::parseFirstLine(std::string line)
 		return ((_ret = 400));
 	}
 	_path.assign(arg);
-	arg.clear();
 
 	// ASSIGNING VERSION
 	i = line.find_first_of('\n');
@@ -120,7 +118,6 @@ int		Request::parseFirstLine(std::string line)
 		return ((_ret = 400));
 	}
 	_version.assign(arg);
-	arg.clear();
 	_ret = verifArg();
 	return (_ret);
 }
@@ -199,7 +196,9 @@ int			Request::parse(const std::string &request)
 	tmp.assign(request, i, std::string::npos);
 	i = tmp.find_first_of('\n') + 1;
 	parseHeader(tmp, i);
+	parsebody(tmp.assign(request, i, std::string::npos));
 	// debug();
+	
 	return (_ret);
 }
 
@@ -273,13 +272,13 @@ void			Request::debug()
 	std::cout << "_METHOD = " << _method << std::endl;
 	std::cout << "_PATH = " << _path << std::endl;
 	std::cout << "_version = " << _version << std::endl;
-	std::cout << "_body = " << _body << std::endl;
 	std::cout << "_port = " << _port << std::endl;
 	std::cout << "_ret = " << _ret << std::endl;
 
 	std::cout << "\n***** HEADERS KEY = VALUE *****\n";
 	for (it = _headers.begin(); it != _headers.end(); it++)
 		std::cout << it->first << " = " << it->second << std::endl;
+	std::cout << "_body = \n" << _body << std::endl;
 	std::cout << "\n***** END OF DEBUG *****\n";
 	
 }
