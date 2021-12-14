@@ -79,9 +79,9 @@ void	Hub::process()
 				}
 				else
 					bytes = 0;
-				_config.getClients()[i].addRequest();
-
+				
 				// PARSE THE REQUEST
+				_config.getClients()[i].addRequest();
 
 				// PREPARE THE RESPONSE
 				_prepareResponse(i);
