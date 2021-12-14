@@ -53,7 +53,7 @@ void	Request::initHeaders()
 int		Request::verifArg()
 {
 	// Initializing all valid methods into a vector
-	std::string methodsArr[] = {"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"};
+	std::string methodsArr[] = {"GET", "POST", "DELETE"};
 	std::vector<std::string> methods(methodsArr, methodsArr + sizeof(methodsArr)/sizeof(std::string));
 
 	// TRIM ALL WHITESPACE NEWLINE ETC
@@ -63,8 +63,8 @@ int		Request::verifArg()
 
 	// CHECKING VERSION
 	if (_version.compare(0, 5, "HTTP/") == 0)
-		_version.assign(_version, 5, std::string::npos - 1);
-	if (_version != "1.1" && _version != "1.0")
+		_version.assign(_version, 5, _version.size() - 2);
+	if (_version.compare("1.1"))
 	{
 		std::cerr << "Bad HTTP version" << std::endl;
 		return ((_ret = 400));
@@ -82,7 +82,6 @@ int		Request::parseFirstLine(std::string line)
 {
 	size_t i;
 	std::string arg;
-
 
 	// ASSIGNING METHOD
 	i = line.find_first_of(' ');
@@ -178,6 +177,18 @@ int			Request::parseHeader(const std::string &request, size_t &i)
 	return (_ret);
 }
 
+// void		Request::setAcceptedLanguages()
+// {
+// 	std::string value = _headers["Accept-Language"];
+// 	std::string lang;
+// 	float		weight;
+
+// 	if (value.size() < 5)
+// 		return ;
+	
+	
+// }
+
 void		Request::parsebody(const std::string &request)
 {
 	size_t j = 0;
@@ -193,6 +204,8 @@ int			Request::parse(const std::string &request)
 	std::string tmp;
 	size_t 		i = 0;
 
+	if (!request.size())
+		return (400);
 	initHeaders();
 	i = request.find_first_of('\n');
 	line = request.substr(0, i);
@@ -202,8 +215,9 @@ int			Request::parse(const std::string &request)
 	i = tmp.find_first_of('\n') + 1;
 	// Parsing each line of the header assigning values to the corresponding keys
 	parseHeader(tmp, i);
-	parsebody(tmp.assign(request, i, std::string::npos));
-	// debug();
+	if (tmp.size())
+		tmp.assign(request, i, std::string::npos);
+	parsebody(tmp);
 	
 	return (_ret);
 }
@@ -225,8 +239,6 @@ std::map<std::string, std::string>	&Request::getHeaders()
 std::string							&Request::getBody()
 { return (_body); }
 
-int									Request::getPort()
-{ return (_port); }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
@@ -245,13 +257,13 @@ int									Request::getPort()
 */
 
 Request::Request(const std::string &request) :
-	_method(""), _path(""), _version(""), _headers(), _body(""), _port(8080), _ret(0)
+	_method(""), _path(""), _version(""), _headers(), _body(""), _ret(0)
 {
 	parse(request);
 }
 
 Request::Request(const Request &obj) :
-	_method(obj._method), _path(obj._path), _version(obj._version), _headers(obj._headers), _body(obj._body), _port(8080), _ret(obj._ret)
+	_method(obj._method), _path(obj._path), _version(obj._version), _headers(obj._headers), _body(obj._body), _ret(obj._ret)
 {}
 
 Request::~Request()
@@ -264,7 +276,6 @@ Request			&Request::operator=(const Request &obj)
 	_version = obj._version;
 	_headers = obj._headers;
 	_body = obj._body;
-	_port = obj._port;
 	return (*this);
 }
 
@@ -278,7 +289,6 @@ void			Request::debug()
 	std::cout << "_METHOD = " << _method << std::endl;
 	std::cout << "_PATH = " << _path << std::endl;
 	std::cout << "_version = " << _version << std::endl;
-	std::cout << "_port = " << _port << std::endl;
 	std::cout << "_ret = " << _ret << std::endl;
 
 	std::cout << "\n***** HEADERS KEY = VALUE *****\n";

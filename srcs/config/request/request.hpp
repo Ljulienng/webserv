@@ -13,9 +13,9 @@ private:
 	std::string							_method;
 	std::string							_path;
 	std::string							_version;
-	std::map<std::string, std::string>	_headers; 
+	std::map<std::string, std::string>	_headers;
+	std::map<std::string, float>		_acceptedLang; 
 	std::string							_body;
-	int									_port;
 	int									_ret;
 
 public: 
@@ -43,7 +43,6 @@ public:
 	std::string							&getVersion();
 	std::map<std::string, std::string>	&getHeaders();
 	std::string							&getBody();
-	int									getPort();
 
 	/* DEBUG */
 	void								debug();
