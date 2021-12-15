@@ -105,8 +105,10 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
 
     // build the response thanks to the request
     // first need to get the server and location to use for this response (context)
+
     Server &server = config.findServer(serverName);
-    Location &location = server.findLocation(request.getPath());
+    (void)server;
+    // Location &location = server.findLocation(request.getPath());
 
     // get the method -> if no method -> set status and print error
     // choose the execution beetween : 

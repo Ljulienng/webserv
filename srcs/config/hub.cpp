@@ -31,7 +31,7 @@ void	Hub::process()
 			std::cout /*<< i */<<  " POLLIN\n";
 			// if the current fd is one of our servers, we connect a new client (listening descriptor is readable)
 			if (i < _config.getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
-			{std::cout << "accept connection " << i << "\n";
+			{
 				_acceptIncomingConnections(i);
 			}
 			// it's not a listening socket (server), therefore an existing connection must be readable (client)

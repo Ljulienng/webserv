@@ -52,6 +52,14 @@ void	Server::addLocation(Location location)
 	_locations.push_back(location);
 }
 
+/*
+** search a location block thanks to the uri (request)
+*/
+// Location 	&findLocation(std::string uri)
+// {
+
+// }
+
 /* SETTERS */
 void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 {
@@ -113,7 +121,6 @@ void	Server::setPort(std::string port)
 void	Server::setMaxBodySize(std::string maxBodySize)
 {
 	Str val(maxBodySize);
-	
 	_maxBodySize = val.getNum();
 }
 
@@ -121,34 +128,22 @@ void	Server::setMaxBodySize(std::string maxBodySize)
 /* GETTERS */
 
 std::string		&Server::getName()
-{
-	return _name;
-}
+{ return _name; }
 
 std::string		&Server::getIp()
-{
-	return _ip;
-}
+{ return _ip; }
 
 unsigned short		&Server::getPort()
-{
-	return _port;
-}
+{ return _port; }
 
 std::vector<Location>	&Server::getLocations()
-{
-	return _locations;
-}
+{ return _locations; }
 
 size_t		&Server::getMaxBodySize()
-{
-	return _maxBodySize;
-}
+{ return _maxBodySize; }
 
 Socket 		&Server::getSocket()
-{
-	return _socket;
-}
+{ return _socket; }
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
