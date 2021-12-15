@@ -222,6 +222,14 @@ std::string							&Request::getVersion()
 std::map<std::string, std::string>	&Request::getHeaders()
 { return (_headers); }
 
+/* get one header value thanks to its key */
+std::string         Request::getHeader(std::string key)
+{
+    if (getHeaders().find(key) != getHeaders().end())
+        return (getHeaders().find(key)->second);
+    return std::string("");
+}
+
 std::string							&Request::getBody()
 { return (_body); }
 

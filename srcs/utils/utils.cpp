@@ -9,9 +9,8 @@ namespace utils {
         char        currentTime[50];
 
         time(&rawTime);
-        timeinfo = localtime(&rawTime);
-
-        strftime(currentTime, 50, "%Y-%m-%d  %T", timeinfo);
+        timeinfo = gmtime(&rawTime);
+        strftime(currentTime, 50, "%Y-%m-%d  %T GMT", timeinfo);
 
         return currentTime;
     }

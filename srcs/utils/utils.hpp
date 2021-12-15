@@ -3,9 +3,7 @@
 
 #include "webserv.hpp"
 
-/*
-** define not member functions -> toolbox
-*/
+/* define not member functions -> toolbox */
 namespace utils {
 
     std::string    getTimestamp();

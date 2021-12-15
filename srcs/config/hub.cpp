@@ -14,7 +14,7 @@ void	Hub::process()
 	int pollRet = 1;
 		
 	// call poll and wait an infinite time
-	std::cout << "Waiting for poll -  nfds = " <<  _config.getNfds() << "\n";
+	// std::cout << "Waiting for poll -  nfds = " <<  _config.getNfds() << "\n";
 	pollRet = poll(_config.getFds(), _config.getNfds(), -1);
 	if (pollRet < 0) // poll() failed
 		return ;
@@ -82,7 +82,7 @@ void	Hub::process()
 					bytes = 0;
 				
 				// PARSE THE REQUEST
-				_config.getClients()[i].addRequest();std::cout << "create request " << i << "\n";
+				_config.getClients()[i].addRequest();
 				// PREPARE THE RESPONSE
 				_prepareResponse(i);
 			}
@@ -152,7 +152,6 @@ void		Hub::_prepareResponse(size_t index)
 		{
 			Request 	req = requests.front();
 			//req.debug();
-			std::cout << "create response " << index << "\n";
 			Response 	resp(req, _config, _config.getClients()[index].getServerName()); // check errors and build response (thanks to req elements)
 
 			// test a supprimer

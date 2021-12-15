@@ -1,5 +1,6 @@
 #include "response.hpp"
 #include "utils.hpp"
+
 void            Response::_updateMessage()
 {
     // append version
@@ -10,21 +11,20 @@ void            Response::_updateMessage()
     stream << _httpStatus.getCode();
     _message += stream.str() + " " + _httpStatus.getMessage() + "\r\n";;
 
-    // // append headers
-    // std::map<std::string, std::string>::iterator headerIterator = _headers.begin();
-    // for ( ; headerIterator != _headers.end(); headerIterator++)
-    //     _message += headerIterator->first + ": " + headerIterator->second + "\r\n";
+    // append headers
+    std::map<std::string, std::string>::iterator headerIterator = _headers.begin();
+    for ( ; headerIterator != _headers.end(); headerIterator++)
+        _message += headerIterator->first + ": " + headerIterator->second + "\r\n";
     // _message += "\r\n";
     
     // // append content
     // _message += _content;
 
     // TEST minimum content-->>   
-    _message += "Connection: keep-alive\r\n";
+
     _message += "Content-length: 49\r\n";
     _message += "Content-Type: text/html; charset=UTF-8\r\n";
-    _message += "Date: \r\n";
-    _message += "Server: Webserv\r\n";
+
     _message += "\r\n";
     _message += "<html><body><h1>Hello world !</h1></body></html>";
 }
@@ -52,32 +52,24 @@ void        Response::setStatus(HttpStatus status)
 
 /* get all headers */
 std::map<std::string, std::string>         &Response::getHeaders()
-{
-    return  _headers;
-}
+{ return  _headers; }
 
 /* get one header value thanks to its key */
 std::string         Response::getHeader(std::string key)
 {
-    if (this->getHeaders().find(key) != this->getHeaders().end())
-        return (this->getHeaders().find(key)->second);
-    return (NULL);
+    if (getHeaders().find(key) != getHeaders().end())
+        return (getHeaders().find(key)->second);
+    return std::string("");
 }
 
 std::string         &Response::getHttpVersion()
-{
-    return  _httpVersion;
-}
+{ return  _httpVersion; }
 
 HttpStatus          &Response::getHttpStatus()
-{
-    return _httpStatus;
-}
+{ return _httpStatus; }
 
 std::string         &Response::getContent()
-{
-    return  _content;
-}
+{ return  _content; }
 
 std::string         &Response::getMessage()
 {
@@ -104,8 +96,12 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
         _message()
 {
     setHeader("Server", "Webserv_42");
-    setHeader("Connection", "keep-alive");
+    if (request.getHeader("Connection") == "close")
+        setHeader("Connection", "close");
+    else
+        setHeader("Connection", "keep-alive");
     setHeader("Date", utils::getTimestamp());
+
     // build the response thanks to the request
     (void)request;
 
