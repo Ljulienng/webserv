@@ -7,6 +7,7 @@
 class Location
 {
     private :
+	
 		std::vector<std::string>	_acceptedMethod;
 		std::string					_path;
 		std::string					_root;
@@ -16,7 +17,9 @@ class Location
 		std::pair<int, std::string>	_redirection;
 		// need to set the type of action : cgi, redirection or nothing
 
+
     public :
+
         Location();
 		Location(const Location &src);
 		~Location();
