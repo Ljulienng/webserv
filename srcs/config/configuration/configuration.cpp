@@ -251,7 +251,6 @@ Server 		&Configuration::findServer(std::string serverName)
 }
 
 /* SETTERS */
-
 void	Configuration::setConfigDatas(std::map<std::string, std::string> mapConfig)
 {
 	std::map<std::string, std::string>::iterator it = mapConfig.begin();
@@ -305,7 +304,6 @@ void	Configuration::setMaxBodySize(std::string maxBodySize)
 
 
 /* GETTERS */
-
 std::pair<std::string, std::string>		&Configuration::getCgi()
 { return _cgi; }
 
@@ -323,7 +321,6 @@ std::vector<ClientSocket>	&Configuration::getClients()
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-
 Configuration::Configuration() : 	_configFile(),
 									_cgi(),
 									_maxBodySize(),

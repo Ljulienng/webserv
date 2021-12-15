@@ -37,7 +37,7 @@ class Server
 		void		setNonBlock();
 		void		listenSocket();
 		void		addLocation(Location location);
-		// Location 	&findLocation(std::string uri);
+		Location 	&findLocation(std::string uri);
 
 		// SETTERS
 		void		setServerDatas(std::map<std::string, std::string> mapServer);

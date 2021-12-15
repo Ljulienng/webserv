@@ -157,7 +157,6 @@ void		Hub::_prepareResponse(size_t index)
 	}
 
 	// the socket is now ready to write in addition to reading because we have added a response
-	// if (_config.getClients().find(index)->second.getResponses().empty() == false)
 	if (_config.getClients()[clientIndex].getResponses().empty() == false)
 		_fds[index].events = POLLIN | POLLOUT;
 }

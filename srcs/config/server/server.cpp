@@ -55,10 +55,11 @@ void	Server::addLocation(Location location)
 /*
 ** search a location block thanks to the uri (request)
 */
-// Location 	&findLocation(std::string uri)
-// {
-
-// }
+Location 	&findLocation(std::string uri)
+{
+	(void)uri;
+	// Location	*locationMatch = 
+}
 
 /* SETTERS */
 void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
