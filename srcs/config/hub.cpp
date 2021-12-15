@@ -14,6 +14,7 @@ void	Hub::process()
 	int pollRet = 1;
 		
 	// call poll and wait an infinite time
+	std::cout << "Waiting for poll -  nfds = " <<  _config.getNfds() << "\n";
 	pollRet = poll(_config.getFds(), _config.getNfds(), -1);
 	if (pollRet < 0) // poll() failed
 		return ;
@@ -30,7 +31,7 @@ void	Hub::process()
 			std::cout /*<< i */<<  " POLLIN\n";
 			// if the current fd is one of our servers, we connect a new client (listening descriptor is readable)
 			if (i < _config.getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
-			{
+			{std::cout << "accept connection " << i << "\n";
 				_acceptIncomingConnections(i);
 			}
 			// it's not a listening socket (server), therefore an existing connection must be readable (client)
@@ -75,15 +76,13 @@ void	Hub::process()
 							throw std::string("Error: can't receive client request");
 						else
 							_config.getClients()[i].getBuffer().append(buffer.begin(), buffer.end());
-
 					}
 				}
 				else
 					bytes = 0;
 				
 				// PARSE THE REQUEST
-				_config.getClients()[i].addRequest();
-
+				_config.getClients()[i].addRequest();std::cout << "create request " << i << "\n";
 				// PREPARE THE RESPONSE
 				_prepareResponse(i);
 			}
@@ -185,7 +184,7 @@ void 		Hub::_sendResponse(size_t index)
 	{
 		std::map<size_t, ClientSocket>::iterator	client = _config.getClients().find(index);
 		std::queue<Response>    					responses = client->second.getResponses();
-		std::string									buffer/* = client->second.getBuffer()*/;
+		std::string									buffer = client->second.getBuffer();
 
 		// we process the responses one by one and append them to the client buffer
 		// then delete the response until the queue is empty
