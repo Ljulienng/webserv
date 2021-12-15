@@ -164,8 +164,9 @@ size_t	Configuration::_parseServer(str_ite it, str_ite ite)
 	server.setServerDatas(mapServer);
 
 	// add the new server to the array of servers
-	static size_t indexServer = 0;
-	_servers.insert(std::pair<size_t/*std::string*/, Server>(indexServer++/*server.getName()*/, server));
+	// static size_t indexServer = 0;
+	// _servers.insert(std::pair<size_t/*std::string*/, Server>(indexServer++/*server.getName()*/, server));
+	_servers.push_back(server);
 
 	return (std::distance(start, it));
 }
@@ -243,13 +244,20 @@ void	Configuration::parse()
 */
 void		Configuration::startSockets()
 {
-	std::map<size_t/*std::string*/, Server>::iterator	it = _servers.begin();
-	for ( ; it != _servers.end(); it++)
+	// std::map<size_t, Server>::iterator	it = _servers.begin();
+	// for ( ; it != _servers.end(); it++)
+	// {
+	// 	it->second.start();
+	// 	_fds[_nfds].fd = it->second.getSocket().getFd();
+	// 	_fds[_nfds].events = POLLIN;
+	// 	_nfds++;		
+	// }
+	for (size_t i = 0; i < _servers.size(); i++)
 	{
-		it->second.start();
-		_fds[_nfds].fd = it->second.getSocket().getFd();
+		_servers[i].start();
+		_fds[_nfds].fd = _servers[i].getSocket().getFd();
 		_fds[_nfds].events = POLLIN;
-		_nfds++;		
+		_nfds++;
 	}
 }
 
@@ -258,12 +266,18 @@ void		Configuration::startSockets()
 */
 Server 		&Configuration::findServer(std::string serverName)
 {
-	std::map<size_t, Server>::iterator it = _servers.begin();
-	std::map<size_t, Server>::iterator start(it);
-	for ( ; it != _servers.end(); it++)
-		if (it->second.getName() == serverName)
-			return it->second;
-	return start->second; // return null
+	// std::map<size_t, Server>::iterator it = _servers.begin();
+	// std::map<size_t, Server>::iterator start(it);
+	// for ( ; it != _servers.end(); it++)
+	// 	if (it->second.getName() == serverName)
+	// 		return it->second;
+	// return start->second; // return null
+	Server *serverMatch = &_servers[0];
+
+	for (size_t i = 0; i < _servers.size(); i++)
+		if (_servers[i].getName() == serverName)
+			serverMatch = &_servers[i];
+	return *serverMatch;
 }
 
 /* SETTERS */
@@ -304,22 +318,37 @@ void	Configuration::setMaxBodySize(std::string maxBodySize)
 
 	// the attribute can be present in config, server and location scope
 	// so we need to make a cascade copy if not set in sub scopes
-	std::map<size_t/*std::string*/, Server>::iterator itServ = _servers.begin();
-	for ( ; itServ != _servers.end(); itServ++)
+	// std::map<size_t, Server>::iterator itServ = _servers.begin();
+	// for ( ; itServ != _servers.end(); itServ++)
+	// {
+	// 	if (itServ->second.getMaxBodySize() == 0)
+	// 		itServ->second.setMaxBodySize(maxBodySize);
+	// 	std::vector<Location>::iterator			itLoc = itServ->second.getLocations().begin();
+	// 	for ( ; itLoc != itServ->second.getLocations().end(); itLoc++)
+	// 	{
+	// 		if (itLoc->getMaxBodySize() == 0)
+	// 		{
+	// 			std::stringstream ss;
+	// 			ss << itServ->second.getMaxBodySize();
+	// 			itLoc->setMaxBodySize(ss.str());
+	// 		}
+	// 	}
+	// }
+	for (size_t i = 0; i < _servers.size(); i++)
 	{
-		if (itServ->second.getMaxBodySize() == 0)
-			itServ->second.setMaxBodySize(maxBodySize);
-		std::vector<Location>::iterator			itLoc = itServ->second.getLocations().begin();
-		for ( ; itLoc != itServ->second.getLocations().end(); itLoc++)
+		if (_servers[i].getMaxBodySize() == 0)
+			_servers[i].setMaxBodySize(maxBodySize);
+		for (size_t j = 0; j < _servers[i].getLocations().size(); j++)
 		{
-			if (itLoc->getMaxBodySize() == 0)
+			if (_servers[i].getLocations()[j].getMaxBodySize() == 0)
 			{
 				std::stringstream ss;
-				ss << itServ->second.getMaxBodySize();
-				itLoc->setMaxBodySize(ss.str());
+				ss << _servers[i].getMaxBodySize();
+				_servers[i].getLocations()[j].setMaxBodySize(ss.str());
 			}
 		}
 	}
+
 }
 
 void		Configuration::setNfds(int nfds)
@@ -344,12 +373,22 @@ std::map<int, std::string>		&Configuration::getErrorPages()
 	return _errorPages;
 }
 
-std::map<size_t/*std::string*/, Server>		&Configuration::getServers()
+// std::map<size_t, Server>		&Configuration::getServers()
+// {
+// 	return _servers;
+// }
+
+// std::map<size_t, ClientSocket>	&Configuration::getClients()
+// {
+// 	return _clients;
+// }
+
+std::vector<Server>		&Configuration::getServers()
 {
 	return _servers;
 }
 
-std::map<size_t, ClientSocket>	&Configuration::getClients()
+std::vector<ClientSocket>	&Configuration::getClients()
 {
 	return _clients;
 }
@@ -440,7 +479,9 @@ void	Configuration::debug()
 	for (; itErr != _errorPages.end(); itErr++)
 		std::cout << " - errorPages = " << itErr->first << ":" << itErr->second << "\n";
 	
-	std::map<size_t, Server>::iterator itServ = _servers.begin();
-	for (size_t i = 0; itServ != _servers.end(); itServ++, i++)
-		itServ->second.debug(i);
+	// std::map<size_t, Server>::iterator itServ = _servers.begin();
+	// for (size_t i = 0; itServ != _servers.end(); itServ++, i++)
+		// itServ->second.debug(i);
+	for (size_t i = 0; i < _servers.size(); i++)
+		_servers[i].debug(i);
 }

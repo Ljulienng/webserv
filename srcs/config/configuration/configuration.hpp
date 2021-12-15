@@ -22,8 +22,10 @@ class Configuration
 		std::pair<std::string, std::string>	_cgi;
 		size_t								_maxBodySize;
 		std::map<int, std::string>			_errorPages;
-		std::map<size_t/*std::string*/, Server>		_servers; // test to have an index instead of the server name
-		std::map<size_t, ClientSocket>		_clients; // test index+client connectes (size_t = index pour matcher dans les _fds apres les serveurs)
+		// std::map<size_t/*std::string*/, Server>		_servers; // test to have an index instead of the server name
+		// std::map<size_t, ClientSocket>		_clients; // test index+client connectes (size_t = index pour matcher dans les _fds apres les serveurs)
+		std::vector<Server>					_servers;
+		std::vector<ClientSocket>			_clients;
 		struct pollfd						_fds[MAX_CONNECTIONS];
 		size_t								_nfds;
 
@@ -58,8 +60,10 @@ class Configuration
 		std::pair<std::string, std::string>		&getCgi();
 		size_t									&getMaxBodySize();
 		std::map<int, std::string>				&getErrorPages();
-		std::map<size_t/*std::string*/, Server>	&getServers();
-		std::map<size_t, ClientSocket>			&getClients();
+		// std::map<size_t, Server>				&getServers();
+		// std::map<size_t, ClientSocket>			&getClients();
+		std::vector<Server>						&getServers();
+		std::vector<ClientSocket>				&getClients();
 		struct pollfd *							getFds();
 		size_t									getNfds();
 		int										getTopServer();

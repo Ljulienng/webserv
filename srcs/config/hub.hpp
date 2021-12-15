@@ -16,6 +16,7 @@ class Hub
 		Configuration		_config;
 
 		void				_acceptIncomingConnections(size_t index);
+		void				_receiveRequest(size_t index);
 		void				_prepareResponse(size_t index);
 		void 				_sendResponse(size_t index);
 		void				_output(std::string msg, int fd);
