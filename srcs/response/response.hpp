@@ -27,8 +27,9 @@ class Response
         Response &operator=(const Response &src);	
 
         // SETTERS
+        void                                setHeader(std::string key, std::string value);
         void                                setStatus(HttpStatus status);
-        void                                setContent(std::string content);
+        void                                setContent(std::string content, std::string contentType);
 
         // GETTERS
         std::map<std::string, std::string>  &getHeaders();

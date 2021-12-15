@@ -1,14 +1,14 @@
 #include "response.hpp"
-
+#include "utils.hpp"
 void            Response::_updateMessage()
 {
     // append version
     _message = _httpVersion + " ";
 
     // append http status
-    std::stringstream   ss;
-    ss << _httpStatus.getCode();
-    _message += ss.str() + " " + _httpStatus.getMessage() + "\r\n";;
+    std::stringstream   stream;
+    stream << _httpStatus.getCode();
+    _message += stream.str() + " " + _httpStatus.getMessage() + "\r\n";;
 
     // // append headers
     // std::map<std::string, std::string>::iterator headerIterator = _headers.begin();
@@ -31,9 +31,16 @@ void            Response::_updateMessage()
 
 /* SETTERS */
 
-void        Response::setContent(std::string content)
+void        Response::setHeader(std::string key, std::string value)
+{
+    _headers.insert(std::pair<std::string, std::string>(key, value));
+}
+
+void        Response::setContent(std::string content, std::string contentType)
 {
     _content = content;
+    setHeader("Content-Type", contentType);
+    setHeader("Content-Length", utils::myItoa(content.size()));
 }
 
 void        Response::setStatus(HttpStatus status)
@@ -88,6 +95,7 @@ Response::Response() :
 			// to be completed if new attributes
 {}
 
+
 Response::Response(Request &request, Configuration &config, std::string serverName) : 
         _headers(),
         _httpVersion("HTTP/1.1"),
@@ -95,12 +103,15 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
         _content(),
         _message()
 {
+    setHeader("Server", "Webserv_42");
+    setHeader("Connection", "keep-alive");
+    setHeader("Date", utils::getTimestamp());
     // build the response thanks to the request
     (void)request;
 
-    // first need to get the server and location to use for this response
+    // first need to get the server and location to use for this response (context)
     Server &server = config.findServer(serverName);
-    std::cout << "server found = " << server.getName() << "\n";
+    (void)server;
     // need to get the uri store in the request
     // get the location bloc concerned
     // get the method -> if no method -> set status and print error
