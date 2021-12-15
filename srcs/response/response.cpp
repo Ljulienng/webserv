@@ -95,6 +95,7 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
         _content(),
         _message()
 {
+    // we set some headers
     setHeader("Server", "Webserv_42");
     if (request.getHeader("Connection") == "close")
         setHeader("Connection", "close");
@@ -103,13 +104,10 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
     setHeader("Date", utils::getTimestamp());
 
     // build the response thanks to the request
-    (void)request;
-
     // first need to get the server and location to use for this response (context)
     Server &server = config.findServer(serverName);
-    (void)server;
-    // need to get the uri store in the request
-    // get the location bloc concerned
+    Location &location = server.findLocation(request.getPath());
+
     // get the method -> if no method -> set status and print error
     // choose the execution beetween : 
     //      - need cgi ?  if yes -> exec cgi
