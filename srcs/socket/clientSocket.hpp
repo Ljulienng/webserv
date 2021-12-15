@@ -12,6 +12,7 @@ class ClientSocket : public Socket
         std::string             _buffer;
         std::queue<Request>     _requests;
         std::queue<Response>    _responses;
+        std::string             _serverName;
 
     public :
         ClientSocket();
@@ -26,12 +27,14 @@ class ClientSocket : public Socket
         void                    setPort(unsigned short port);
         void                    setBuffer(std::string buffer);
         void                    setRequests(std::queue<Request> requests);
+        void                    setServerName(std::string serverName);
 
         // GETTERS
         unsigned short          &getPort();
         std::string             &getBuffer();
         std::queue<Request>	    &getRequests();
         std::queue<Response>    &getResponses();
+        std::string             &getServerName();
 
 };
 

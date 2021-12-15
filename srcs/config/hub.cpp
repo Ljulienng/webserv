@@ -75,6 +75,7 @@ void	Hub::process()
 							throw std::string("Error: can't receive client request");
 						else
 							_config.getClients()[i].getBuffer().append(buffer.begin(), buffer.end());
+
 					}
 				}
 				else
@@ -116,10 +117,11 @@ void		Hub::_acceptIncomingConnections(size_t index)
 			break ;
 
 		ClientSocket client;
+		client.setServerName(_config.getServers().find(index)->second.getName());
 		client.setFd(acceptRet);
 		client.setPort(_config.getServers().find(index)->second.getPort());
 		// insert new client at index 'i + nb of servers' to find it easily
-		_config.getClients().insert(std::pair<size_t, ClientSocket>(index + _config.getServers().size(), client));
+		_config.getClients().insert(std::pair<size_t, ClientSocket>(_config.getNfds(), client));
 		
 		// add the new incoming connection to the pollfd structure
 		_output("New incoming connection", acceptRet);
@@ -144,13 +146,15 @@ void		Hub::_prepareResponse(size_t index)
 {
 	if (_config.getClients().find(index) != _config.getClients().end())
 	{
-		std::queue<Request>		&requests = _config.getClients()[index].getRequests();
-		
+		// std::queue<Request>		&requests = _config.getClients()[index].getRequests();
+		std::queue<Request>		&requests = _config.getClients().find(index)->second.getRequests();
+
 		while (requests.empty() == false)
 		{
 			Request 	req = requests.front();
 			//req.debug();
-			Response 	resp(req); // check errors and build response (thanks to req elements)
+			std::cout << "create response " << index << "\n";
+			Response 	resp(req, _config, _config.getClients()[index].getServerName()); // check errors and build response (thanks to req elements)
 
 			// test a supprimer
 			//resp.setContent("TEST"); 

@@ -5,6 +5,8 @@
 #include "httpStatus.hpp"
 #include "request.hpp"
 
+class Configuration;
+
 class Response
 {
     private :
@@ -19,7 +21,7 @@ class Response
 
     public :
 		Response();
-        Response(Request &request);
+        Response(Request &request, Configuration &config, std::string serverName);
 		Response(const Response &src);
 		~Response();
         Response &operator=(const Response &src);	
@@ -36,5 +38,7 @@ class Response
         std::string                         &getContent();
         std::string                         &getMessage();
 };
+
+#include "configuration.hpp"
 
 #endif

@@ -3,11 +3,13 @@
 
 #include "webserv.hpp"
 #include "configuration.hpp"
-// #include "socketList.hpp"
+
 extern bool    g_run;
+
 /*
 ** general class to handle the program
 */
+
 class Hub
 {
     private :
@@ -30,5 +32,7 @@ class Hub
 
 		Configuration	&getConfig();
 };
+
+
 
 #endif

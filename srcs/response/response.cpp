@@ -88,16 +88,19 @@ Response::Response() :
 			// to be completed if new attributes
 {}
 
-Response::Response(Request &request) : 
+Response::Response(Request &request, Configuration &config, std::string serverName) : 
         _headers(),
         _httpVersion("HTTP/1.1"),
         _httpStatus(200),
         _content(),
         _message()
 {
-    (void)request;
     // build the response thanks to the request
+    (void)request;
 
+    // first need to get the server and location to use for this response
+    Server &server = config.findServer(serverName);
+    std::cout << "server found = " << server.getName() << "\n";
     // need to get the uri store in the request
     // get the location bloc concerned
     // get the method -> if no method -> set status and print error

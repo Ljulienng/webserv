@@ -253,6 +253,19 @@ void		Configuration::startSockets()
 	}
 }
 
+/*
+** search a server thanks to its name
+*/
+Server 		&Configuration::findServer(std::string serverName)
+{
+	std::map<size_t, Server>::iterator it = _servers.begin();
+	std::map<size_t, Server>::iterator start(it);
+	for ( ; it != _servers.end(); it++)
+		if (it->second.getName() == serverName)
+			return it->second;
+	return start->second; // return null
+}
+
 /* SETTERS */
 
 void	Configuration::setConfigDatas(std::map<std::string, std::string> mapConfig)

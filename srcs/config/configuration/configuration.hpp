@@ -7,6 +7,8 @@
 #include "file.hpp"
 #include "clientSocket.hpp"
 
+class ClientSocket;
+
 /*
 ** informations from the configuration file : cgi, bodyMaxSize, a list of server(s) ...
 */
@@ -39,11 +41,11 @@ class Configuration
 		Configuration(std::string configFile);
 		Configuration(const Configuration &src);
 		~Configuration();	
-
 		Configuration &operator=(const Configuration &src);
 
 		void		parse();
 		void		startSockets();
+		Server 		&findServer(std::string serverName);
 		void		debug();
 
 		// SETTERS
