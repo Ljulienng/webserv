@@ -70,22 +70,30 @@ Location	*Server::_findExactLocation(std::string uriRequest)
 */
 bool	_matchLocation(std::string locationPath, std::string uriRequest)
 {
+	std::cout << "[_matchLocation]   locpath = " << locationPath << "   uriRequest = " << uriRequest << "\n";
 	if (uriRequest.size() < locationPath.size())
 		return false;
 
 	std::string::iterator loc = locationPath.begin();
 	std::string::iterator req = uriRequest.begin();
-	for ( ; req != uriRequest.end(); loc++, req++)
+	for ( ; req != uriRequest.end(); ++loc, ++req)
 	{
+		if (loc == locationPath.end())
+			break ;
 		if (loc != locationPath.end() && *loc != *req)
 			return false;
 	}
 	return true;
 }
 
+/*
+** it's possible that we have several location blocks which match the request
+** so we have to determine which one is more precise
+*/
 bool	_isMorePreciseLocation(std::string locationPath, std::string prevLocationPath)
 {
-
+	std::cout << "[_isMorePreciseLocation]   locpath = " << locationPath << "   prevLocationPath = " << prevLocationPath << "\n";
+	return (locationPath.size() > prevLocationPath.size());
 }
 
 /*
@@ -94,16 +102,22 @@ bool	_isMorePreciseLocation(std::string locationPath, std::string prevLocationPa
 Location 	&Server::findLocation(std::string uriRequest)
 {
 	Location	*locationMatch = _findExactLocation(uriRequest);
+	size_t 		indexMatch = 0;
 
 	if (locationMatch != NULL)
 		return *locationMatch;
 	for (size_t i = 0; i < _locations.size(); i++)
 	{
 		if (_matchLocation(_locations[i].getPath(), uriRequest))
-			if (_isMorePreciseLocation(_locations[i].getPath(), locationMatch->getPath()))
-				locationMatch = &_locations[i];
+		{
+			if (_isMorePreciseLocation(_locations[i].getPath(), _locations[indexMatch].getPath()))
+			{
+				indexMatch = i;
+				std::cout << "Choose location = " << _locations[indexMatch].getPath() << "\n";
+			}
+		}
 	}
-	return *locationMatch;
+	return _locations[indexMatch];
 }
 
 /* SETTERS */

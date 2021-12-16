@@ -152,7 +152,7 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
     // std::string parsedUri = parseUri(request.getPath());
     Location &location = server.findLocation(request.getPath());
     (void)location;
-    
+
     // get the method -> if no method -> set status and print error
     // choose the execution beetween : 
     //      - need cgi ?  if yes -> exec cgi
