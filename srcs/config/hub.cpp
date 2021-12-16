@@ -78,16 +78,19 @@ void		Hub::_acceptIncomingConnections(size_t index)
 {
 	while (42)
 	{
+		if (_nfds == MAX_CONNECTIONS)
+			_disconnect(0, 1); // disconnect the first client
 		int acceptRet = accept(_fds[index].fd, NULL, NULL);
 
 		if (acceptRet == -1) // no connection is present
 			break ;
 
 		ClientSocket client;
-
+		std::cout << "new fd (accept) = " << acceptRet << "\n";
 		client.setServerName(_config.getServers()[index].getName());
 		client.setFd(acceptRet);
 		client.setPort(_config.getServers()[index].getPort());
+		std::cout << "new fd client to add (accept) = " << client.getFd() << "\n";
 		_config.getClients().push_back(client);
 
 		// add the new incoming connection to the pollfd structure
@@ -125,8 +128,11 @@ void		Hub::_receiveRequest(size_t index)
 		}
 	}
 	else
-		bytes = 0;
-	
+	{std::cout << "here\n";
+		_disconnect(clientIndex, 1); // disconnect the client
+		std::cout << "here2\n";
+		//bytes = 0;
+	}
 	// PARSE THE REQUEST
 	_config.getClients()[clientIndex].addRequest();
 }
@@ -196,6 +202,7 @@ void 		Hub::_sendResponse(size_t index)
 	{
 		// we can use send() ( without flag parameter, send is equivalent to write() )
 		// so write into the _fds[i].fd the content of buffer
+		std::cout << "fd to send response = " << _fds[index].fd << "  at index = " << index << "\n";
 		int bytes = write(_fds[index].fd, &buffer[0], buffer.size());
 
 		if (bytes <= 0)
@@ -205,8 +212,34 @@ void 		Hub::_sendResponse(size_t index)
 		// finished to write so we are now waiting for reading
 		_fds[index].events = POLLIN;
 	}
+	std::cout << "index of client fd to close = " << clientIndex << "  fd = " << _config.getClients()[clientIndex].getFd() << "\n"; 
+	_disconnect(clientIndex, 1); // _disconnect client
 }
 
+void		Hub::_disconnect(size_t index, bool type)
+{
+	if (type == 0)
+	{
+		std::cout << "Need to disconnect server here" << index << "\n";
+		_output("Connection closed", _config.getServers()[index].getSocket().getFd());
+		close(_config.getServers()[index].getSocket().getFd());
+		_config.getServers().erase(_config.getServers().begin() + index);
+		for (size_t i = index; i < _nfds; i++)
+			_fds[i] = _fds[i + 1];
+	}
+	else 
+	{
+		std::cout << "Need to disconnect client here" << index << "\n";
+		_output("Connection closed", _config.getClients()[index].getFd());
+		close(_config.getClients()[index].getFd());
+		_config.getClients().erase(_config.getClients().begin() + index);
+		for (size_t i = index + _config.getServers().size(); i < _nfds; i++)
+			_fds[i] = _fds[i + 1];	
+	}
+	_nfds--;
+
+
+}
 
 void			Hub::_output(std::string msg, int fd)
 {

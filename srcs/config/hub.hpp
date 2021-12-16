@@ -23,6 +23,7 @@ class Hub
 		void				_receiveRequest(size_t index);
 		void				_prepareResponse(size_t index);
 		void 				_sendResponse(size_t index);
+		void				_disconnect(size_t index, bool type);
 		void				_output(std::string msg, int fd);
 
 

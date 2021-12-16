@@ -215,8 +215,8 @@ int			Request::parse(const std::string &request)
 	std::string tmp;
 	size_t 		i = 0;
 
-	if (!request.size())
-		return (400);
+	// if (!request.size())
+	// 	return (400);
 	initHeaders();
 	i = request.find_first_of('\n');
 	line = request.substr(0, i);
