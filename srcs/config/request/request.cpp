@@ -177,17 +177,31 @@ int			Request::parseHeader(const std::string &request, size_t &i)
 	return (_ret);
 }
 
-// void		Request::setAcceptedLanguages()
-// {
-// 	std::string value = _headers["Accept-Language"];
-// 	std::string lang;
-// 	float		weight;
+// The Accept-Language request HTTP header indicates the natural language and locale that the client prefers
+void		Request::setAcceptedLanguages()
+{
+	std::string 				value = _headers["Accept-Language"];
+	std::string 				lang;
+	std::vector<std::string>	langVec;
+	size_t						i;
+	float						weight;
 
-// 	if (value.size() < 5)
-// 		return ;
-	
-	
-// }
+	if (value.size() < 5)
+		return ;
+	langVec = splitString(value, ',');
+	std:: cout << value << std::endl;
+	for (std::vector<std::string>::iterator it = langVec.begin(); it != langVec.end(); it++)
+	{
+		weight = 0.0;
+		lang.assign((*it), 0, (*it).find_first_of(';'));
+		i = (*it).find_last_of('=');
+		if (i != std::string::npos)
+			weight = atof((*it).substr(i + 1).c_str());
+		else
+			weight = 1.0;
+		_acceptedLang.push_back(std::pair<std::string, float>(lang, weight));
+	}
+}
 
 void		Request::parsebody(const std::string &request)
 {
@@ -215,10 +229,11 @@ int			Request::parse(const std::string &request)
 	i = tmp.find_first_of('\n') + 1;
 	// Parsing each line of the header assigning values to the corresponding keys
 	parseHeader(tmp, i);
+	setAcceptedLanguages();
 	if (tmp.size())
 		tmp.assign(request, i, std::string::npos);
 	parsebody(tmp);
-	
+	// debug();
 	return (_ret);
 }
 
@@ -283,7 +298,8 @@ Request			&Request::operator=(const Request &obj)
 
 void			Request::debug()
 {
-	std::map<std::string, std::string>::iterator it;
+	std::map<std::string, std::string>::iterator 			it;
+	std::vector<std::pair<std::string, float> >::iterator	it2;
 
 	std::cout << "\n***** DEBUG *****\n";
 	std::cout << "_METHOD = " << _method << std::endl;
@@ -294,6 +310,10 @@ void			Request::debug()
 	std::cout << "\n***** HEADERS KEY = VALUE *****\n";
 	for (it = _headers.begin(); it != _headers.end(); it++)
 		std::cout << it->first << " = " << it->second << std::endl;
-	std::cout << "_body = \n" << _body << std::endl;
+	std::cout << "\n***** ACCEPTED LANG *****\n";
+	for (it2 = _acceptedLang.begin(); it2 != _acceptedLang.end(); it2++)
+		std::cout << (*it2).first << " = " << (*it2).second << std::endl;
+	std::cout << "\n***** BODY *****\n";
+	std::cout << _body << std::endl;
 	std::cout << "\n***** END OF DEBUG *****\n";
 }
