@@ -85,8 +85,7 @@ int		Request::parseFirstLine(std::string line)
 
 	// ASSIGNING METHOD
 	i = line.find_first_of(' ');
-	i++;
-	arg.assign(line, 0, i);
+	arg.assign(line, 0, ++i);
 	line.assign(line, i, std::string::npos);
 	if (i == std::string::npos)
 	{
@@ -97,8 +96,7 @@ int		Request::parseFirstLine(std::string line)
 
 	// ASSIGNING PATH
 	i = line.find_first_of(' ');
-	i++;
-	arg.assign(line, 0, i);
+	arg.assign(line, 0, ++i);
 	line.assign(line, i, std::string::npos);
 	if (i == std::string::npos)
 	{
@@ -109,8 +107,7 @@ int		Request::parseFirstLine(std::string line)
 
 	// ASSIGNING VERSION
 	i = line.find_first_of('\n');
-	i--;
-	arg.assign(line, 0, i);
+	arg.assign(line, 0, --i);
 	if (i == std::string::npos)
 	{
 		std::cerr << "No HTTP version" << std::endl;
