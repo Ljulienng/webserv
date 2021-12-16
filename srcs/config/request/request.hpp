@@ -10,13 +10,13 @@ class Request
 private:
 	// const std::string 	&_rawRequest;
 
-	std::string							_method;
-	std::string							_path;
-	std::string							_version;
-	std::map<std::string, std::string>	_headers; 
-	std::string							_body;
-	int									_port;
-	int									_ret;
+	std::string									_method;
+	std::string									_path;
+	std::string									_version;
+	std::map<std::string, std::string>			_headers;
+	std::vector<std::pair<std::string, float> >	_acceptedLang; 
+	std::string									_body;
+	int											_ret;
 
 public: 
 	Request();
@@ -32,6 +32,7 @@ public:
 	std::string		nextLine(const std::string &request, size_t &i);
 	void			storeKeyValue(const std::string &line);
 	int				parseHeader(const std::string &request, size_t &i);
+	void			setAcceptedLanguages();
 	void			parsebody(const std::string &request);
 	int 			parse(const std::string &request);
 
@@ -44,7 +45,6 @@ public:
 	std::map<std::string, std::string>	&getHeaders();
 	std::string                         getHeader(std::string key);
 	std::string							&getBody();
-	int									getPort();
 
 	/* DEBUG */
 	void								debug();

@@ -1,6 +1,17 @@
 #include "str.hpp"
 
-void			capitalizeString(std::string &str)
+std::vector<std::string>	splitString(std::string &str, char c)
+{
+	std::istringstream			strStream(str);
+	std::string					tmp;
+	std::vector<std::string>	strVector;
+
+	while(std::getline(strStream, tmp, c))
+		strVector.push_back(tmp);
+	return (strVector);
+}
+
+void						capitalizeString(std::string &str)
 {
 	size_t i = 0;
 
@@ -13,13 +24,13 @@ void			capitalizeString(std::string &str)
 	// }
 }
 
-std::string		&removeChar(std::string &str, char c)
-{
+std::string					&removeChar(std::string &str, char c)
+{	
 	str.erase(remove(str.begin(), str.end(), c), str.end());
 	return str;
 }
 
-std::string		&trimChar(std::string &str)
+std::string					&trimChar(std::string &str)
 {
 	str = removeChar(str, ' ');
 	str = removeChar(str, '\n');
