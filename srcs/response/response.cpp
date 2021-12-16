@@ -1,4 +1,5 @@
 #include "response.hpp"
+#include "utils.hpp"
 
 void            Response::_updateMessage()
 {
@@ -6,25 +7,40 @@ void            Response::_updateMessage()
     _message = _httpVersion + " ";
 
     // append http status
-    std::stringstream   ss;
-    ss << _httpStatus.getCode();
-    _message += ss.str() + " " + _httpStatus.getMessage() + "\r\n";;
+    std::stringstream   stream;
+    stream << _httpStatus.getCode();
+    _message += stream.str() + " " + _httpStatus.getMessage() + "\r\n";;
 
     // append headers
     std::map<std::string, std::string>::iterator headerIterator = _headers.begin();
     for ( ; headerIterator != _headers.end(); headerIterator++)
         _message += headerIterator->first + ": " + headerIterator->second + "\r\n";
-    _message += "\r\n";
+    // _message += "\r\n";
     
-    // append content
-    _message += _content;
+    // // append content
+    // _message += _content;
+
+    // TEST minimum content-->>   
+
+    _message += "Content-length: 49\r\n";
+    _message += "Content-Type: text/html; charset=UTF-8\r\n";
+
+    _message += "\r\n";
+    _message += "<html><body><h1>Hello world !</h1></body></html>";
 }
 
 /* SETTERS */
 
-void        Response::setContent(std::string content)
+void        Response::setHeader(std::string key, std::string value)
+{
+    _headers.insert(std::pair<std::string, std::string>(key, value));
+}
+
+void        Response::setContent(std::string content, std::string contentType)
 {
     _content = content;
+    setHeader("Content-Type", contentType);
+    setHeader("Content-Length", utils::myItoa(content.size()));
 }
 
 void        Response::setStatus(HttpStatus status)
@@ -36,32 +52,24 @@ void        Response::setStatus(HttpStatus status)
 
 /* get all headers */
 std::map<std::string, std::string>         &Response::getHeaders()
-{
-    return  _headers;
-}
+{ return  _headers; }
 
 /* get one header value thanks to its key */
 std::string         Response::getHeader(std::string key)
 {
-    if (this->getHeaders().find(key) != this->getHeaders().end())
-        return (this->getHeaders().find(key)->second);
-    return (NULL);
+    if (getHeaders().find(key) != getHeaders().end())
+        return (getHeaders().find(key)->second);
+    return std::string("");
 }
 
 std::string         &Response::getHttpVersion()
-{
-    return  _httpVersion;
-}
+{ return  _httpVersion; }
 
 HttpStatus          &Response::getHttpStatus()
-{
-    return _httpStatus;
-}
+{ return _httpStatus; }
 
 std::string         &Response::getContent()
-{
-    return  _content;
-}
+{ return  _content; }
 
 std::string         &Response::getMessage()
 {
@@ -79,17 +87,73 @@ Response::Response() :
 			// to be completed if new attributes
 {}
 
-Response::Response(Request &request) : 
+// std::string     parseUri(std::string uri)
+// {
+//     std::string newUri;
+//     std::string delimiter = "/";
+// 	std::list<std::string> mylist;
+
+//     size_t pos = 0;
+// 	std::string token;
+//     while ((pos = uri.find(delimiter)) != std::string::npos)
+//     {
+// 		token = uri.substr(0, pos);
+// 		if (token == "..")
+// 		{
+// 			if (!mylist.empty())
+// 				mylist.pop_back();
+// 		}
+// 		else if (token == "."|| token == "")
+// 			;
+// 		else 
+// 		{
+// 			mylist.push_back("/" + token);
+// 		}
+// 		uri.erase(0, pos + delimiter.length());
+// 	}
+
+//     if (token == "..")
+// 	{
+// 		if(!mylist.empty())
+// 			mylist.pop_back();
+// 	}
+// 	else if (uri == ".")
+// 		;
+// 	else 
+// 		mylist.push_back("/" + uri);
+
+//     if (mylist.empty())
+// 		newUri = "/";
+// 	for (std::list<std::string>::iterator it=mylist.begin(); it != mylist.end(); ++it)
+// 		newUri += *it;
+
+//     return newUri;
+// }
+
+Response::Response(Request &request, Configuration &config, std::string serverName) : 
         _headers(),
-        _httpVersion(request.getVersion()),
+        _httpVersion("HTTP/1.1"),
         _httpStatus(200),
         _content(),
         _message()
 {
-    // build the response thanks to the request
+    // we set some headers
+    setHeader("Server", "Webserv_42");
+    if (request.getHeader("Connection") == "close")
+        setHeader("Connection", "close");
+    else
+        setHeader("Connection", "keep-alive");
+    setHeader("Date", utils::getTimestamp());
 
-    // need to get the uri store in the request
-    // get the location bloc concerned
+    // build the response thanks to the request
+    // first need to get the server and location to use for this response (context)
+    Server &server = config.findServer(serverName);
+    Location &location = server.findLocation(request.getPath());
+    (void)location;
+
+    // then we need to transform the uri request to match in the server
+    // std::string parsedUri = parseUri(request.getPath());
+
     // get the method -> if no method -> set status and print error
     // choose the execution beetween : 
     //      - need cgi ?  if yes -> exec cgi

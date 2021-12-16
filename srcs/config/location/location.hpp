@@ -7,15 +7,19 @@
 class Location
 {
     private :
-		std::vector<std::string>	_acceptedMethod; // GET POST DELETE
+	
+		std::vector<std::string>	_acceptedMethod;
 		std::string					_path;
 		std::string					_root;
 		std::string					_defaultFile;
 		bool						_autoindex;
 		size_t						_maxBodySize; 
 		std::pair<int, std::string>	_redirection;
+		// need to set the type of action : cgi, redirection or nothing
+
 
     public :
+
         Location();
 		Location(const Location &src);
 		~Location();
@@ -41,6 +45,38 @@ class Location
 		bool						&getAutoindex();
 		size_t						&getMaxBodySize();
 		std::pair<int, std::string>	&getRedirection();
+};
+
+
+// NON MEMBER FUNCTIONS
+int isValidExpression(std::string expression, const char **validExpressions);
+
+static const char* configExpression[] = {
+	"cgi",
+	"max_body_size",
+	"error_pages",
+	"server",
+	0
+};
+
+static const char* serverExpression[] = {
+	"server_name",
+	"ip",
+	"port",
+	"max_body_size",
+	"location",
+	0
+};
+
+static const char* locationExpression[] = {
+	"path",
+	"root",
+	"accepted_methods",
+	"default_file",
+	"autoindex",
+	"max_body_size",
+	"redirection",
+	0
 };
 
 #endif

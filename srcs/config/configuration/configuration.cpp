@@ -164,8 +164,7 @@ size_t	Configuration::_parseServer(str_ite it, str_ite ite)
 	server.setServerDatas(mapServer);
 
 	// add the new server to the array of servers
-	static size_t indexServer = 0;
-	_servers.insert(std::pair<size_t/*std::string*/, Server>(indexServer++/*server.getName()*/, server));
+	_servers.push_back(server);
 
 	return (std::distance(start, it));
 }
@@ -239,22 +238,19 @@ void	Configuration::parse()
 }
 
 /*
-** start socket for each server of the configuration file
+** search a server thanks to its name
 */
-void		Configuration::startSockets()
+Server 		&Configuration::findServer(std::string serverName)
 {
-	std::map<size_t/*std::string*/, Server>::iterator	it = _servers.begin();
-	for ( ; it != _servers.end(); it++)
-	{
-		it->second.start();
-		_fds[_nfds].fd = it->second.getSocket().getFd();
-		_fds[_nfds].events = POLLIN;
-		_nfds++;		
-	}
+	Server *serverMatch = &_servers[0];
+
+	for (size_t i = 0; i < _servers.size(); i++)
+		if (_servers[i].getName() == serverName)
+			serverMatch = &_servers[i];
+	return *serverMatch;
 }
 
 /* SETTERS */
-
 void	Configuration::setConfigDatas(std::map<std::string, std::string> mapConfig)
 {
 	std::map<std::string, std::string>::iterator it = mapConfig.begin();
@@ -289,77 +285,48 @@ void	Configuration::setMaxBodySize(std::string maxBodySize)
 
 	_maxBodySize = val.getNum();
 
-	// the attribute can be present in config, server and location scope
-	// so we need to make a cascade copy if not set in sub scopes
-	std::map<size_t/*std::string*/, Server>::iterator itServ = _servers.begin();
-	for ( ; itServ != _servers.end(); itServ++)
+	for (size_t i = 0; i < _servers.size(); i++)
 	{
-		if (itServ->second.getMaxBodySize() == 0)
-			itServ->second.setMaxBodySize(maxBodySize);
-		std::vector<Location>::iterator			itLoc = itServ->second.getLocations().begin();
-		for ( ; itLoc != itServ->second.getLocations().end(); itLoc++)
+		if (_servers[i].getMaxBodySize() == 0)
+			_servers[i].setMaxBodySize(maxBodySize);
+		for (size_t j = 0; j < _servers[i].getLocations().size(); j++)
 		{
-			if (itLoc->getMaxBodySize() == 0)
+			if (_servers[i].getLocations()[j].getMaxBodySize() == 0)
 			{
 				std::stringstream ss;
-				ss << itServ->second.getMaxBodySize();
-				itLoc->setMaxBodySize(ss.str());
+				ss << _servers[i].getMaxBodySize();
+				_servers[i].getLocations()[j].setMaxBodySize(ss.str());
 			}
 		}
 	}
+
 }
 
-void		Configuration::setNfds(int nfds)
-{
-	_nfds = nfds;
-}
 
 /* GETTERS */
-
 std::pair<std::string, std::string>		&Configuration::getCgi()
-{
-	return _cgi;
-}
+{ return _cgi; }
 
 size_t		&Configuration::getMaxBodySize()
-{
-	return _maxBodySize;
-}
+{ return _maxBodySize; }
 
 std::map<int, std::string>		&Configuration::getErrorPages()
-{
-	return _errorPages;
-}
+{ return _errorPages; }
 
-std::map<size_t/*std::string*/, Server>		&Configuration::getServers()
-{
-	return _servers;
-}
+std::vector<Server>		&Configuration::getServers()
+{ return _servers; }
 
-std::map<size_t, ClientSocket>	&Configuration::getClients()
-{
-	return _clients;
-}
+std::vector<ClientSocket>	&Configuration::getClients()
+{ return _clients; }
 
-struct pollfd *		Configuration::getFds()
-{
-	return _fds;
-}
-
-size_t		Configuration::getNfds()
-{
-	return _nfds;
-}
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-
 Configuration::Configuration() : 	_configFile(),
 									_cgi(),
 									_maxBodySize(),
 									_errorPages(),
 									_servers(),
-									_clients(),
-									_nfds()
+									_clients()
 									// to be completed if new attributes
 {}
 
@@ -369,12 +336,10 @@ Configuration::Configuration(std::string configFile) :
 									_maxBodySize(),
 									_errorPages(),
 									_servers(),
-									_clients(),
-									_nfds()						
+									_clients()					
 									// to be completed if new attributes
 {
 	_parseConfigPath();
-	memset(_fds, 0, sizeof(_fds));
 }
 
 Configuration::Configuration(const Configuration &src)
@@ -394,7 +359,6 @@ Configuration &Configuration::operator=(const Configuration &src)
 		_errorPages = src._errorPages;
 		_servers = src._servers;
 		_clients = src._clients;
-		_nfds = src._nfds;
 		// to be completed if new attributes
 	}
 	return (*this);
@@ -426,8 +390,6 @@ void	Configuration::debug()
 	std::map<int, std::string>::iterator itErr = _errorPages.begin();
 	for (; itErr != _errorPages.end(); itErr++)
 		std::cout << " - errorPages = " << itErr->first << ":" << itErr->second << "\n";
-	
-	std::map<size_t, Server>::iterator itServ = _servers.begin();
-	for (size_t i = 0; itServ != _servers.end(); itServ++, i++)
-		itServ->second.debug(i);
+	for (size_t i = 0; i < _servers.size(); i++)
+		_servers[i].debug(i);
 }

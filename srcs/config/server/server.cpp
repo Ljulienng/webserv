@@ -52,6 +52,76 @@ void	Server::addLocation(Location location)
 	_locations.push_back(location);
 }
 
+/*
+** return a location bloc if : uri request = uri in location bloc
+*/
+Location	*Server::_findExactLocation(std::string uriRequest)
+{
+	for (size_t i = 0; i < _locations.size(); i++)
+		if (_locations[i].getPath() == uriRequest)
+			return &_locations[i];
+	return NULL;
+}
+
+/*
+** check if the location path match with the URI request
+** for example "localhost:8080/images" matches with "location path = '/' "
+** so we must have all the path in the request
+*/
+bool	_matchLocation(std::string locationPath, std::string uriRequest)
+{
+	if (uriRequest.size() < locationPath.size())
+		return false;
+
+	std::list<std::string>	locList = tokenize(locationPath, '/');
+	std::list<std::string>	reqList = tokenize(uriRequest, '/');
+	std::list<std::string>::iterator loc = locList.begin();
+	std::list<std::string>::iterator req = reqList.begin();
+
+	for ( ; req != reqList.end(); ++loc, ++req)
+	{
+		if (loc == locList.end())
+			break ;
+		if (loc != locList.end() && *loc != *req)
+			return false;
+	}
+	return true;
+}
+
+/*
+** it's possible that we have several location blocks which match the request
+** so we have to determine which one is more precise
+*/
+bool	_isMorePreciseLocation(std::string locationPath, std::string prevLocationPath)
+{
+	//std::cout << "[_isMorePreciseLocation]   locpath = " << locationPath << "   prevLocationPath = " << prevLocationPath << "\n";
+	return (locationPath.size() > prevLocationPath.size());
+}
+
+/*
+** search a location block thanks to the uri (request)
+*/
+Location 	&Server::findLocation(std::string uriRequest)
+{
+	Location	*locationMatch = _findExactLocation(uriRequest);
+	size_t 		indexMatch = 0;
+
+	if (locationMatch != NULL)
+		return *locationMatch;
+	for (size_t i = 0; i < _locations.size(); i++)
+	{
+		if (_matchLocation(_locations[i].getPath(), uriRequest))
+		{
+			if (_isMorePreciseLocation(_locations[i].getPath(), _locations[indexMatch].getPath()))
+			{
+				indexMatch = i;
+				//std::cout << "Choose location = " << _locations[indexMatch].getPath() << "\n";
+			}
+		}
+	}
+	return _locations[indexMatch];
+}
+
 /* SETTERS */
 void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 {
@@ -113,7 +183,6 @@ void	Server::setPort(std::string port)
 void	Server::setMaxBodySize(std::string maxBodySize)
 {
 	Str val(maxBodySize);
-	
 	_maxBodySize = val.getNum();
 }
 
@@ -121,34 +190,22 @@ void	Server::setMaxBodySize(std::string maxBodySize)
 /* GETTERS */
 
 std::string		&Server::getName()
-{
-	return _name;
-}
+{ return _name; }
 
 std::string		&Server::getIp()
-{
-	return _ip;
-}
+{ return _ip; }
 
 unsigned short		&Server::getPort()
-{
-	return _port;
-}
+{ return _port; }
 
 std::vector<Location>	&Server::getLocations()
-{
-	return _locations;
-}
+{ return _locations; }
 
 size_t		&Server::getMaxBodySize()
-{
-	return _maxBodySize;
-}
+{ return _maxBodySize; }
 
 Socket 		&Server::getSocket()
-{
-	return _socket;
-}
+{ return _socket; }
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */

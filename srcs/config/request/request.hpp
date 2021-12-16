@@ -43,6 +43,7 @@ public:
 	std::string							&getPath();
 	std::string							&getVersion();
 	std::map<std::string, std::string>	&getHeaders();
+	std::string                         getHeader(std::string key);
 	std::string							&getBody();
 
 	/* DEBUG */

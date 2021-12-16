@@ -10,7 +10,8 @@ SRC_FILES	= 	webserv.cpp					\
 				httpStatus.cpp				\
 				file.cpp					\
 				mime.cpp					\
-				str.cpp	
+				str.cpp						\
+				utils.cpp
 
 INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/config/configuration/configuration.hpp			\
@@ -24,4 +25,5 @@ INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/httpStatus/httpStatus.hpp						\
 				srcs/utils/file/file.hpp							\
 				srcs/utils/mime/mime.hpp							\
-				srcs/utils/str/str.hpp
+				srcs/utils/str/str.hpp								\
+				srcs/utils/utils.hpp

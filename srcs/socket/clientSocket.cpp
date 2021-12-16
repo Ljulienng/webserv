@@ -29,29 +29,35 @@ void			ClientSocket::setRequests(std::queue<Request> requests)
 	_requests = requests;
 }
 
+void            ClientSocket::setServerName(std::string serverName)
+{
+	_serverName = serverName;
+}
+
 /* GETTERS */ 
 unsigned short		&ClientSocket::getPort()
-{
-    return _port;
-}
+{ return _port; }
 
 std::string  		&ClientSocket::getBuffer()
-{
-    return _buffer;
-}
+{ return _buffer; }
 
 std::queue<Request>	&ClientSocket::getRequests()
-{
-	return _requests;
-}
+{ return _requests; }
 
 std::queue<Response>    &ClientSocket::getResponses()
-{
-	return		_responses;
-}
+{ return		_responses; }
+
+std::string			&ClientSocket::getServerName()
+{ return _serverName; }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-ClientSocket::ClientSocket() : Socket(), _port(), _buffer(), _requests(), _responses()
+ClientSocket::ClientSocket() :
+			Socket(),
+			_port(),
+			_buffer(),
+			_requests(),
+			_responses(),
+			_serverName()
 			// to be completed if new attributes
 {}
 
@@ -72,6 +78,7 @@ ClientSocket &ClientSocket::operator=(const ClientSocket &src)
 		_buffer = src._buffer;
 		_requests = src._requests;
 		_responses = src._responses;
+		_serverName = src._serverName;
 		// to be completed if new attributes
 	}
 	return (*this);
