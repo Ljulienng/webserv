@@ -64,11 +64,45 @@ Location	*Server::_findExactLocation(std::string uriRequest)
 }
 
 /*
+** check if the location path match with the URI request
+** for example "localhost:8080/images" matches with "location path = '/' "
+** so we must have all the path in the request
+*/
+bool	_matchLocation(std::string locationPath, std::string uriRequest)
+{
+	if (uriRequest.size() < locationPath.size())
+		return false;
+
+	std::string::iterator loc = locationPath.begin();
+	std::string::iterator req = uriRequest.begin();
+	for ( ; req != uriRequest.end(); loc++, req++)
+	{
+		if (loc != locationPath.end() && *loc != *req)
+			return false;
+	}
+	return true;
+}
+
+bool	_isMorePreciseLocation(std::string locationPath, std::string prevLocationPath)
+{
+
+}
+
+/*
 ** search a location block thanks to the uri (request)
 */
 Location 	&Server::findLocation(std::string uriRequest)
 {
-	Location	*locationMatch = _findExactLocation(uriRequest);	
+	Location	*locationMatch = _findExactLocation(uriRequest);
+
+	if (locationMatch != NULL)
+		return *locationMatch;
+	for (size_t i = 0; i < _locations.size(); i++)
+	{
+		if (_matchLocation(_locations[i].getPath(), uriRequest))
+			if (_isMorePreciseLocation(_locations[i].getPath(), locationMatch->getPath()))
+				locationMatch = &_locations[i];
+	}
 	return *locationMatch;
 }
 
