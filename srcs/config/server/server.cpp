@@ -70,17 +70,19 @@ Location	*Server::_findExactLocation(std::string uriRequest)
 */
 bool	_matchLocation(std::string locationPath, std::string uriRequest)
 {
-	std::cout << "[_matchLocation]   locpath = " << locationPath << "   uriRequest = " << uriRequest << "\n";
 	if (uriRequest.size() < locationPath.size())
 		return false;
 
-	std::string::iterator loc = locationPath.begin();
-	std::string::iterator req = uriRequest.begin();
-	for ( ; req != uriRequest.end(); ++loc, ++req)
+	std::list<std::string>	locList = tokenize(locationPath, '/');
+	std::list<std::string>	reqList = tokenize(uriRequest, '/');
+	std::list<std::string>::iterator loc = locList.begin();
+	std::list<std::string>::iterator req = reqList.begin();
+
+	for ( ; req != reqList.end(); ++loc, ++req)
 	{
-		if (loc == locationPath.end())
+		if (loc == locList.end())
 			break ;
-		if (loc != locationPath.end() && *loc != *req)
+		if (loc != locList.end() && *loc != *req)
 			return false;
 	}
 	return true;
@@ -92,7 +94,7 @@ bool	_matchLocation(std::string locationPath, std::string uriRequest)
 */
 bool	_isMorePreciseLocation(std::string locationPath, std::string prevLocationPath)
 {
-	std::cout << "[_isMorePreciseLocation]   locpath = " << locationPath << "   prevLocationPath = " << prevLocationPath << "\n";
+	//std::cout << "[_isMorePreciseLocation]   locpath = " << locationPath << "   prevLocationPath = " << prevLocationPath << "\n";
 	return (locationPath.size() > prevLocationPath.size());
 }
 
@@ -113,7 +115,7 @@ Location 	&Server::findLocation(std::string uriRequest)
 			if (_isMorePreciseLocation(_locations[i].getPath(), _locations[indexMatch].getPath()))
 			{
 				indexMatch = i;
-				std::cout << "Choose location = " << _locations[indexMatch].getPath() << "\n";
+				//std::cout << "Choose location = " << _locations[indexMatch].getPath() << "\n";
 			}
 		}
 	}

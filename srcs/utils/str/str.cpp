@@ -27,8 +27,24 @@ std::string		&trimChar(std::string &str)
 	return str;
 }
 
+std::list<std::string>	tokenize(std::string str, char delim)
+{
+	std::list<std::string>	tokens;
 
-bool Str::_isDelim(char c, std::string delimiters)
+	for (size_t i = 0; i < str.size(); i++)
+	{
+		while (str[i] == delim  && i < str.size())
+			i++;
+		size_t start = i;
+		while (str[i] != delim && i < str.size())
+			i++;
+		tokens.push_back(str.substr(start, i - start));
+	}
+	return tokens;
+}
+
+
+bool Str::_isDelim(char c, std::string delimiters) 
 {
 	for (size_t i = 0; i < delimiters.size(); i++)
 	{
@@ -44,16 +60,13 @@ bool Str::_isDelim(char c, std::string delimiters)
 
 void	Str::_tokenize(std::string delimiters)
 {
-	// std::cout << "Delimiters = " << delimiters << "\n";
 	for (size_t i = 0; i < _string.size(); i++)
 	{
 		while (_isDelim(_string[i], delimiters) && i < _string.size())
 			i++;
 		size_t start = i;
-		// std::cout << "find_first_of = " << _string.find_first_of(delimiters) << "    i = " << i << "\n";
 		while (!_isDelim(_string[i], delimiters) && i < _string.size())
 			i++;
-		// std::cout << "start = " << start << "    i = " << i << "   newtoken = " << _string.substr(start, i - start) << "\n";
 		_tokens.push_back(_string.substr(start, i - start));
 	}
 }

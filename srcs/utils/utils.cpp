@@ -23,5 +23,4 @@ namespace utils {
         return stream.str();
     }
 
-
 }

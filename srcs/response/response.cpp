@@ -147,11 +147,12 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
 
     // build the response thanks to the request
     // first need to get the server and location to use for this response (context)
-
     Server &server = config.findServer(serverName);
-    // std::string parsedUri = parseUri(request.getPath());
     Location &location = server.findLocation(request.getPath());
     (void)location;
+
+    // then we need to transform the uri request to match in the server
+    // std::string parsedUri = parseUri(request.getPath());
 
     // get the method -> if no method -> set status and print error
     // choose the execution beetween : 

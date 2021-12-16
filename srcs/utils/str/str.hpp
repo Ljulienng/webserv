@@ -27,8 +27,9 @@ class Str
 		// std::string 				capitalizeString(std::string &str);
 };
 
-void			capitalizeString(std::string &str);
-std::string		&removeChar(std::string &str, char c);
-std::string		&trimChar(std::string &str);
+void					capitalizeString(std::string &str);
+std::string				&removeChar(std::string &str, char c);
+std::string				&trimChar(std::string &str);
+std::list<std::string>	tokenize(std::string str, char delim);
 
 #endif
