@@ -20,6 +20,8 @@ class Server
 		std::vector<Location>		_locations;
 		Socket						_socket;
 		
+		Location		*_findExactLocation(std::string uriRequest);
+		
 
     public :
 
@@ -37,7 +39,7 @@ class Server
 		void		setNonBlock();
 		void		listenSocket();
 		void		addLocation(Location location);
-		Location 	&findLocation(std::string uri);
+		Location	&findLocation(std::string uriRequest);
 
 		// SETTERS
 		void		setServerDatas(std::map<std::string, std::string> mapServer);

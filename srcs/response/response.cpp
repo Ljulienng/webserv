@@ -87,6 +87,48 @@ Response::Response() :
 			// to be completed if new attributes
 {}
 
+// std::string     parseUri(std::string uri)
+// {
+//     std::string newUri;
+//     std::string delimiter = "/";
+// 	std::list<std::string> mylist;
+
+//     size_t pos = 0;
+// 	std::string token;
+//     while ((pos = uri.find(delimiter)) != std::string::npos)
+//     {
+// 		token = uri.substr(0, pos);
+// 		if (token == "..")
+// 		{
+// 			if (!mylist.empty())
+// 				mylist.pop_back();
+// 		}
+// 		else if (token == "."|| token == "")
+// 			;
+// 		else 
+// 		{
+// 			mylist.push_back("/" + token);
+// 		}
+// 		uri.erase(0, pos + delimiter.length());
+// 	}
+
+//     if (token == "..")
+// 	{
+// 		if(!mylist.empty())
+// 			mylist.pop_back();
+// 	}
+// 	else if (uri == ".")
+// 		;
+// 	else 
+// 		mylist.push_back("/" + uri);
+
+//     if (mylist.empty())
+// 		newUri = "/";
+// 	for (std::list<std::string>::iterator it=mylist.begin(); it != mylist.end(); ++it)
+// 		newUri += *it;
+
+//     return newUri;
+// }
 
 Response::Response(Request &request, Configuration &config, std::string serverName) : 
         _headers(),
@@ -107,9 +149,10 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
     // first need to get the server and location to use for this response (context)
 
     Server &server = config.findServer(serverName);
-    (void)server;
-    // Location &location = server.findLocation(request.getPath());
-
+    // std::string parsedUri = parseUri(request.getPath());
+    Location &location = server.findLocation(request.getPath());
+    (void)location;
+    
     // get the method -> if no method -> set status and print error
     // choose the execution beetween : 
     //      - need cgi ?  if yes -> exec cgi

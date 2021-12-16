@@ -53,12 +53,23 @@ void	Server::addLocation(Location location)
 }
 
 /*
+** return a location bloc if : uri request = uri in location bloc
+*/
+Location	*Server::_findExactLocation(std::string uriRequest)
+{
+	for (size_t i = 0; i < _locations.size(); i++)
+		if (_locations[i].getPath() == uriRequest)
+			return &_locations[i];
+	return NULL;
+}
+
+/*
 ** search a location block thanks to the uri (request)
 */
-Location 	&findLocation(std::string uri)
+Location 	&Server::findLocation(std::string uriRequest)
 {
-	(void)uri;
-	// Location	*locationMatch = 
+	Location	*locationMatch = _findExactLocation(uriRequest);	
+	return *locationMatch;
 }
 
 /* SETTERS */
