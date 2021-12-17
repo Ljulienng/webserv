@@ -29,21 +29,21 @@ void	Hub::process()
 		
 	// call poll and wait an infinite time
 	pollRet = poll(_fds, _nfds, -1);
-	if (pollRet < 0) // poll failed or SIGINT
-	{
-		// if (SIGINT)
-		// 	 return ;
-		// else
-		// {
-		// 	_closeAllConnections();
-		// 	exit(EXIT_FAILURE);
-		// }
-		return ;
+	// poll is a blocking function and SIGINT will unblock it
+	if (pollRet < 0)
+	{ // we use EINTR to know if it's a ctrl-c or a poll error
+		if (errno == EINTR)
+			return ;
+		else
+		{
+			_closeAllConnections();
+			exit(EXIT_FAILURE);
+		}
 	}
 	// one or more fd are readable. Need to determine which ones they are
 	for (size_t i = 0; i < _nfds; i++)
 	{
-		// loop through to find the fd that returned POLLIN and determine whether it's the listening or the active connection
+		// loop to find the fd that returned POLLIN and determine whether it's the listening or the active connection
 		if (_fds[i].revents == 0)
 			continue;
 		
@@ -72,6 +72,7 @@ void	Hub::process()
 		else
 		{
 			// std::cout << " ERROR QUIT PROGRAM\n";
+			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -139,6 +140,7 @@ void		Hub::_receiveRequest(size_t index)
 
 	// PARSE THE REQUEST
 	_config.getClients()[clientIndex].addRequest();
+	_output("Received a new request", _config.getClients()[clientIndex].getFd());
 }
 
 /*
@@ -251,7 +253,7 @@ void		Hub::_closeAllConnections()
 
 void			Hub::_output(std::string msg, int fd)
 {
-	std::cout << " [ " << fd << " ]  " << ORG << msg  << RESET << std::endl;
+	std::cout << " [ fd " << fd << " ]  " << ORG << msg  << RESET << std::endl;
 }
 
 

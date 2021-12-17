@@ -46,10 +46,8 @@ class Hub
 
 		// GETTERS
 		Configuration		&getConfig();
-		struct pollfd *		getFds();
+		struct pollfd 		*getFds();
 		size_t				getNfds();
 };
-
-
 
 #endif
