@@ -4,8 +4,11 @@
 #include "webserv.hpp"
 #include "httpStatus.hpp"
 #include "request.hpp"
+#include "utils.hpp"
 
 class Configuration;
+class Server;
+class Location;
 
 class Response
 {
@@ -17,7 +20,11 @@ class Response
         std::string                         _content;
         std::string                         _message; // the formatted message to insert to the buffer
 
-        void                                _updateMessage();
+        void        _updateMessage();
+        void        _dispatchingResponse(Request &request, Server &server, Location &location);
+        void        _getResponse();
+        void        _postResponse();
+        void        _deleteResponse();
 
     public :
 		Response();

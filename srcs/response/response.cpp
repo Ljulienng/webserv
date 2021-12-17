@@ -1,5 +1,4 @@
 #include "response.hpp"
-#include "utils.hpp"
 
 void            Response::_updateMessage()
 {
@@ -130,6 +129,21 @@ Response::Response() :
 //     return newUri;
 // }
 
+void    Response::_getResponse()
+{
+
+}
+
+void    Response::_postResponse()
+{
+
+}
+
+void    Response::_deleteResponse()
+{
+
+}
+
 /*
 ** evaluate the type of the response we need :
 **      - get
@@ -139,9 +153,17 @@ Response::Response() :
 **      - redirection
 **      - error
 */
-void      dispatchingResponse(Request &request, Server &server, Location &location)
+void      Response::_dispatchingResponse(Request &request, Server &server, Location &location)
 {
-    (void)request; (void)server; (void)location;
+    (void)server; (void)location;
+    // then we need to transform the uri request to match in the server
+    // std::string parsedUri = parseUri(request.getPath()); TO IMPLEMENT
+    if (request.getMethod() == "GET")
+        _getResponse();
+    else if (request.getMethod() == "POST")
+        _postResponse();
+    else if (request.getMethod() == "DELETE")
+        _deleteResponse();
 }
 
 Response::Response(Request &request, Configuration &config, std::string serverName) : 
@@ -162,9 +184,7 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
     // first need to get the server and location to use for this response (context)
     Server &server = config.findServer(serverName);
     Location &location = server.findLocation(request.getPath());
-    // then we need to transform the uri request to match in the server
-    // std::string parsedUri = parseUri(request.getPath()); TO IMPLEMENT
-    dispatchingResponse(request, server, location);
+    _dispatchingResponse(request, server, location);
 }
 
 Response::Response(const Response &src)
