@@ -186,7 +186,7 @@ void		Request::setAcceptedLanguages()
 	if (value.size() < 5)
 		return ;
 	langVec = splitString(value, ',');
-	std:: cout << value << std::endl;
+	// std:: cout << value << std::endl;
 	for (std::vector<std::string>::iterator it = langVec.begin(); it != langVec.end(); it++)
 	{
 		weight = 0.0;
