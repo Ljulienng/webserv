@@ -21,12 +21,14 @@ void            Response::_updateMessage()
     // _message += _content;
 
     // TEST minimum content-->>   
-
-    _message += "Content-length: 49\r\n";
+    std::string content = "<html><body><h1>Hello world !</h1></body></html>";
+    // std::cout << "content length = " << content.size() << "\n";
+    
+    _message += "Content-length: " + utils::myItoa(content.size()) + "\r\n";
     _message += "Content-Type: text/html; charset=UTF-8\r\n";
 
     _message += "\r\n";
-    _message += "<html><body><h1>Hello world !</h1></body></html>";
+    _message += content;
 }
 
 /* SETTERS */
