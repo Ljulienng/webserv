@@ -11,6 +11,7 @@ class File
 {
     private :
 		std::string			_filePath;
+		std::string			_fileContent;
 		struct stat			_fileStat;
 
     public :
@@ -28,6 +29,7 @@ class File
 
 		// GETTERS
 		std::string		&getFilePath();
+		std::string		&getFileContent();
 		struct stat		&getfileStat();
 };
 

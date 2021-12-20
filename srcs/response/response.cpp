@@ -14,17 +14,17 @@ void            Response::_updateMessage()
     std::map<std::string, std::string>::iterator headerIterator = _headers.begin();
     for ( ; headerIterator != _headers.end(); headerIterator++)
         _message += headerIterator->first + ": " + headerIterator->second + "\r\n";
-    // _message += "\r\n";
+    _message += "\r\n";
     
-    // // append content
-    // _message += _content;
+    // append content
+    _message += _content;
 
     /**************** TEST *************/   
-    std::string content = "<html><body><h1>Hello world !</h1></body></html>";   
-    _message += "Content-length: " + utils::myItoa(content.size()) + "\r\n";
-    _message += "Content-Type: text/html; charset=UTF-8\r\n";
-    _message += "\r\n";
-    _message += content;
+    // std::string content = "<html><body><h1>Hello world !</h1></body></html>";   
+    // _message += "Content-length: " + utils::myItoa(content.size()) + "\r\n";
+    // _message += "Content-Type: text/html; charset=UTF-8\r\n";
+    // _message += "\r\n";
+    // _message += content;
     /***********************************/
 }
 
@@ -40,11 +40,6 @@ void        Response::setContent(std::string content, std::string contentType)
     _content = content;
     setHeader("Content-Type", contentType);
     setHeader("Content-Length", utils::myItoa(content.size()));
-}
-
-void        Response::setStatus(HttpStatus status)
-{
-    _httpStatus = status;
 }
 
 /* GETTERS */
@@ -94,7 +89,7 @@ std::string     parseUri(Server &server, Location &location, std::string uri)
     std::string defaultFile;
 
     if (location.getRoot().empty())
-        root = "./www" ; // server.getRoot(); // a inclure dans Server
+        root = "./www/data" ; // server.getRoot(); // a inclure dans Server
     else
         root = location.getRoot();
 
@@ -120,7 +115,14 @@ std::string     getExtension(std::string filename)
     return (filename.substr(index, std::string::npos));
 }
 
-void    _getResponse(std::string _path)
+void    Response::_makeErrorResponse(int status)
+{
+    File errorFile("./www/data/error_pages/404.html");
+    _httpStatus.setStatus(status);
+    setContent(errorFile.getFileContent(), "text/html");
+}
+
+void    Response::_getResponse(std::string _path)
 {
     File        path(_path);
     Mime        extension(getExtension(_path));
@@ -131,13 +133,16 @@ void    _getResponse(std::string _path)
     {
         std::cout << "Regular file\n";
         std::string mime = extension.getMime();
-        // set header content-type
         // set status ok
-        // set content (getFileContent)
+        _httpStatus.setStatus(200);
+        // set content-type + content-length + content
+        setContent(path.getFileContent(), extension.getMime());
     }
     else
     {
-        // ERROR
+        std::cout << "400 error\n";
+        // send error response and page 404.html
+        _makeErrorResponse(400);
     }
 }
 

@@ -91,17 +91,20 @@ void    HttpStatus::_setExistingStatus()
 	_existingStatus[511] = "Network authentication required";
 }
 
+/* SETTERS */
+void            HttpStatus::setStatus(int status)
+{
+	_code = status;
+	_message = _existingStatus.find(_code)->second;
+}
 
 /* GETTERS */
 size_t          &HttpStatus::getCode()
-{
-	return _code;
-}
+{ return _code; }
 
 std::string     &HttpStatus::getMessage()
-{
-	return _message;
-}
+{ return _message; }
+
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 HttpStatus::HttpStatus() : _code(), _message()

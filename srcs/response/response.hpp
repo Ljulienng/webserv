@@ -21,6 +21,8 @@ class Response
 
         void        _updateMessage();
         void        _dispatchingResponse(Request &request, Server &server, Location &location);
+        void        _getResponse(std::string _path);
+        void        _makeErrorResponse(int status);
 
     public :
 		Response();
@@ -31,7 +33,6 @@ class Response
 
         // SETTERS
         void                                setHeader(std::string key, std::string value);
-        void                                setStatus(HttpStatus status);
         void                                setContent(std::string content, std::string contentType);
 
         // GETTERS

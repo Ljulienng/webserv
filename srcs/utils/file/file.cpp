@@ -35,20 +35,31 @@ std::string	File::findContentType(std::string extension)
 
 /* GETTERS */
 std::string		&File::getFilePath()
-{
-	return _filePath;
-}
+{ return _filePath; }
+
+std::string		&File::getFileContent()
+{ return _fileContent; }
 
 struct stat		&File::getfileStat()
-{
-	return _fileStat;
-}
+{ return _fileStat; }
+
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
+File::File() :
+	_filePath(),
+	_fileContent(),
+	_fileStat() {}
 
-File::File() : _filePath(), _fileStat() {}
-
-File::File(std::string filePath) : _filePath(filePath), _fileStat() {}
+File::File(std::string filePath) : 
+	_filePath(filePath),
+	_fileContent(),
+	_fileStat()
+{
+	std::ifstream ifs;
+	ifs.open(filePath.c_str());
+	std::getline(ifs, _fileContent, '\0');
+	ifs.close();
+}
 
 File::File(const File &src)
 {

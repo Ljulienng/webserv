@@ -22,6 +22,9 @@ class HttpStatus
 
         std::string     findStatusMessage(size_t code);
 
+        // SETTERS
+        void            setStatus(int status);
+        
         // GETTERS
         size_t          &getCode();
         std::string     &getMessage();
