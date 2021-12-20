@@ -1179,11 +1179,22 @@ void    Mime::_setExistingMimes()
 		_existingMimes["zmm"] = "application/vnd.handheld-entertainment+xml";
 }
 
-/* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
-Mime::Mime()
+/* GETTERS */
+std::string     &Mime::getMime()
+{ return _mime; }
+
+
+/* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
+Mime::Mime() : _mime()
 {
     _setExistingMimes();
+}
+
+Mime::Mime(std::string extension)
+{
+    _setExistingMimes();
+	_mime = findMime(extension);
 }
 
 Mime::Mime(const Mime &src)

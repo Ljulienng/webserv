@@ -88,38 +88,29 @@ void	Location::setRedirection(std::string redirection)
 }
 
 /* GETTERS */
-
 std::vector<std::string>	&Location::getAcceptedMethod()
-{ 
-	return _acceptedMethod;
-}
+{ return _acceptedMethod; }
 
 std::string		&Location::getPath()
-{ 
-	return _path;
-}
+{ return _path; }
 
 std::string		&Location::getRoot()
-{ 
-	return _root;
-}
+{ return _root; }
+
+std::string					&Location::getDefaultFile()
+{ return _defaultFile; }
 
 bool	&Location::getAutoindex()
-{
-	return _autoindex;
-}
+{ return _autoindex; }
 
 size_t	&Location::getMaxBodySize()
-{
-	return _maxBodySize;
-}
+{ return _maxBodySize; }
 
 std::pair<int, std::string>	&Location::getRedirection()
-{
-	return _redirection;
-}
-/* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
+{ return _redirection; }
 
+
+/* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 Location::Location()  : _acceptedMethod(),
 						_path(),
 						_root(),

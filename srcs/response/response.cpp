@@ -86,60 +86,67 @@ Response::Response() :
 			// to be completed if new attributes
 {}
 
-// std::string     parseUri(std::string uri)
-// {
-//     std::string newUri;
-//     std::string delimiter = "/";
-// 	std::list<std::string> mylist;
+std::string     parseUri(Server &server, Location &location, std::string uri)
+{
+    (void)server;
+    std::string newUri;
+    std::string root;
+    std::string defaultFile;
 
-//     size_t pos = 0;
-// 	std::string token;
-//     while ((pos = uri.find(delimiter)) != std::string::npos)
-//     {
-// 		token = uri.substr(0, pos);
-// 		if (token == "..")
-// 		{
-// 			if (!mylist.empty())
-// 				mylist.pop_back();
-// 		}
-// 		else if (token == "."|| token == "")
-// 			;
-// 		else 
-// 		{
-// 			mylist.push_back("/" + token);
-// 		}
-// 		uri.erase(0, pos + delimiter.length());
-// 	}
+    if (location.getRoot().empty())
+        root = "./www" ; // server.getRoot(); // a inclure dans Server
+    else
+        root = location.getRoot();
 
-//     if (token == "..")
-// 	{
-// 		if(!mylist.empty())
-// 			mylist.pop_back();
-// 	}
-// 	else if (uri == ".")
-// 		;
-// 	else 
-// 		mylist.push_back("/" + uri);
+    if (location.getDefaultFile().empty())
+        defaultFile = "index.html"; // server.getDefaultFile(); // a inclure dans Server
+    else
+        defaultFile = location.getDefaultFile();
 
-//     if (mylist.empty())
-// 		newUri = "/";
-// 	for (std::list<std::string>::iterator it=mylist.begin(); it != mylist.end(); ++it)
-// 		newUri += *it;
+    // test
+    if (uri[uri.size() - 1] == '/')
+        newUri = root + uri + defaultFile;
+    else 
+        newUri = root + uri + "/" + defaultFile;
 
-//     return newUri;
-// }
+    return newUri;
+}
 
-void    Response::_getResponse()
+std::string     getExtension(std::string filename)
+{
+    size_t index = filename.find_last_of(".") + 1;
+    if (index == std::string::npos)
+        return NULL;
+    return (filename.substr(index, std::string::npos));
+}
+
+void    _getResponse(std::string _path)
+{
+    File        path(_path);
+    Mime        extension(getExtension(_path));
+    // std::cout << "extension = " << getExtension(absolutePath) << "\n";
+    // std::cout << "mime = " << extension.getMime() << "\n";
+    
+    if (path.isRegularFile())
+    {
+        std::cout << "Regular file\n";
+        std::string mime = extension.getMime();
+        // set header content-type
+        // set status ok
+        // set content (getFileContent)
+    }
+    else
+    {
+        // ERROR
+    }
+}
+
+void    _postResponse()
 {
 
 }
 
-void    Response::_postResponse()
-{
-
-}
-
-void    Response::_deleteResponse()
+void    _deleteResponse()
 {
 
 }
@@ -155,11 +162,11 @@ void    Response::_deleteResponse()
 */
 void      Response::_dispatchingResponse(Request &request, Server &server, Location &location)
 {
-    (void)server; (void)location;
     // then we need to transform the uri request to match in the server
-    // std::string parsedUri = parseUri(request.getPath()); TO IMPLEMENT
+    std::string path = parseUri(server, location, request.getPath()); //TO IMPLEMENT
+    std::cout << "Path = " << path << "\n";
     if (request.getMethod() == "GET")
-        _getResponse();
+        _getResponse(path);
     else if (request.getMethod() == "POST")
         _postResponse();
     else if (request.getMethod() == "DELETE")

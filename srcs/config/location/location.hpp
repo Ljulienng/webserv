@@ -42,6 +42,7 @@ class Location
 		std::vector<std::string>	&getAcceptedMethod();
 		std::string					&getPath();
 		std::string					&getRoot();
+		std::string					&getDefaultFile();
 		bool						&getAutoindex();
 		size_t						&getMaxBodySize();
 		std::pair<int, std::string>	&getRedirection();

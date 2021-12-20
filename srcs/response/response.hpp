@@ -13,7 +13,6 @@ class Location;
 class Response
 {
     private :
-    // header :
         std::map<std::string, std::string>  _headers;
         std::string                         _httpVersion;
         HttpStatus                          _httpStatus;
@@ -22,9 +21,6 @@ class Response
 
         void        _updateMessage();
         void        _dispatchingResponse(Request &request, Server &server, Location &location);
-        void        _getResponse();
-        void        _postResponse();
-        void        _deleteResponse();
 
     public :
 		Response();
