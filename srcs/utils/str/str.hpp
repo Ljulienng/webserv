@@ -9,9 +9,6 @@ class Str
 		std::string					_string;
 		std::vector<std::string>	_tokens;
 
-		bool 						_isDelim(char c, std::string delimiters);
-		void						_tokenize(std::string delimiters);
-
     public :
         Str();
 		Str(const std::string &str);
@@ -24,13 +21,13 @@ class Str
 		std::string					&getStr();
 		std::vector<std::string>	&getTokens();
 		void						setStr(const std::string &str);
-		// std::string 				capitalizeString(std::string &str);
 };
 
 std::vector<std::string>	splitString(std::string &str, char c);
 void						capitalizeString(std::string &str);
 std::string					&removeChar(std::string &str, char c);
 std::string					&trimChar(std::string &str);
-std::list<std::string>		tokenize(std::string str, char delim);
+bool 						isDelim(char c, std::string delimiters);
+std::vector<std::string>	tokenize(std::string str, std::string delim);
 
 #endif

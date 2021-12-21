@@ -4,6 +4,8 @@
 #include "webserv.hpp"
 #include "configuration.hpp"
 
+#define SERVER 0
+#define CLIENT 1
 extern bool    g_run;
 
 /*
@@ -23,6 +25,8 @@ class Hub
 		void				_receiveRequest(size_t index);
 		void				_prepareResponse(size_t index);
 		void 				_sendResponse(size_t index);
+		void				_closeConnection(size_t index, int type);
+		void				_closeAllConnections();
 		void				_output(std::string msg, int fd);
 
 
@@ -42,10 +46,8 @@ class Hub
 
 		// GETTERS
 		Configuration		&getConfig();
-		struct pollfd *		getFds();
+		struct pollfd 		*getFds();
 		size_t				getNfds();
 };
-
-
 
 #endif

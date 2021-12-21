@@ -20,13 +20,13 @@ void            Response::_updateMessage()
     // // append content
     // _message += _content;
 
-    // TEST minimum content-->>   
-
-    _message += "Content-length: 49\r\n";
+    /**************** TEST *************/   
+    std::string content = "<html><body><h1>Hello world !</h1></body></html>";   
+    _message += "Content-length: " + utils::myItoa(content.size()) + "\r\n";
     _message += "Content-Type: text/html; charset=UTF-8\r\n";
-
     _message += "\r\n";
-    _message += "<html><body><h1>Hello world !</h1></body></html>";
+    _message += content;
+    /***********************************/
 }
 
 /* SETTERS */
@@ -130,6 +130,20 @@ Response::Response() :
 //     return newUri;
 // }
 
+/*
+** evaluate the type of the response we need :
+**      - get
+**      - post
+**      - delete
+**      - cgi
+**      - redirection
+**      - error
+*/
+void      dispatchingResponse(Request &request, Server &server, Location &location)
+{
+    (void)request; (void)server; (void)location;
+}
+
 Response::Response(Request &request, Configuration &config, std::string serverName) : 
         _headers(),
         _httpVersion("HTTP/1.1"),
@@ -145,20 +159,12 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
         setHeader("Connection", "keep-alive");
     setHeader("Date", utils::getTimestamp());
 
-    // build the response thanks to the request
     // first need to get the server and location to use for this response (context)
     Server &server = config.findServer(serverName);
     Location &location = server.findLocation(request.getPath());
-    (void)location;
-
     // then we need to transform the uri request to match in the server
-    // std::string parsedUri = parseUri(request.getPath());
-
-    // get the method -> if no method -> set status and print error
-    // choose the execution beetween : 
-    //      - need cgi ?  if yes -> exec cgi
-    //      - redirection
-    //      - method get, post or delete
+    // std::string parsedUri = parseUri(request.getPath()); TO IMPLEMENT
+    dispatchingResponse(request, server, location);
 }
 
 Response::Response(const Response &src)

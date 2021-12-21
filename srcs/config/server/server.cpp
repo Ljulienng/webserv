@@ -73,10 +73,10 @@ bool	_matchLocation(std::string locationPath, std::string uriRequest)
 	if (uriRequest.size() < locationPath.size())
 		return false;
 
-	std::list<std::string>	locList = tokenize(locationPath, '/');
-	std::list<std::string>	reqList = tokenize(uriRequest, '/');
-	std::list<std::string>::iterator loc = locList.begin();
-	std::list<std::string>::iterator req = reqList.begin();
+	std::vector<std::string>	locList = tokenize(locationPath, "/");
+	std::vector<std::string>	reqList = tokenize(uriRequest, "/");
+	std::vector<std::string>::iterator loc = locList.begin();
+	std::vector<std::string>::iterator req = reqList.begin();
 
 	for ( ; req != reqList.end(); ++loc, ++req)
 	{
@@ -162,7 +162,7 @@ void	Server::setIp(std::string ip)
 	for (; it != ip.end(); it++)
 	{
 		std::string::iterator start(it);
-		while (*it != '.' && it != ip.end())
+		while (*it != '.' && it != ip.end()) 
 			it++;
 		int nb = atoi(std::string(start, it).c_str());
 		if (nb < 0 || nb > 254)
@@ -183,6 +183,7 @@ void	Server::setPort(std::string port)
 void	Server::setMaxBodySize(std::string maxBodySize)
 {
 	Str val(maxBodySize);
+
 	_maxBodySize = val.getNum();
 }
 
