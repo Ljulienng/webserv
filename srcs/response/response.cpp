@@ -115,43 +115,76 @@ std::string     getExtension(std::string filename)
     return (filename.substr(index, std::string::npos));
 }
 
-void    Response::_makeErrorResponse(int status)
+std::string     _buildDefaultErrorPage(int status)
 {
-    File errorFile("./www/data/error_pages/404.html");
-    _httpStatus.setStatus(status);
-    setContent(errorFile.getFileContent(), "text/html");
+    std::string     errorPage;
+
+    errorPage += "<!DOCTYPE html>";
+    errorPage += "<html>";
+    errorPage += "<head>";
+    errorPage += "<meta charset=\"utf-8\" />";
+    errorPage += "<title>";
+    errorPage += utils::myItoa(status);
+    errorPage += "</title>";
+    errorPage += "</head>";
+    errorPage += "<body>";
+    errorPage += "<p>";
+    errorPage += "ERROR ";
+    errorPage += utils::myItoa(status);
+    errorPage += "</p>";
+    errorPage += "</body>";
+    errorPage += "</html>";
+
+    return errorPage;
 }
 
-void    Response::_getResponse(std::string _path)
+void    Response::_buildErrorResponse(std::map<int, std::string> errorPages, std::string root, int status)
+{
+    std::string     errorPage = errorPages[status];
+    File            errorPath(root + errorPage);
+
+    _httpStatus.setStatus(status);
+    if (!errorPage.empty() && errorPath.isRegularFile())
+    {
+        setContent(errorPath.getFileContent(), "text/html");
+    }
+    else
+    {
+        std::string defaultErrorPage = _buildDefaultErrorPage(status);
+        setContent(defaultErrorPage, "text/html");
+    }
+}
+
+void    Response::_getMethodResponse(Configuration &config, Location &location, std::string _path)
 {
     File        path(_path);
     Mime        extension(getExtension(_path));
     // std::cout << "extension = " << getExtension(absolutePath) << "\n";
     // std::cout << "mime = " << extension.getMime() << "\n";
-    
+
     if (path.isRegularFile())
     {
         std::cout << "Regular file\n";
-        std::string mime = extension.getMime();
-        // set status ok
-        _httpStatus.setStatus(200);
-        // set content-type + content-length + content
-        setContent(path.getFileContent(), extension.getMime());
+        _httpStatus.setStatus(200); // ok
+        setContent(path.getFileContent(), extension.getMime()); // set content-type + content-length + content
     }
-    else
+    else if (path.isDirectory() && location.getAutoindex())
     {
-        std::cout << "400 error\n";
-        // send error response and page 404.html
-        _makeErrorResponse(400);
+        std::cout << "Autoindex\n";
+        // buildAutoIndexResponse();
+    }
+    else // not found
+    {
+        _buildErrorResponse(config.getErrorPages(), location.getRoot(), 404); // send error response and page 404.html
     }
 }
 
-void    _postResponse()
+void    _postMethodResponse()
 {
 
 }
 
-void    _deleteResponse()
+void    _deleteMethodResponse()
 {
 
 }
@@ -165,17 +198,17 @@ void    _deleteResponse()
 **      - redirection
 **      - error
 */
-void      Response::_dispatchingResponse(Request &request, Server &server, Location &location)
+void      Response::_dispatchingResponse(Configuration &config, Request &request, Server &server, Location &location)
 {
     // then we need to transform the uri request to match in the server
     std::string path = parseUri(server, location, request.getPath()); //TO IMPLEMENT
     std::cout << "Path = " << path << "\n";
     if (request.getMethod() == "GET")
-        _getResponse(path);
+        _getMethodResponse(config, location, path);
     else if (request.getMethod() == "POST")
-        _postResponse();
+        _postMethodResponse();
     else if (request.getMethod() == "DELETE")
-        _deleteResponse();
+        _deleteMethodResponse();
 }
 
 Response::Response(Request &request, Configuration &config, std::string serverName) : 
@@ -196,7 +229,7 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
     // first need to get the server and location to use for this response (context)
     Server &server = config.findServer(serverName);
     Location &location = server.findLocation(request.getPath());
-    _dispatchingResponse(request, server, location);
+    _dispatchingResponse(config, request, server, location);
 }
 
 Response::Response(const Response &src)

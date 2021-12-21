@@ -20,9 +20,9 @@ class Response
         std::string                         _message; // the formatted message to insert to the buffer
 
         void        _updateMessage();
-        void        _dispatchingResponse(Request &request, Server &server, Location &location);
-        void        _getResponse(std::string _path);
-        void        _makeErrorResponse(int status);
+        void        _dispatchingResponse(Configuration &config, Request &request, Server &server, Location &location);
+        void        _getMethodResponse(Configuration &config, Location &location, std::string _path);
+        void        _buildErrorResponse(std::map<int, std::string> errorPages, std::string root, int status);
 
     public :
 		Response();
