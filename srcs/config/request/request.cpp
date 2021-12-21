@@ -186,10 +186,6 @@ void		Request::setAcceptedLanguages()
 	if (value.size() < 5)
 		return ;
 	langVec = splitString(value, ',');
-<<<<<<< HEAD
-=======
-	// std:: cout << value << std::endl;
->>>>>>> 733b6303c99d8467c2b8006eb846fb7bf5093cfb
 	for (std::vector<std::string>::iterator it = langVec.begin(); it != langVec.end(); it++)
 	{
 		weight = 0.0;
@@ -218,16 +214,11 @@ int			Request::parse(const std::string &request)
 	std::string tmp;
 	size_t 		i = 0;
 
-<<<<<<< HEAD
 	if (!request.size())
 	{
 		std::cerr << "Request is empty" << std::endl;
 		return (400);
 	}
-=======
-	// if (!request.size())
-	// 	return (400);
->>>>>>> 733b6303c99d8467c2b8006eb846fb7bf5093cfb
 	initHeaders();
 	i = request.find_first_of('\n');
 	line = request.substr(0, i);
