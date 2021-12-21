@@ -81,7 +81,7 @@ Response::Response() :
 			// to be completed if new attributes
 {}
 
-std::string     parseUri(Server &server, Location &location, std::string uri)
+std::string     parseUrl(Server &server, Location &location, std::string uri)
 {
     (void)server;
     std::string newUri;
@@ -97,6 +97,9 @@ std::string     parseUri(Server &server, Location &location, std::string uri)
         defaultFile = "index.html"; // server.getDefaultFile(); // a inclure dans Server
     else
         defaultFile = location.getDefaultFile();
+
+    // if uri = file -> display content
+    // si uri = folder -> display default file
 
     // test
     if (uri[uri.size() - 1] == '/')
@@ -115,7 +118,7 @@ std::string     getExtension(std::string filename)
     return (filename.substr(index, std::string::npos));
 }
 
-std::string     _buildDefaultErrorPage(int status)
+std::string     _buildDefaultHtmlPage(std::string content)
 {
     std::string     errorPage;
 
@@ -123,14 +126,10 @@ std::string     _buildDefaultErrorPage(int status)
     errorPage += "<html>";
     errorPage += "<head>";
     errorPage += "<meta charset=\"utf-8\" />";
-    errorPage += "<title>";
-    errorPage += utils::myItoa(status);
-    errorPage += "</title>";
     errorPage += "</head>";
     errorPage += "<body>";
     errorPage += "<p>";
-    errorPage += "ERROR ";
-    errorPage += utils::myItoa(status);
+    errorPage += content;
     errorPage += "</p>";
     errorPage += "</body>";
     errorPage += "</html>";
@@ -150,7 +149,7 @@ void    Response::_buildErrorResponse(std::map<int, std::string> errorPages, std
     }
     else
     {
-        std::string defaultErrorPage = _buildDefaultErrorPage(status);
+        std::string defaultErrorPage = _buildDefaultHtmlPage("ERROR " + utils::myItoa(status));
         setContent(defaultErrorPage, "text/html");
     }
 }
@@ -159,8 +158,6 @@ void    Response::_getMethodResponse(Configuration &config, Location &location, 
 {
     File        path(_path);
     Mime        extension(getExtension(_path));
-    // std::cout << "extension = " << getExtension(absolutePath) << "\n";
-    // std::cout << "mime = " << extension.getMime() << "\n";
 
     if (path.isRegularFile())
     {
@@ -175,7 +172,7 @@ void    Response::_getMethodResponse(Configuration &config, Location &location, 
     }
     else // not found
     {
-        _buildErrorResponse(config.getErrorPages(), location.getRoot(), 404); // send error response and page 404.html
+        _buildErrorResponse(config.getErrorPages(), location.getRoot(), 400); // send error response and page 404.html
     }
 }
 
@@ -201,7 +198,7 @@ void    _deleteMethodResponse()
 void      Response::_dispatchingResponse(Configuration &config, Request &request, Server &server, Location &location)
 {
     // then we need to transform the uri request to match in the server
-    std::string path = parseUri(server, location, request.getPath()); //TO IMPLEMENT
+    std::string path = parseUrl(server, location, request.getPath()); //TO IMPLEMENT
     std::cout << "Path = " << path << "\n";
     if (request.getMethod() == "GET")
         _getMethodResponse(config, location, path);
