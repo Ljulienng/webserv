@@ -6,13 +6,14 @@
 #include "str.hpp"
 #include "file.hpp"
 #include "clientSocket.hpp"
+#include "singleton.hpp"  //test
 
 class ClientSocket;
 
 /*
 ** informations from the configuration file : cgi, bodyMaxSize, a list of server(s) ...
 */
-class Configuration
+class Configuration : public Singleton<Configuration>
 {
 	public :
 
@@ -23,12 +24,11 @@ class Configuration
 
 		std::string							_configFile;
 		std::pair<std::string, std::string>	_cgi;
-		size_t								_maxBodySize;
 		std::map<int, std::string>			_errorPages;
 		std::vector<Server>					_servers;
 		std::vector<ClientSocket>			_clients;
 
-		void 		_parseConfigPath(); 
+		// void 		_parseConfigPath(); 
 		void		_cleanSpaces(std::string &buf);
 		size_t		_parseServer(str_ite it, str_ite ite);
 		size_t		_parseErrorPages(str_ite it, str_ite ite);
@@ -46,6 +46,7 @@ class Configuration
 		~Configuration();	
 		Configuration &operator=(const Configuration &src);
 
+		void 		parseConfigPath(std::string configFile); //test singleton
 		void		parse();
 		Server 		&findServer(std::string serverName);
 		void		debug();
@@ -53,15 +54,12 @@ class Configuration
 		// SETTERS
 		void		setConfigDatas(std::map<std::string, std::string> mapConfig);
 		void		setCgi(std::string cgi);
-		void		setMaxBodySize(std::string maxBodySize);
 
 		// GETTERS
 		std::pair<std::string, std::string>		&getCgi();
-		size_t									&getMaxBodySize();
 		std::map<int, std::string>				&getErrorPages();
 		std::vector<Server>						&getServers();
 		std::vector<ClientSocket>				&getClients();
-		int										getTopServer();
 };
 
 #endif

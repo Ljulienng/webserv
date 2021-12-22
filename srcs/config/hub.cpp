@@ -2,7 +2,9 @@
 
 void	Hub::start()
 {
-	_config.parse();
+	Configuration::getInstance().parse();Configuration::getInstance().debug();
+	// _config.parse();
+	// _config.debug();
 	_startSockets();
 }
 
@@ -11,6 +13,8 @@ void	Hub::start()
 */
 void		Hub::_startSockets()
 {
+	Configuration &_config = Configuration::getInstance(); // test
+
 	for (size_t i = 0; i < _config.getServers().size(); i++)
 	{
 		_config.getServers()[i].start();
@@ -25,6 +29,8 @@ void		Hub::_startSockets()
 */
 void	Hub::process()
 {
+	Configuration &_config = Configuration::getInstance(); // test
+
 	int pollRet = 1;
 		
 	// call poll and wait an infinite time
@@ -86,6 +92,8 @@ void	Hub::process()
 */
 void		Hub::_acceptIncomingConnections(size_t index)
 {
+	Configuration &_config = Configuration::getInstance(); // test
+
 	while (42)
 	{
 		if (_nfds == MAX_CONNECTIONS)
@@ -115,6 +123,8 @@ void		Hub::_acceptIncomingConnections(size_t index)
 */
 void		Hub::_receiveRequest(size_t index)
 {
+	Configuration &_config = Configuration::getInstance(); // test
+
 	size_t				clientIndex = index - _config.getServers().size();
 	int 				bytes = 0;
 	std::vector<char>	buffer(MAX_BUF_LEN);
@@ -154,6 +164,8 @@ void		Hub::_receiveRequest(size_t index)
 */
 void		Hub::_prepareResponse(size_t index)
 {
+	Configuration &_config = Configuration::getInstance(); // test
+
 	size_t					clientIndex = index - _config.getServers().size();
 	std::queue<Request>		&requests = _config.getClients()[clientIndex].getRequests();
 
@@ -184,6 +196,8 @@ void		Hub::_prepareResponse(size_t index)
 */
 void 		Hub::_sendResponse(size_t index)
 {
+	Configuration &_config = Configuration::getInstance(); // test
+
 	size_t					clientIndex = index - _config.getServers().size();
 	std::queue<Response>	&responses = _config.getClients()[clientIndex].getResponses();
 	std::string				buffer = _config.getClients()[clientIndex].getBuffer();
@@ -221,6 +235,8 @@ void 		Hub::_sendResponse(size_t index)
 
 void		Hub::_closeConnection(size_t index, int type)
 {
+	Configuration &_config = Configuration::getInstance(); // test
+
 	if (type == SERVER)
 	{
 		_output("Connection closed - server", _config.getServers()[index].getSocket().getFd());
@@ -242,8 +258,12 @@ void		Hub::_closeConnection(size_t index, int type)
 
 void		Hub::_closeAllConnections()
 {
+	Configuration &_config = Configuration::getInstance(); // test
+
 	size_t nbOfServers = _config.getServers().size();
 	size_t nbOfClients = _config.getClients().size();
+	// size_t nbOfServers = _config.getServers().size();
+	// size_t nbOfClients = _config.getClients().size();
 
 	for (size_t index = 0; index < nbOfServers; index++)
 		_closeConnection(0, SERVER);
@@ -263,8 +283,8 @@ void		Hub::setNfds(int nfds)
 
 
 /* GETTERS */
-Configuration	&Hub::getConfig()
-{ return _config; }
+// Configuration	&Hub::getConfig()
+// { return _config; }
 
 struct pollfd *		Hub::getFds()
 { return _fds; }
@@ -274,14 +294,15 @@ size_t		Hub::getNfds()
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-Hub::Hub() : _config(), _nfds() 
+Hub::Hub() : /*_config(),*/ _nfds() 
 			// to be completed if new attributes
 {
 	memset(_fds, 0, sizeof(_fds));
 }
 
-Hub::Hub(std::string configFile) : _config(configFile), _nfds() 
+Hub::Hub(std::string configFile) : /*_config(configFile),*/ _nfds() 
 {
+	Configuration::getInstance().parseConfigPath(configFile); //test
 	memset(_fds, 0, sizeof(_fds));
 }
 
@@ -299,7 +320,7 @@ Hub &Hub::operator=(const Hub &src)
 {
 	if (&src != this)
 	{
-		_config = src._config;
+		// _config = src._config;
 		_nfds = src._nfds;
 		// to be completed if new attributes
 	}

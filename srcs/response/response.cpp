@@ -86,26 +86,34 @@ std::string     parseUrl(Server &server, Location &location, std::string uri)
     (void)server;
     std::string newUri;
     std::string root;
-    std::string defaultFile;
+    std::string index;
 
     if (location.getRoot().empty())
-        root = "./www/data" ; // server.getRoot(); // a inclure dans Server
+        root = server.getRoot() ; // server.getRoot(); // a inclure dans Server
     else
         root = location.getRoot();
 
-    if (location.getDefaultFile().empty())
-        defaultFile = "index.html"; // server.getDefaultFile(); // a inclure dans Server
+    if (location.getIndex().empty())
+        index = server.getIndex(); // server.getDefaultFile(); // a inclure dans Server
     else
-        defaultFile = location.getDefaultFile();
+        index = location.getIndex();
 
-    // if uri = file -> display content
-    // si uri = folder -> display default file
+    // if uri is file ->
+    //          - if exist : display content
+    //          - else : 404 error
+    // if uri is folder ->
+    //          - if doesn't exist : 404 error
+    //          - else :
+    //                    - autoindex on : display list of file
+    //                    - autoindex off : 
+    //                                      - if default file : display
+    //                                      - else : 404 error
 
     // test
     if (uri[uri.size() - 1] == '/')
-        newUri = root + uri + defaultFile;
+        newUri = root + uri + index;
     else 
-        newUri = root + uri + "/" + defaultFile;
+        newUri = root + uri + "/" + index;
 
     return newUri;
 }
@@ -137,9 +145,9 @@ std::string     _buildDefaultHtmlPage(std::string content)
     return errorPage;
 }
 
-void    Response::_buildErrorResponse(std::map<int, std::string> errorPages, std::string root, int status)
+void    Response::_buildErrorResponse(std::string root, int status)
 {
-    std::string     errorPage = errorPages[status];
+    std::string     errorPage = Configuration::getInstance().getErrorPages()[status];
     File            errorPath(root + errorPage);
 
     _httpStatus.setStatus(status);
@@ -154,7 +162,7 @@ void    Response::_buildErrorResponse(std::map<int, std::string> errorPages, std
     }
 }
 
-void    Response::_getMethodResponse(Configuration &config, Location &location, std::string _path)
+void    Response::_getMethodResponse(Location &location, std::string _path)
 {
     File        path(_path);
     Mime        extension(getExtension(_path));
@@ -172,7 +180,7 @@ void    Response::_getMethodResponse(Configuration &config, Location &location, 
     }
     else // not found
     {
-        _buildErrorResponse(config.getErrorPages(), location.getRoot(), 400); // send error response and page 404.html
+        _buildErrorResponse(location.getRoot(), 400); // send error response and page 404.html
     }
 }
 
@@ -195,13 +203,13 @@ void    _deleteMethodResponse()
 **      - redirection
 **      - error
 */
-void      Response::_dispatchingResponse(Configuration &config, Request &request, Server &server, Location &location)
+void      Response::_dispatchingResponse(Request &request, Server &server, Location &location)
 {
     // then we need to transform the uri request to match in the server
     std::string path = parseUrl(server, location, request.getPath()); //TO IMPLEMENT
     std::cout << "Path = " << path << "\n";
     if (request.getMethod() == "GET")
-        _getMethodResponse(config, location, path);
+        _getMethodResponse(location, path);
     else if (request.getMethod() == "POST")
         _postMethodResponse();
     else if (request.getMethod() == "DELETE")
@@ -226,7 +234,7 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
     // first need to get the server and location to use for this response (context)
     Server &server = config.findServer(serverName);
     Location &location = server.findLocation(request.getPath());
-    _dispatchingResponse(config, request, server, location);
+    _dispatchingResponse(request, server, location);
 }
 
 Response::Response(const Response &src)

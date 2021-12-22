@@ -129,16 +129,18 @@ void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 	std::map<std::string, std::string>::iterator ite = mapServer.end();
 	int ret;
 	typedef void (Server::* funcPtr)(std::string);
-	funcPtr setData[4] = {	&Server::setName,
+	funcPtr setData[6] = {	&Server::setName,
 							&Server::setIp,
 							&Server::setPort,
+							&Server::setRoot,
+							&Server::setIndex,
 							&Server::setMaxBodySize };
 	while (it != ite)
 	{
 		if ((ret = isValidExpression(it->first, serverExpression)) != -1)
 			(this->*setData[ret])(it->second);
 		else
-			throw (std::string("Error: unknown expression in configuration file"));
+			throw (std::string("Error: unknown expression in configuration file : " + it->first));
 		it++;
 	}
 }
@@ -180,6 +182,18 @@ void	Server::setPort(std::string port)
 	_port = static_cast<unsigned short>(atoi(port.c_str()));
 }
 
+// gerer cas d'erreurs
+void	Server::setRoot(std::string root)
+{
+	_root = root;
+}
+
+// gerer cas d'erreurs
+void	Server::setIndex(std::string index)
+{
+	_index = index;
+}
+
 void	Server::setMaxBodySize(std::string maxBodySize)
 {
 	Str val(maxBodySize);
@@ -199,6 +213,12 @@ std::string		&Server::getIp()
 unsigned short		&Server::getPort()
 { return _port; }
 
+std::string				&Server::getRoot()
+{ return _root; }
+
+std::string				&Server::getIndex()
+{ return _index; }
+
 std::vector<Location>	&Server::getLocations()
 { return _locations; }
 
@@ -214,7 +234,9 @@ Socket 		&Server::getSocket()
 Server::Server() : 	_name(),
 					_ip(),
 					_port(),
-					_maxBodySize(),
+					_root(),
+					_index(),
+					_maxBodySize(1000000), // default nginx
 					_locations(),
 					_socket()
 					// to be completed if new attributes
@@ -234,6 +256,8 @@ Server &Server::operator=(const Server &src)
 		_name = src._name;
 		_ip = src._ip;
 		_port = src._port;
+		_root = src._root;
+		_index = src._index;
 		_maxBodySize = src._maxBodySize;
 		_locations = src._locations;
 		_socket = src._socket;
@@ -248,6 +272,8 @@ void	Server::debug(size_t index)
 	std::cout << "\t - name = " << _name << "\n";
 	std::cout << "\t - ip = " << _ip << "\n";
 	std::cout << "\t - port = " << _port << "\n";
+	std::cout << "\t - root = " << _root << "\n";
+	std::cout << "\t - index = " << _index << "\n";
 	std::cout << "\t - maxBodySize = " << _maxBodySize << "\n";
 	std::cout << "\t - fd socket = " << _socket.getFd() << "\n";
 

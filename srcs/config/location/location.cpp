@@ -10,7 +10,7 @@ void	Location::setLocationsDatas(std::map<std::string, std::string> mapLocation)
 	funcPtr setData[7] = {	&Location::setPath,
 							&Location::setRoot,
 							&Location::setMethods,
-							&Location::setDefaultFile,
+							&Location::setIndex,
 							&Location::setAutoindex ,
 							&Location::setMaxBodySize,
 							&Location::setRedirection };
@@ -19,7 +19,7 @@ void	Location::setLocationsDatas(std::map<std::string, std::string> mapLocation)
 		if ((ret = isValidExpression(it->first, locationExpression)) != -1)
 			(this->*setData[ret])(it->second);
 		else
-			throw (std::string("Error: unknown expression in configuration file"));
+			throw (std::string("Error: unknown expression in configuration file : " + it->first));
 		it++;
 	}
 }
@@ -49,13 +49,13 @@ void	Location::setMethods(std::string methods)
 		_acceptedMethod.push_back(tmp.getTokens()[i]);
 }
 
-void	Location::setDefaultFile(std::string default_file)
+void	Location::setIndex(std::string index)
 {
-	Str	tmp(default_file);
+	Str	tmp(index);
 	
 	if (tmp.getTokens().size() != 1)
 		throw(std::string("Error: bad default_file name"));
-	_defaultFile = default_file;
+	_index = index;
 }
 
 void	Location::setAutoindex(std::string autoIndex)
@@ -71,7 +71,7 @@ void	Location::setMaxBodySize(std::string maxBodySize)
  
 	_maxBodySize = val.getNum();
 
-	std::vector<std::string> tmp = tokenize(maxBodySize, " \t\n");
+	// std::vector<std::string> tmp = tokenize(maxBodySize, " \t\n");
 }
 
 void	Location::setRedirection(std::string redirection)
@@ -97,8 +97,8 @@ std::string		&Location::getPath()
 std::string		&Location::getRoot()
 { return _root; }
 
-std::string					&Location::getDefaultFile()
-{ return _defaultFile; }
+std::string					&Location::getIndex()
+{ return _index; }
 
 bool	&Location::getAutoindex()
 { return _autoindex; }
@@ -114,7 +114,7 @@ std::pair<int, std::string>	&Location::getRedirection()
 Location::Location()  : _acceptedMethod(),
 						_path(),
 						_root(),
-						_defaultFile(),
+						_index(),
 						_autoindex(),
 						_maxBodySize(),
 						_redirection()
@@ -135,7 +135,7 @@ Location &Location::operator=(const Location &src)
 		_acceptedMethod = src._acceptedMethod;
 		_path = src._path;
 		_root = src._root;
-		_defaultFile = src._defaultFile;
+		_index = src._index;
 		_autoindex = src._autoindex;
 		_maxBodySize = src._maxBodySize;
 		_redirection = src._redirection;
@@ -154,7 +154,7 @@ void	Location::debug(size_t index)
 		std::cout << _acceptedMethod[i] << " ";
 	std::cout << "\n\t\t - path = " << _path << "\n";
 	std::cout << "\t\t - root = " << _root << "\n";
-	std::cout << "\t\t - default file = " << _defaultFile << "\n";
+	std::cout << "\t\t - index = " << _index << "\n";
 	std::cout << "\t\t - autoindex = " << _autoindex << "\n";
 	std::cout << "\t\t - maxBodySize = " << _maxBodySize << "\n";
 	std::cout << "\t\t - redirection = " << _redirection.first << " : " << _redirection.second  << "\n";

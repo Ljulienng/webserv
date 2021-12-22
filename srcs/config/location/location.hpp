@@ -11,7 +11,7 @@ class Location
 		std::vector<std::string>	_acceptedMethod;
 		std::string					_path;
 		std::string					_root;
-		std::string					_defaultFile;
+		std::string					_index;
 		bool						_autoindex;
 		size_t						_maxBodySize; 
 		std::pair<int, std::string>	_redirection;
@@ -33,7 +33,7 @@ class Location
 		void	setPath(std::string path);
 		void	setRoot(std::string root);
 		void	setMethods(std::string methods);
-		void	setDefaultFile(std::string default_file);
+		void	setIndex(std::string index);
 		void	setAutoindex(std::string autoIndex);
 		void	setMaxBodySize(std::string maxBodySize);
 		void	setRedirection(std::string redirection);	
@@ -42,7 +42,7 @@ class Location
 		std::vector<std::string>	&getAcceptedMethod();
 		std::string					&getPath();
 		std::string					&getRoot();
-		std::string					&getDefaultFile();
+		std::string					&getIndex();
 		bool						&getAutoindex();
 		size_t						&getMaxBodySize();
 		std::pair<int, std::string>	&getRedirection();
@@ -54,7 +54,6 @@ int isValidExpression(std::string expression, const char **validExpressions);
 
 static const char* configExpression[] = {
 	"cgi",
-	"max_body_size",
 	"error_pages",
 	"server",
 	0
@@ -64,6 +63,8 @@ static const char* serverExpression[] = {
 	"server_name",
 	"ip",
 	"port",
+	"root",
+	"index",
 	"max_body_size",
 	"location",
 	0
@@ -73,7 +74,7 @@ static const char* locationExpression[] = {
 	"path",
 	"root",
 	"accepted_methods",
-	"default_file",
+	"index",
 	"autoindex",
 	"max_body_size",
 	"redirection",

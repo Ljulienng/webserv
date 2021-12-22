@@ -25,5 +25,6 @@ INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/httpStatus/httpStatus.hpp						\
 				srcs/utils/file/file.hpp							\
 				srcs/utils/mime/mime.hpp							\
+				srcs/utils/singleton/singleton.hpp					\
 				srcs/utils/str/str.hpp								\
 				srcs/utils/utils.hpp
