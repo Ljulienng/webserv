@@ -2,9 +2,9 @@
 # define RESPONSE_HPP
 
 #include "webserv.hpp"
-// #include "configuration.hpp" // test singleton access
 #include "httpStatus.hpp"
 #include "request.hpp"
+#include "html.hpp"
 #include "utils.hpp"
 
 class Configuration;
@@ -21,13 +21,14 @@ class Response
         std::string                         _message; // the formatted message to insert to the buffer
 
         void        _updateMessage();
-        void        _dispatchingResponse(Request &request, Server &server, Location &location);
-        void        _getMethodResponse(Location &location, std::string _path);
+        void        _dispatchingResponse(Request &request, Server &server, Location &location, std::string index, std::string root);
+        void        _getMethodResponse(Location &location, std::string _path, std::string index, std::string root);
+        void        _buildAutoIndexResponse(std::string path);
         void        _buildErrorResponse(std::string root, int status);
 
     public :
 		Response();
-        Response(Request &request, Configuration &config, std::string serverName);
+        Response(Request &request, std::string serverName);
 		Response(const Response &src);
 		~Response();
         Response &operator=(const Response &src);	

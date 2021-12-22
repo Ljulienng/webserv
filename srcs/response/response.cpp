@@ -81,6 +81,8 @@ Response::Response() :
 			// to be completed if new attributes
 {}
 
+
+
 std::string     parseUrl(Server &server, Location &location, std::string uri)
 {
     (void)server;
@@ -110,11 +112,11 @@ std::string     parseUrl(Server &server, Location &location, std::string uri)
     //                                      - else : 404 error
 
     // test
-    if (uri[uri.size() - 1] == '/')
+    File indexFile(root + uri + index);
+    if (uri[uri.size() - 1] == '/' && indexFile.isRegularFile()) // if directory and directory/index exist
         newUri = root + uri + index;
-    else 
-        newUri = root + uri + "/" + index;
-
+    else    // file or directory without autoindex
+        newUri = root + uri;
     return newUri;
 }
 
@@ -126,24 +128,6 @@ std::string     getExtension(std::string filename)
     return (filename.substr(index, std::string::npos));
 }
 
-std::string     _buildDefaultHtmlPage(std::string content)
-{
-    std::string     errorPage;
-
-    errorPage += "<!DOCTYPE html>";
-    errorPage += "<html>";
-    errorPage += "<head>";
-    errorPage += "<meta charset=\"utf-8\" />";
-    errorPage += "</head>";
-    errorPage += "<body>";
-    errorPage += "<p>";
-    errorPage += content;
-    errorPage += "</p>";
-    errorPage += "</body>";
-    errorPage += "</html>";
-
-    return errorPage;
-}
 
 void    Response::_buildErrorResponse(std::string root, int status)
 {
@@ -157,13 +141,20 @@ void    Response::_buildErrorResponse(std::string root, int status)
     }
     else
     {
-        std::string defaultErrorPage = _buildDefaultHtmlPage("ERROR " + utils::myItoa(status));
+        std::string defaultErrorPage = html::buildErrorHtmlPage(utils::myItoa(status));
         setContent(defaultErrorPage, "text/html");
     }
 }
 
-void    Response::_getMethodResponse(Location &location, std::string _path)
+void    Response::_buildAutoIndexResponse(std::string path)
 {
+    _httpStatus.setStatus(200);
+    (void)path;
+}
+
+void    Response::_getMethodResponse(Location &location, std::string _path, std::string index, std::string root)
+{
+    (void)index;
     File        path(_path);
     Mime        extension(getExtension(_path));
 
@@ -176,11 +167,11 @@ void    Response::_getMethodResponse(Location &location, std::string _path)
     else if (path.isDirectory() && location.getAutoindex())
     {
         std::cout << "Autoindex\n";
-        // buildAutoIndexResponse();
+        _buildAutoIndexResponse(_path);
     }
     else // not found
     {
-        _buildErrorResponse(location.getRoot(), 400); // send error response and page 404.html
+        _buildErrorResponse(root, 400); // send error response and page 404.html
     }
 }
 
@@ -203,20 +194,21 @@ void    _deleteMethodResponse()
 **      - redirection
 **      - error
 */
-void      Response::_dispatchingResponse(Request &request, Server &server, Location &location)
+void      Response::_dispatchingResponse(Request &request, Server &server, Location &location, std::string index, std::string root)
 {
     // then we need to transform the uri request to match in the server
     std::string path = parseUrl(server, location, request.getPath()); //TO IMPLEMENT
-    std::cout << "Path = " << path << "\n";
+
+    // std::cout << "Path = " << path << "\n";
     if (request.getMethod() == "GET")
-        _getMethodResponse(location, path);
+        _getMethodResponse(location, path, index, root);
     else if (request.getMethod() == "POST")
         _postMethodResponse();
     else if (request.getMethod() == "DELETE")
         _deleteMethodResponse();
 }
 
-Response::Response(Request &request, Configuration &config, std::string serverName) : 
+Response::Response(Request &request, std::string serverName) : 
         _headers(),
         _httpVersion("HTTP/1.1"),
         _httpStatus(200),
@@ -231,10 +223,25 @@ Response::Response(Request &request, Configuration &config, std::string serverNa
         setHeader("Connection", "keep-alive");
     setHeader("Date", utils::getTimestamp());
 
+
     // first need to get the server and location to use for this response (context)
-    Server &server = config.findServer(serverName);
+    Server &server = Configuration::getInstance().findServer(serverName);
     Location &location = server.findLocation(request.getPath());
-    _dispatchingResponse(request, server, location);
+    std::string root;
+    std::string index;
+
+    if (location.getRoot().empty())
+        root = server.getRoot() ; // server.getRoot(); // a inclure dans Server
+    else
+        root = location.getRoot();
+
+    if (location.getIndex().empty())
+        index = server.getIndex(); // server.getDefaultFile(); // a inclure dans Server
+    else
+        index = location.getIndex();
+    
+    // create a class with the server, location, root, index and all context matching the request
+    _dispatchingResponse(request, server, location, index, root);
 }
 
 Response::Response(const Response &src)

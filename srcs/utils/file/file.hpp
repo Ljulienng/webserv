@@ -5,7 +5,7 @@
 #include "mime.hpp"
 
 /*
-** useful functions to handle files
+** useful functions to handle files and directories
 */
 class File
 {
@@ -21,10 +21,11 @@ class File
 		~File();
 		File &operator=(const File &src);
 
-		bool		isRegularFile();
-		bool		isDirectory();
-		bool		canReadFile();
-		std::string	findContentType(std::string extension);
+		bool						isRegularFile();
+		bool						isDirectory();
+		bool						canReadFile();
+		std::list<std::string>		buildFilesList();
+		std::string					findContentType(std::string extension);
 		// ...
 
 		// GETTERS

@@ -25,6 +25,11 @@ bool	File::canReadFile()
 	return true;
 }
 
+std::list<std::string>		buildFilesList()
+{
+
+}
+
 std::string	File::findContentType(std::string extension)
 {
 	Mime mime;
