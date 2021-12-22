@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <dirent.h>
 
 // Streams
 #include <iostream>

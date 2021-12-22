@@ -148,8 +148,11 @@ void    Response::_buildErrorResponse(std::string root, int status)
 
 void    Response::_buildAutoIndexResponse(std::string path)
 {
+    File                    dir(path);
+    std::list<std::string>  files = dir.buildFilesList();
+    
     _httpStatus.setStatus(200);
-    (void)path;
+    
 }
 
 void    Response::_getMethodResponse(Location &location, std::string _path, std::string index, std::string root)

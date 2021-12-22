@@ -25,9 +25,19 @@ bool	File::canReadFile()
 	return true;
 }
 
-std::list<std::string>		buildFilesList()
+/* build the list of files in a directory */
+std::list<std::string>		File::buildFilesList()
 {
+	DIR 					*dir;
+	struct 	dirent 			*diread;
+	std::list<std::string>	files;
 
+	if ((dir = opendir(_filePath.c_str())) != nullptr)
+		while ((diread = readdir(dir)) != nullptr)
+			files.push_back(diread->d_name);
+	closedir(dir);
+
+	return files;
 }
 
 std::string	File::findContentType(std::string extension)
@@ -60,10 +70,13 @@ File::File(std::string filePath) :
 	_fileContent(),
 	_fileStat()
 {
-	std::ifstream ifs;
-	ifs.open(filePath.c_str());
-	std::getline(ifs, _fileContent, '\0');
-	ifs.close();
+	if (isRegularFile())
+	{
+		std::ifstream ifs;
+		ifs.open(filePath.c_str());
+		std::getline(ifs, _fileContent, '\0');
+		ifs.close();
+	}
 }
 
 File::File(const File &src)
