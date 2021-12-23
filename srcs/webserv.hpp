@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <sys/types.h>
 #include <errno.h>
-#include "utils/str/str.hpp"
+#include <cstddef>
 
 // C sockets/network
 #include <netinet/in.h>

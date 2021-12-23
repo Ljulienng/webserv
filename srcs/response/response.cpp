@@ -148,10 +148,11 @@ void    Response::_buildErrorResponse(std::string root, int status)
 
 void    Response::_buildAutoIndexResponse(std::string path)
 {
-    File                    dir(path);
-    std::list<std::string>  files = dir.buildFilesList();
-    
+    std::string autoIndexPage;
+
     _httpStatus.setStatus(200);
+    autoIndexPage = html::buildAutoIndexPage(path);
+    setContent(autoIndexPage, "text/html");
     
 }
 

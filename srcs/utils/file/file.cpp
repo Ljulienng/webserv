@@ -32,8 +32,8 @@ std::list<std::string>		File::buildFilesList()
 	struct 	dirent 			*diread;
 	std::list<std::string>	files;
 
-	if ((dir = opendir(_filePath.c_str())) != nullptr)
-		while ((diread = readdir(dir)) != nullptr)
+	if ((dir = opendir(_filePath.c_str())) != NULL)
+		while ((diread = readdir(dir)) != NULL)
 			files.push_back(diread->d_name);
 	closedir(dir);
 

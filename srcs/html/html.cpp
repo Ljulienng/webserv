@@ -3,6 +3,30 @@
 namespace html {
 
 
+std::string     buildAutoIndexPage(std::string path)
+{
+    File                                dir(path);
+    std::list<std::string>              files = dir.buildFilesList();
+    std::list<std::string>::iterator    it = files.begin();
+    std::string                         autoIndexPage;
+
+    autoIndexPage += "<!DOCTYPE html>";
+    autoIndexPage += "<html>";
+    autoIndexPage += "<head>";
+    autoIndexPage += "<meta charset=\"utf-8\" />";
+    autoIndexPage += "</head>";
+    autoIndexPage += "<body>";
+    autoIndexPage += "<h1> Index of </h1";
+    for ( ; it != files.end(); it++)
+    {
+        autoIndexPage += "  <a href=\"./" + *it + "\">"  + *it + "</a> <br/>\n";
+    }
+    autoIndexPage += "</body>";
+    autoIndexPage += "</html>";
+
+    return autoIndexPage;
+}
+
 std::string     buildErrorHtmlPage(std::string content)
 {
     std::string     errorPage;
