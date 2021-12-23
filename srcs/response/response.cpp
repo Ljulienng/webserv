@@ -144,6 +144,7 @@ void    Response::_buildErrorResponse(std::string root, int status)
         std::string defaultErrorPage = html::buildErrorHtmlPage(utils::myItoa(status));
         setContent(defaultErrorPage, "text/html");
     }
+    std::cout << "Before crash here\n";
 }
 
 void    Response::_buildAutoIndexResponse(std::string path)
@@ -159,7 +160,7 @@ void    Response::_buildAutoIndexResponse(std::string path)
 void       Response::_redirectionResponse(std::pair<int, std::string> redirection)
 {
     std::string redirectionPage;
-
+    std::cout << "REDIRECTION RESPONSE\n";
     _httpStatus.setStatus(redirection.first);
     setHeader("Location", redirection.second);
     redirectionPage = html::buildRedirectionPage(redirection);
