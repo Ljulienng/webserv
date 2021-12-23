@@ -3,10 +3,13 @@
 
 #include "webserv.hpp"
 #include "file.hpp"
+#include "httpStatus.hpp"
+#include "utils.hpp"
 
 namespace html {
 
 std::string     buildAutoIndexPage(std::string path);
+std::string     buildRedirectionPage(std::pair<int, std::string> redirection);
 std::string     buildErrorHtmlPage(std::string content);
 
 

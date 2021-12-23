@@ -13,7 +13,6 @@ std::string     buildAutoIndexPage(std::string path)
     autoIndexPage += "<!DOCTYPE html>";
     autoIndexPage += "<html>";
     autoIndexPage += "<head>";
-    autoIndexPage += "<meta charset=\"utf-8\" />";
     autoIndexPage += "</head>";
     autoIndexPage += "<body>";
     autoIndexPage += "<h1> Index of </h1";
@@ -32,22 +31,44 @@ std::string     buildAutoIndexPage(std::string path)
     return autoIndexPage;
 }
 
+std::string     buildRedirectionPage(std::pair<int, std::string> redirection)
+{
+    std::string     redirectionPage;
+    HttpStatus      status(redirection.first);
+
+    redirectionPage = 
+        "<!DOCTYPE html>\n"
+        "<html>\n"
+        "   <head>\n"
+        "       <title> Redirection " + utils::myItoa(redirection.first) + " " + status.findStatusMessage() +  "</title>\n"
+        "   </head>\n"
+        "   <body>\n"
+        "       <p>\n"
+        "           Content moved to : " + redirection.second + "\n"
+        "       </p>\n"
+        "   </body>\n"
+        "</html>\n";
+
+    return redirectionPage;
+}
+
+
 std::string     buildErrorHtmlPage(std::string content)
 {
     std::string     errorPage;
 
-    errorPage += "<!DOCTYPE html>";
-    errorPage += "<html>";
-    errorPage += "<head>";
-    errorPage += "<meta charset=\"utf-8\" />";
-    errorPage += "</head>";
-    errorPage += "<body>";
-    errorPage += "<p>";
-    errorPage += "ERROR ";
-    errorPage += content;
-    errorPage += "</p>";
-    errorPage += "</body>";
-    errorPage += "</html>";
+    errorPage =
+        "<!DOCTYPE html>\n"
+        "<html>\n"
+        "   <head>\n"
+        "       <title> Error " + content +  "</title>\n"
+        "   </head>\n"
+        "   <body>\n"
+        "       <p>\n"
+        "           Error : " + content + "\n"
+        "       </p>\n"
+        "   </body>\n"
+        "</html>\n";
 
     return errorPage;
 }

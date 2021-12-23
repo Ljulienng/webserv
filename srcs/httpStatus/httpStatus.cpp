@@ -1,8 +1,8 @@
 #include "httpStatus.hpp"
 
-std::string     HttpStatus::findStatusMessage(size_t code)
+std::string     HttpStatus::findStatusMessage()
 {
-	std::map<size_t, std::string>::iterator	it = _existingStatus.find(code);
+	std::map<size_t, std::string>::iterator	it = _existingStatus.find(_code);
 
 	if (it != _existingStatus.end())
 		return it->second;
@@ -115,7 +115,7 @@ HttpStatus::HttpStatus() : _code(), _message()
 HttpStatus::HttpStatus(size_t code) : _code(code)
 {
 	_setExistingStatus();
-	_message = findStatusMessage(_code);
+	_message = findStatusMessage();
 }
 
 HttpStatus::HttpStatus(const HttpStatus &src)

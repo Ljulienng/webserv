@@ -74,9 +74,17 @@ void	Hub::process()
 			// std::cout <<  " POLLOUT\n";
 			_sendResponse(i);
 		}
+		else if (_fds[i].revents == POLLHUP)
+		{
+			std::cout << "POLLHUP\n";
+		}
+		else if (_fds[i].revents == POLLERR)
+		{
+			std::cout << "POLLERR\n";
+		}
 		else
 		{
-			// std::cout << " ERROR QUIT PROGRAM\n";
+			std::cout << "revent = " << _fds[i].revents << " ERROR QUIT PROGRAM\n";
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
@@ -131,6 +139,7 @@ void		Hub::_receiveRequest(size_t index)
 	std::vector<char>	buffer(MAX_BUF_LEN);
 
 	bytes = recv(_fds[index].fd, &buffer[0], MAX_BUF_LEN, 0);
+	std::cout << "Request : \n" << &buffer[0] << "\n";
 	if (bytes < 0)
 		throw std::string("Error: can't receive client request");
 	else if (bytes > 0)
@@ -234,7 +243,7 @@ void 		Hub::_sendResponse(size_t index)
 	{
 		// we can use send() ( without flag parameter, send is equivalent to write() )
 		// so write into the _fds[i].fd the content of buffer
-		// std::cout << "Response = \n" << &buffer[0] << "\n";
+		std::cout << "Response = \n" << &buffer[0] << "\n";
 		int bytes = write(_fds[index].fd, &buffer[0], buffer.size());
 
 		if (bytes <= 0)
