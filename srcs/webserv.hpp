@@ -32,6 +32,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <signal.h>
 
 // Streams
 #include <iostream>

@@ -3,7 +3,7 @@
 void	Hub::start()
 {
 	Configuration::getInstance().parse();
-	Configuration::getInstance().debug();
+	// Configuration::getInstance().debug();
 	// _config.parse();
 	// _config.debug();
 	_startSockets();
@@ -31,7 +31,7 @@ void		Hub::_startSockets()
 void	Hub::process()
 {
 	int pollRet = 1;
-		
+
 	// call poll and wait an infinite time
 	pollRet = poll(_fds, _nfds, -1);
 	// poll is a blocking function and SIGINT will unblock it
@@ -234,6 +234,7 @@ void 		Hub::_sendResponse(size_t index)
 	{
 		// we can use send() ( without flag parameter, send is equivalent to write() )
 		// so write into the _fds[i].fd the content of buffer
+		// std::cout << "Response = \n" << &buffer[0] << "\n";
 		int bytes = write(_fds[index].fd, &buffer[0], buffer.size());
 
 		if (bytes <= 0)
@@ -278,7 +279,6 @@ void		Hub::_closeAllConnections()
 	size_t nbOfClients = clients.size();
 	// size_t nbOfServers = _config.getServers().size();
 	// size_t nbOfClients = _config.getClients().size();
-
 	for (size_t index = 0; index < nbOfServers; index++)
 		_closeConnection(0, SERVER);
 	for (size_t index = 0; index < nbOfClients; index++)
@@ -325,9 +325,11 @@ Hub::Hub(const Hub &src)
 	*this = src;
 }
 
+// find another way to close connection
+// if fail to bind, try to close connection and segfault
 Hub::~Hub()
 {
-	_closeAllConnections();
+	// _closeAllConnections();
 }
 
 Hub &Hub::operator=(const Hub &src)

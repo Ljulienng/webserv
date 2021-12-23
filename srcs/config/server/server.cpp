@@ -38,7 +38,7 @@ void 	Server::setSocketOptions()
 void	Server::bindSocket()
 {
 	if (bind(_socket.getFd(), (struct sockaddr *)&_socket.getAddr(), sizeof(_socket.getAddr())) < 0)
-			throw(std::string("Error: Failed to bind"));
+		throw(std::string("Error: Failed to bind"));
 }
 
 void	Server::listenSocket()
