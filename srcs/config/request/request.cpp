@@ -230,7 +230,7 @@ int			Request::parse(const std::string &request)
 	if (tmp.size())
 		tmp.assign(request, i, std::string::npos);
 	parsebody(tmp);
-	debug();
+	// debug();
 	return (_ret);
 }
 

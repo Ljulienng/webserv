@@ -175,6 +175,7 @@ void    Response::_getMethodResponse(Location &location, std::string _path, std:
     }
     else // not found
     {
+        std::cout << "Error not found\n";
         _buildErrorResponse(root, 400); // send error response and page 404.html
     }
 }
@@ -187,6 +188,15 @@ void    _postMethodResponse()
 void    _deleteMethodResponse()
 {
 
+}
+
+void       Response::_redirectionResponse(std::pair<int, std::string> redirection)
+{
+    std::string redirectionPage;
+
+    _httpStatus.setStatus(redirection.first);
+    redirectionPage = html::buildRedirectionPage(path);
+    setContent(redirectionPage, "text/html");
 }
 
 /*
@@ -204,6 +214,8 @@ void      Response::_dispatchingResponse(Request &request, Server &server, Locat
     std::string path = parseUrl(server, location, request.getPath()); //TO IMPLEMENT
 
     // std::cout << "Path = " << path << "\n";
+    if (location.getRedirection().first > 0 && !location.getRedirection().second.empty())
+        _redirectionResponse(location.getRedirection();
     if (request.getMethod() == "GET")
         _getMethodResponse(location, path, index, root);
     else if (request.getMethod() == "POST")

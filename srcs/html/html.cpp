@@ -20,13 +20,9 @@ std::string     buildAutoIndexPage(std::string path)
     for ( ; it != files.end(); it++)
     {
         std::string newUrl = path + "/" + *it;
-        std::cout << "path = " << path << "\n";
-        std::cout << "*it = " << *it << "\n";
-        std::cout << "newurl = " << newUrl << "\n";
         File file(newUrl);
         if (file.isRegularFile())
             autoIndexPage += "  <a href=\"./" + *it +  "\">"  + *it + "</a> <br/>\n";
-            // autoIndexPage += "  <a href=\"./" + *it +  "\">"  + *it + "</a> <br/>\n";
         else if (file.isDirectory())
             autoIndexPage += "  <a href=\"./" + *it +  "/\">"  + *it + "/ </a> <br/>\n";
     }

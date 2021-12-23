@@ -24,6 +24,7 @@ class Response
         void        _dispatchingResponse(Request &request, Server &server, Location &location, std::string index, std::string root);
         void        _getMethodResponse(Location &location, std::string _path, std::string index, std::string root);
         void        _buildAutoIndexResponse(std::string path);
+        void        _redirectionResponse(std::pair<int, std::string> redirection);
         void        _buildErrorResponse(std::string root, int status);
 
     public :
