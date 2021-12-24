@@ -168,6 +168,11 @@ void       Response::_redirectionResponse(std::pair<int, std::string> redirectio
     setContent(redirectionPage, "text/html");
 }
 
+void    Response::_cgiResponse()
+{
+    std::cout << "Need to execute CGI\n";
+}
+
 void    Response::_getMethodResponse(Location &location, std::string _path, std::string index, std::string root)
 {
     File        path(_path);
@@ -199,14 +204,27 @@ void    Response::_getMethodResponse(Location &location, std::string _path, std:
     }
 }
 
-void    _postMethodResponse()
+void    Response::_postMethodResponse()
 {
 
 }
 
-void    _deleteMethodResponse()
+void    Response::_deleteMethodResponse(std::string path, std::string root)
 {
+    File    fileToDelete(path);
 
+    if (fileToDelete.isRegularFile())
+    {
+       if (remove(path.c_str()) == 0)
+        {
+            _httpStatus.setStatus(200);
+            setContent(html::buildPage(root, 200), "text/html");
+        }
+        else
+            _buildErrorResponse(root, 204);
+    }
+    else
+        _buildErrorResponse(root, 204);
 }
 
 /*
@@ -223,14 +241,17 @@ void      Response::_dispatchingResponse(Request &request, Server &server, Locat
     // then we need to transform the uri request to match in the server
     std::string path = parseUrl(server, location, request.getPath(), index, root); //TO IMPLEMENT
 
-    if (location.getRedirection().first > 0 && !location.getRedirection().second.empty())
+    if (request.getPath().find(Configuration::getInstance().getCgi().first) != std::string::npos
+        && (request.getMethod() == "GET" || request.getMethod() == "POST"))
+        _cgiResponse();
+    else if (location.getRedirection().first > 0 && !location.getRedirection().second.empty())
         _redirectionResponse(location.getRedirection());
     else if (request.getMethod() == "GET")
         _getMethodResponse(location, path, index, root);
     else if (request.getMethod() == "POST")
         _postMethodResponse();
     else if (request.getMethod() == "DELETE")
-        _deleteMethodResponse();
+        _deleteMethodResponse(path, root);
 }
 
 Response::Response(Request &request, std::string serverName) : 
