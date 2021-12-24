@@ -66,6 +66,7 @@ static const char* serverExpression[] = {
 	"root",
 	"index",
 	"max_body_size",
+	"upload_path",
 	"location",
 	0
 };

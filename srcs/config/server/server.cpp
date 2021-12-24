@@ -129,12 +129,13 @@ void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 	std::map<std::string, std::string>::iterator ite = mapServer.end();
 	int ret;
 	typedef void (Server::* funcPtr)(std::string);
-	funcPtr setData[6] = {	&Server::setName,
+	funcPtr setData[7] = {	&Server::setName,
 							&Server::setIp,
 							&Server::setPort,
 							&Server::setRoot,
 							&Server::setIndex,
-							&Server::setMaxBodySize };
+							&Server::setMaxBodySize,
+							&Server::setUploadPath };
 	while (it != ite)
 	{
 		if ((ret = isValidExpression(it->first, serverExpression)) != -1)
@@ -201,6 +202,11 @@ void	Server::setMaxBodySize(std::string maxBodySize)
 	_maxBodySize = val.getNum();
 }
 
+void		Server::setUploadPath(std::string uploadPath)
+{
+	_uploadPath = uploadPath;
+}
+
 
 /* GETTERS */
 
@@ -225,6 +231,9 @@ std::vector<Location>	&Server::getLocations()
 size_t		&Server::getMaxBodySize()
 { return _maxBodySize; }
 
+std::string		&Server::getUploadPath()
+{ return _uploadPath; }
+
 Socket 		&Server::getSocket()
 { return _socket; }
 
@@ -237,6 +246,7 @@ Server::Server() : 	_name(),
 					_root(),
 					_index(),
 					_maxBodySize(1000000), // default nginx
+					_uploadPath(),
 					_locations(),
 					_socket()
 					// to be completed if new attributes
@@ -259,6 +269,7 @@ Server &Server::operator=(const Server &src)
 		_root = src._root;
 		_index = src._index;
 		_maxBodySize = src._maxBodySize;
+		_uploadPath = src._uploadPath;
 		_locations = src._locations;
 		_socket = src._socket;
 		// to be completed if new attributes
@@ -275,6 +286,7 @@ void	Server::debug(size_t index)
 	std::cout << "\t - root = " << _root << "\n";
 	std::cout << "\t - index = " << _index << "\n";
 	std::cout << "\t - maxBodySize = " << _maxBodySize << "\n";
+	std::cout << "\t - uploadPath = " << _uploadPath << "\n";
 	std::cout << "\t - fd socket = " << _socket.getFd() << "\n";
 
 	std::vector<Location>::iterator itLoc = _locations.begin();

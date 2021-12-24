@@ -83,21 +83,12 @@ Response::Response() :
 
 
 
-std::string     parseUrl(Server &server, Location &location, std::string url)
+std::string     parseUrl(Server &server, Location &location, std::string url, std::string index, std::string root)
 {
     std::string newUrl;
-    std::string root;
-    std::string index;
-
-    if (location.getRoot().empty())
-        root = server.getRoot() ;
-    else
-        root = location.getRoot();
-
-    if (location.getIndex().empty())
-        index = server.getIndex();
-    else
-        index = location.getIndex();
+    (void)index;
+    (void)server;
+    (void)location;
 
     // if uri is file ->
     //          - if exist : display content
@@ -179,7 +170,6 @@ void       Response::_redirectionResponse(std::pair<int, std::string> redirectio
 
 void    Response::_getMethodResponse(Location &location, std::string _path, std::string index, std::string root)
 {
-    (void)index;
     File        path(_path);
     
 
@@ -196,10 +186,11 @@ void    Response::_getMethodResponse(Location &location, std::string _path, std:
         std::cout << "Directory -> autoindex\n";
         _buildAutoIndexResponse(_path);
     }
-    else if (path.isDirectory() && !location.getAutoindex() && !index.empty())
+    else if (path.isDirectory() && !location.getAutoindex() && !index.empty() && (location.getPath() == "/"))
     {
         std::cout << "Directory -> index\n";
         _buildIndexResponse(_path, index);
+
     }
     else // not found
     {
@@ -230,7 +221,7 @@ void    _deleteMethodResponse()
 void      Response::_dispatchingResponse(Request &request, Server &server, Location &location, std::string index, std::string root)
 {
     // then we need to transform the uri request to match in the server
-    std::string path = parseUrl(server, location, request.getPath()); //TO IMPLEMENT
+    std::string path = parseUrl(server, location, request.getPath(), index, root); //TO IMPLEMENT
 
     if (location.getRedirection().first > 0 && !location.getRedirection().second.empty())
         _redirectionResponse(location.getRedirection());
@@ -251,12 +242,8 @@ Response::Response(Request &request, std::string serverName) :
 {
     // we set some headers
     setHeader("Server", "Webserv_42");
-    if (request.getHeader("Connection") == "close")
-        setHeader("Connection", "close");
-    else
-        setHeader("Connection", "keep-alive");
+    request.getHeader("Connection") == "close" ? setHeader("Connection", "close") : setHeader("Connection", "keep-alive");
     setHeader("Date", utils::getTimestamp());
-
 
     // first need to get the server and location to use for this response (context)
     Server &server = Configuration::getInstance().findServer(serverName);
@@ -264,15 +251,8 @@ Response::Response(Request &request, std::string serverName) :
     std::string root;
     std::string index;
 
-    if (location.getRoot().empty())
-        root = server.getRoot() ; // server.getRoot(); // a inclure dans Server
-    else
-        root = location.getRoot();
-
-    if (location.getIndex().empty())
-        index = server.getIndex(); // server.getDefaultFile(); // a inclure dans Server
-    else
-        index = location.getIndex();
+    location.getRoot().empty()  ? root = server.getRoot()   : root = location.getRoot();
+    location.getIndex().empty() ? index = server.getIndex() : index = location.getIndex();
     
     // create a class with the server, location, root, index and all context matching the request
     _dispatchingResponse(request, server, location, index, root);
