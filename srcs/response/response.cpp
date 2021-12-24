@@ -157,6 +157,15 @@ void    Response::_buildAutoIndexResponse(std::string path)
     
 }
 
+void    Response::_buildIndexResponse(std::string path, std::string index)
+{
+        File indexFile(path + index);
+        Mime indexExtension(getExtension(index));
+
+        _httpStatus.setStatus(200);
+        setContent(indexFile.getFileContent(), indexExtension.getMime()); // set content-type + content-length + content
+}
+
 void       Response::_redirectionResponse(std::pair<int, std::string> redirection)
 {
     std::string redirectionPage;
@@ -190,11 +199,7 @@ void    Response::_getMethodResponse(Location &location, std::string _path, std:
     else if (path.isDirectory() && !location.getAutoindex() && !index.empty())
     {
         std::cout << "Directory -> index\n";
-        File indexFile(_path + index);
-        Mime indexExtension(getExtension(index));
-
-        _httpStatus.setStatus(200);
-        setContent(indexFile.getFileContent(), indexExtension.getMime()); // set content-type + content-length + content
+        _buildIndexResponse(_path, index);
     }
     else // not found
     {
