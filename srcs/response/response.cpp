@@ -170,7 +170,7 @@ void       Response::_redirectionResponse(std::pair<int, std::string> redirectio
 {
     std::string redirectionPage;
 
-    std::cout << "Redirection " << redirection.first << "\n";
+    std::cout << "Redirection " << redirection.first << " -> " << redirection.second << "\n";
     _httpStatus.setStatus(redirection.first);
     setHeader("Location", redirection.second);
     redirectionPage = html::buildRedirectionPage(redirection);

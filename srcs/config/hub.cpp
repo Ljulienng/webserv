@@ -65,8 +65,6 @@ void	Hub::process()
 		}
 		else
 		{
-			std::cout << "revent = " << _fds[i].revents << " ERROR QUIT PROGRAM\n";
-			std::cout << "errno = " << errno << "  " << strerror(errno) << "\n";
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
@@ -121,7 +119,6 @@ void		Hub::_receiveRequest(size_t index)
 	std::vector<char>	buffer(MAX_BUF_LEN);
 
 	bytes = recv(_fds[index].fd, &buffer[0], MAX_BUF_LEN, 0);
-	// std::cout << "Request : \n" << &buffer[0] << "\n";
 	if (bytes < 0)
 		throw std::string("Error: can't receive client request");
 	else if (bytes > 0)
@@ -136,12 +133,11 @@ void		Hub::_receiveRequest(size_t index)
 			else
 				clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
 		}
+		clients[clientIndex].addRequest(); // move here not to create the request if bytes = 0
 	}
 	else //bytes = 0;
 		_closeConnection(clientIndex, CLIENT); // disconnect the client
 
-	// PARSE THE REQUEST
-	clients[clientIndex].addRequest();
 	_output("Received a new request", clients[clientIndex].getFd());
 }
 
