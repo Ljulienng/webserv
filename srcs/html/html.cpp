@@ -2,6 +2,24 @@
 
 namespace html {
 
+std::string     buildPage(std::string message)
+{
+    std::string     page;
+
+    page =
+        "<html>\n"
+        "   <head>\n"
+        "       <title></title>\n"
+        "   </head>\n"
+        "   <body>\n"
+        "       <p>\n"
+        "           Error : " + message + "\n"
+        "       </p>\n"
+        "   </body>\n"
+        "</html>\n";
+
+    return page;
+}
 
 std::string     buildAutoIndexPage(std::string path)
 {
@@ -60,7 +78,6 @@ std::string     buildErrorHtmlPage(std::string content)
     std::string     errorPage;
 
     errorPage =
-        "<!DOCTYPE html>\n"
         "<html>\n"
         "   <head>\n"
         "       <title> Error " + content +  "</title>\n"

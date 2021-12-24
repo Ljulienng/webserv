@@ -12,7 +12,7 @@ void	Hub::start()
 */
 void		Hub::_startSockets()
 {
-	std::vector<Server> &servers = Configuration::getInstance().getServers(); // test
+	std::vector<Server> &servers = Configuration::getInstance().getServers();
 
 	for (size_t i = 0; i < servers.size(); i++)
 	{
@@ -79,8 +79,8 @@ void	Hub::process()
 */
 void		Hub::_acceptIncomingConnections(size_t index)
 {
-	std::vector<Server> 		&servers = Configuration::getInstance().getServers(); // test
-	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients(); // test
+	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
+	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
 
 	while (42)
 	{
@@ -111,12 +111,11 @@ void		Hub::_acceptIncomingConnections(size_t index)
 */
 void		Hub::_receiveRequest(size_t index)
 {
-	std::vector<Server> &servers = Configuration::getInstance().getServers(); // test
-	std::vector<ClientSocket> &clients = Configuration::getInstance().getClients(); // test
-
-	size_t				clientIndex = index - servers.size();
-	int 				bytes = 0;
-	std::vector<char>	buffer(MAX_BUF_LEN);
+	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
+	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
+	size_t						clientIndex = index - servers.size();
+	int 						bytes = 0;
+	std::vector<char>			buffer(MAX_BUF_LEN);
 
 	bytes = recv(_fds[index].fd, &buffer[0], MAX_BUF_LEN, 0);
 	if (bytes < 0)
@@ -152,8 +151,8 @@ void		Hub::_receiveRequest(size_t index)
 */
 void		Hub::_prepareResponse(size_t index)
 {
-	std::vector<Server> &servers = Configuration::getInstance().getServers();
-	std::vector<ClientSocket> &clients = Configuration::getInstance().getClients();
+	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
+	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
 
 	size_t					clientIndex = index - servers.size();
 	std::queue<Request>		&requests = clients[clientIndex].getRequests();
@@ -162,11 +161,14 @@ void		Hub::_prepareResponse(size_t index)
 	{
 		Request 	req = requests.front();
 		//req.debug();
-		Response 	resp(req, clients[clientIndex].getServerName()); // check errors and build response (thanks to req elements)
+		
+		Response 	response(req, clients[clientIndex].getServerName()); // check errors and build response (thanks to req elements)
+		// to do :  make code cleaner, put only the minimum in Response class :
+		// response = makeResponse(req);
 
 		requests.pop();
 
-		clients[clientIndex].getResponses().push(resp);
+		clients[clientIndex].getResponses().push(response);
 	}
 
 	// the socket is now ready to write in addition to reading because we have added a response
@@ -185,8 +187,8 @@ void		Hub::_prepareResponse(size_t index)
 */
 void 		Hub::_sendResponse(size_t index)
 {
-	std::vector<Server> 		&servers = Configuration::getInstance().getServers(); // test
-	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients(); // test
+	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
+	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
 	size_t						clientIndex = index - servers.size();
 	std::queue<Response>		&responses = clients[clientIndex].getResponses();
 	std::string					buffer = clients[clientIndex].getBuffer();

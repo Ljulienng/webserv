@@ -18,14 +18,6 @@ void            Response::_updateMessage()
     
     // append content
     _message += _content;
-
-    /**************** TEST *************/   
-    // std::string content = "<html><body><h1>Hello world !</h1></body></html>";   
-    // _message += "Content-length: " + utils::myItoa(content.size()) + "\r\n";
-    // _message += "Content-Type: text/html; charset=UTF-8\r\n";
-    // _message += "\r\n";
-    // _message += content;
-    /***********************************/
 }
 
 /* SETTERS */
@@ -80,7 +72,6 @@ Response::Response() :
         _message()
 			// to be completed if new attributes
 {}
-
 
 
 std::string     parseUrl(Server &server, Location &location, std::string url, std::string index, std::string root)
@@ -177,7 +168,6 @@ void    Response::_getMethodResponse(Location &location, std::string _path, std:
 {
     File        path(_path);
     
-
     if (path.isRegularFile())
     {
         std::cout << "File -> ok regular file\n";
@@ -218,7 +208,7 @@ void    Response::_deleteMethodResponse(std::string path, std::string root)
        if (remove(path.c_str()) == 0)
         {
             _httpStatus.setStatus(200);
-            setContent(html::buildPage(root, 200), "text/html");
+            setContent(html::buildPage("Method DELETE ok : file successfully deleted"), "text/html");
         }
         else
             _buildErrorResponse(root, 204);
