@@ -83,20 +83,19 @@ Response::Response() :
 
 
 
-std::string     parseUrl(Server &server, Location &location, std::string uri)
+std::string     parseUrl(Server &server, Location &location, std::string url)
 {
-    (void)server;
-    std::string newUri;
+    std::string newUrl;
     std::string root;
     std::string index;
 
     if (location.getRoot().empty())
-        root = server.getRoot() ; // server.getRoot(); // a inclure dans Server
+        root = server.getRoot() ;
     else
         root = location.getRoot();
 
     if (location.getIndex().empty())
-        index = server.getIndex(); // server.getDefaultFile(); // a inclure dans Server
+        index = server.getIndex();
     else
         index = location.getIndex();
 
@@ -112,12 +111,14 @@ std::string     parseUrl(Server &server, Location &location, std::string uri)
     //                                      - else : 404 error
 
     // test
-    File indexFile(root + uri + index);
-    if (uri[uri.size() - 1] == '/' && indexFile.isRegularFile()) // if directory and directory/index exist
-        newUri = root + uri + index;
-    else    // file or directory without autoindex
-        newUri = root + uri;
-    return newUri;
+    // File    indexFile(root + url + index);
+    
+    // if (url[url.size() - 1] == '/' && indexFile.isRegularFile())    // if directory and directory/index exist
+    //     newUrl = root + url + index;
+    // else                                                         // file or directory without autoindex
+    //     newUrl = root + url;
+    newUrl = root + url;
+    return newUrl;
 }
 
 std::string     getExtension(std::string filename)
@@ -144,7 +145,6 @@ void    Response::_buildErrorResponse(std::string root, int status)
         std::string defaultErrorPage = html::buildErrorHtmlPage(utils::myItoa(status));
         setContent(defaultErrorPage, "text/html");
     }
-    std::cout << "Before crash here\n";
 }
 
 void    Response::_buildAutoIndexResponse(std::string path)
@@ -160,7 +160,8 @@ void    Response::_buildAutoIndexResponse(std::string path)
 void       Response::_redirectionResponse(std::pair<int, std::string> redirection)
 {
     std::string redirectionPage;
-    std::cout << "REDIRECTION RESPONSE\n";
+
+    std::cout << "Redirection " << redirection.first << "\n";
     _httpStatus.setStatus(redirection.first);
     setHeader("Location", redirection.second);
     redirectionPage = html::buildRedirectionPage(redirection);
@@ -171,18 +172,29 @@ void    Response::_getMethodResponse(Location &location, std::string _path, std:
 {
     (void)index;
     File        path(_path);
-    Mime        extension(getExtension(_path));
+    
 
     if (path.isRegularFile())
     {
-        std::cout << "Regular file\n";
-        _httpStatus.setStatus(200); // ok
+        std::cout << "File -> ok regular file\n";
+        Mime    extension(getExtension(_path));
+
+        _httpStatus.setStatus(200);
         setContent(path.getFileContent(), extension.getMime()); // set content-type + content-length + content
     }
     else if (path.isDirectory() && location.getAutoindex())
     {
-        std::cout << "Autoindex\n";
+        std::cout << "Directory -> autoindex\n";
         _buildAutoIndexResponse(_path);
+    }
+    else if (path.isDirectory() && !location.getAutoindex() && !index.empty())
+    {
+        std::cout << "Directory -> index\n";
+        File indexFile(_path + index);
+        Mime indexExtension(getExtension(index));
+
+        _httpStatus.setStatus(200);
+        setContent(indexFile.getFileContent(), indexExtension.getMime()); // set content-type + content-length + content
     }
     else // not found
     {

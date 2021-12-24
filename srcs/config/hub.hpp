@@ -16,7 +16,6 @@ class Hub
 {
     private :
 
-		// Configuration		_config;
 		struct pollfd		_fds[MAX_CONNECTIONS];
 		size_t				_nfds;
 
@@ -45,7 +44,6 @@ class Hub
 		void		setNfds(int nfds);
 
 		// GETTERS
-		// Configuration		&getConfig();
 		struct pollfd 		*getFds();
 		size_t				getNfds();
 };

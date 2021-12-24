@@ -14,13 +14,13 @@ void 	Server::start()
 void	Server::createSocket()
 {
 	_socket.setFd(socket(AF_INET, SOCK_STREAM, 0));
-	if (_socket.getFd() == -1)
+	if (_socket.getFd() < 0)
 		throw(std::string("Error: Failed to create socket"));
 }
 
 void	Server::setNonBlock()
 {
-	if (fcntl(_socket.getFd(), F_SETFL, O_NONBLOCK) == -1)
+	if (fcntl(_socket.getFd(), F_SETFL, O_NONBLOCK) < 0)
 		throw(std::string("Error: Failed to set non blocking connection"));
 }
 

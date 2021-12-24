@@ -10,12 +10,13 @@ std::string     buildAutoIndexPage(std::string path)
     std::list<std::string>::iterator    it = files.begin();
     std::string                         autoIndexPage;
 
-    autoIndexPage += "<!DOCTYPE html>";
-    autoIndexPage += "<html>";
-    autoIndexPage += "<head>";
-    autoIndexPage += "</head>";
-    autoIndexPage += "<body>";
-    autoIndexPage += "<h1> Index of </h1";
+    autoIndexPage =
+    "<html>\n"
+    "   <head>\n"
+    "       <meta charset=\"UTF-8\" />\n"
+    "   </head>\n"
+    "   <body>\n"
+    "   <h1> Index of </h1>\n";
     for ( ; it != files.end(); it++)
     {
         std::string newUrl = path + "/" + *it;
@@ -25,8 +26,9 @@ std::string     buildAutoIndexPage(std::string path)
         else if (file.isDirectory())
             autoIndexPage += "  <a href=\"./" + *it +  "/\">"  + *it + "/ </a> <br/>\n";
     }
-    autoIndexPage += "</body>";
-    autoIndexPage += "</html>";
+    autoIndexPage +=
+    "   </body>\n"
+    "</html>\n";
 
     return autoIndexPage;
 }
@@ -37,9 +39,9 @@ std::string     buildRedirectionPage(std::pair<int, std::string> redirection)
     HttpStatus      status(redirection.first);
 
     redirectionPage = 
-        "<!DOCTYPE html>\n"
         "<html>\n"
         "   <head>\n"
+        "       <meta charset=\"UTF-8\" />\n"
         "       <title> Redirection " + utils::myItoa(redirection.first) + " " + status.findStatusMessage() +  "</title>\n"
         "   </head>\n"
         "   <body>\n"
