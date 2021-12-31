@@ -4,31 +4,42 @@
 #include "webserv.hpp"
 #include "httpStatus.hpp"
 #include "request.hpp"
+#include "html.hpp"
+#include "utils.hpp"
 
 class Configuration;
+class Server;
+class Location;
 
 class Response
 {
     private :
-    // header :
         std::map<std::string, std::string>  _headers;
         std::string                         _httpVersion;
         HttpStatus                          _httpStatus;
         std::string                         _content;
         std::string                         _message; // the formatted message to insert to the buffer
 
-        void                                _updateMessage();
+        void        _updateMessage();
+        void        _dispatchingResponse(Request &request, Server &server, Location &location, std::string index, std::string root);
+        void        _cgiResponse();
+        void        _getMethodResponse(Location &location, std::string _path, std::string index, std::string root);
+        void        _postMethodResponse();
+        void        _deleteMethodResponse(std::string path, std::string root);
+        void        _buildAutoIndexResponse(std::string path);
+        void        _buildIndexResponse(std::string path, std::string index);
+        void        _redirectionResponse(std::pair<int, std::string> redirection);
+        void        _buildErrorResponse(std::string root, int status);
 
     public :
 		Response();
-        Response(Request &request, Configuration &config, std::string serverName);
+        Response(Request &request, std::string serverName);
 		Response(const Response &src);
 		~Response();
         Response &operator=(const Response &src);	
 
         // SETTERS
         void                                setHeader(std::string key, std::string value);
-        void                                setStatus(HttpStatus status);
         void                                setContent(std::string content, std::string contentType);
 
         // GETTERS

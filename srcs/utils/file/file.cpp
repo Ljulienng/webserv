@@ -25,6 +25,21 @@ bool	File::canReadFile()
 	return true;
 }
 
+/* build the list of files in a directory */
+std::list<std::string>		File::buildFilesList()
+{
+	DIR 					*dir;
+	struct 	dirent 			*diread;
+	std::list<std::string>	files;
+
+	if ((dir = opendir(_filePath.c_str())) != NULL)
+		while ((diread = readdir(dir)) != NULL)
+			files.push_back(diread->d_name);
+	closedir(dir);
+
+	return files;
+}
+
 std::string	File::findContentType(std::string extension)
 {
 	Mime mime;
@@ -35,20 +50,34 @@ std::string	File::findContentType(std::string extension)
 
 /* GETTERS */
 std::string		&File::getFilePath()
-{
-	return _filePath;
-}
+{ return _filePath; }
+
+std::string		&File::getFileContent()
+{ return _fileContent; }
 
 struct stat		&File::getfileStat()
-{
-	return _fileStat;
-}
+{ return _fileStat; }
+
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
+File::File() :
+	_filePath(),
+	_fileContent(),
+	_fileStat() {}
 
-File::File() : _filePath(), _fileStat() {}
-
-File::File(std::string filePath) : _filePath(filePath), _fileStat() {}
+File::File(std::string filePath) : 
+	_filePath(filePath),
+	_fileContent(),
+	_fileStat()
+{
+	if (isRegularFile())
+	{
+		std::ifstream ifs;
+		ifs.open(filePath.c_str());
+		std::getline(ifs, _fileContent, '\0');
+		ifs.close();
+	}
+}
 
 File::File(const File &src)
 {

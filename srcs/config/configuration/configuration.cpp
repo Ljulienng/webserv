@@ -1,7 +1,9 @@
 #include "configuration.hpp"
 
-void	Configuration::_parseConfigPath()
+void 		Configuration::parseConfigPath(std::string configFile)
 {
+	_configFile = configFile;
+
 	File 	file(_configFile);
 
 	if (_configFile.find(".conf") != _configFile.size() - 5 || _configFile.size() < 6)
@@ -11,6 +13,18 @@ void	Configuration::_parseConfigPath()
 	if (file.canReadFile() == false)
 		throw std::string("Error : can't read configuration file");
 }
+
+// void	Configuration::_parseConfigPath()
+// {
+// 	File 	file(_configFile);
+
+// 	if (_configFile.find(".conf") != _configFile.size() - 5 || _configFile.size() < 6)
+// 		throw std::string("Error : the configuration file must be a <something.conf> file");
+// 	if (file.isRegularFile() == false)
+// 		throw std::string("Error : the configuration file is not a regular file");
+// 	if (file.canReadFile() == false)
+// 		throw std::string("Error : can't read configuration file");
+// }
 
 /*
 ** remove spaces in the configuration file except beetween 2 quotes to make parsing easier
@@ -190,7 +204,7 @@ void	Configuration::parse()
 	std::getline(fileStream, buf, '\0');
 	fileStream.close();
 	_cleanSpaces(buf);
-	// std::cout << "Buffer :\n" << buf << std::endl;
+	//std::cout << "Buffer :\n" << buf << std::endl;
 
 	std::map<std::string, std::string> 	mapConfig;
 	str_ite 							it = buf.begin();
@@ -198,6 +212,7 @@ void	Configuration::parse()
 
 	if (!_checkConfigScope(it, ite))
 		throw std::string("Error: bad format : config scope");
+	//std::cout << "it = " << *(it + 2) << "\n";
 	if (*it++ != '{')
 		throw std::string("Error: bad format : config scope");
 	while (it != ite)
@@ -257,12 +272,11 @@ void	Configuration::setConfigDatas(std::map<std::string, std::string> mapConfig)
 	std::map<std::string, std::string>::iterator ite = mapConfig.end();
 	int ret;
 	typedef void (Configuration::* funcPtr)(std::string);
-	funcPtr setData[2] = {	&Configuration::setCgi,
-							&Configuration::setMaxBodySize };
+	funcPtr setData[1] = {	&Configuration::setCgi };
 	while (it != ite)
 	{
 		if ((ret = isValidExpression(it->first, configExpression)) != -1)
-			(this->*setData[ret])(it->second);
+				(this->*setData[ret])(it->second);
 		else
 			throw (std::string("Error: unknown expression in configuration file : " + it->first));
 		it++;
@@ -272,43 +286,17 @@ void	Configuration::setConfigDatas(std::map<std::string, std::string> mapConfig)
 void	Configuration::setCgi(std::string cgi)
 {
 	Str	cgiElements(cgi);
-
+	
 	if (cgiElements.getTokens().size() != 2 || cgiElements.getTokens()[0][0] != '.')
 		throw (std::string("Error: bad cgi format in configuration file"));
 	_cgi.first = cgiElements.getTokens()[0];
 	_cgi.second = cgiElements.getTokens()[1];
 }
 
-void	Configuration::setMaxBodySize(std::string maxBodySize)
-{
-	Str val(maxBodySize);
-
-	_maxBodySize = val.getNum();
-
-	for (size_t i = 0; i < _servers.size(); i++)
-	{
-		if (_servers[i].getMaxBodySize() == 0)
-			_servers[i].setMaxBodySize(maxBodySize);
-		for (size_t j = 0; j < _servers[i].getLocations().size(); j++)
-		{
-			if (_servers[i].getLocations()[j].getMaxBodySize() == 0)
-			{
-				std::stringstream ss;
-				ss << _servers[i].getMaxBodySize();
-				_servers[i].getLocations()[j].setMaxBodySize(ss.str());
-			}
-		}
-	}
-
-}
-
 
 /* GETTERS */
 std::pair<std::string, std::string>		&Configuration::getCgi()
 { return _cgi; }
-
-size_t		&Configuration::getMaxBodySize()
-{ return _maxBodySize; }
 
 std::map<int, std::string>		&Configuration::getErrorPages()
 { return _errorPages; }
@@ -321,25 +309,25 @@ std::vector<ClientSocket>	&Configuration::getClients()
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-Configuration::Configuration() : 	_configFile(),
+Configuration::Configuration() : Singleton(),
+									_configFile(),
 									_cgi(),
-									_maxBodySize(),
 									_errorPages(),
 									_servers(),
 									_clients()
 									// to be completed if new attributes
 {}
 
-Configuration::Configuration(std::string configFile) : 
+Configuration::Configuration(std::string configFile) :
+									Singleton(),
 									_configFile(configFile),
 									_cgi(),
-									_maxBodySize(),
 									_errorPages(),
 									_servers(),
 									_clients()					
 									// to be completed if new attributes
 {
-	_parseConfigPath();
+	// _parseConfigPath();
 }
 
 Configuration::Configuration(const Configuration &src)
@@ -355,7 +343,6 @@ Configuration &Configuration::operator=(const Configuration &src)
 	{
 		_configFile = src._configFile;
 		_cgi = src._cgi;
-		_maxBodySize = src._maxBodySize;
 		_errorPages = src._errorPages;
 		_servers = src._servers;
 		_clients = src._clients;
@@ -386,7 +373,6 @@ void	Configuration::debug()
 	std::cout << "\n***** DEBUG *****\n";
 	std::cout << "CONFIG (general scope) =>\n";
 	std::cout << " - cgi =  1->" << _cgi.first << "  2->" << _cgi.second << "\n";
-	std::cout << " - maxBodySize = " << _maxBodySize << "\n";
 	std::map<int, std::string>::iterator itErr = _errorPages.begin();
 	for (; itErr != _errorPages.end(); itErr++)
 		std::cout << " - errorPages = " << itErr->first << ":" << itErr->second << "\n";

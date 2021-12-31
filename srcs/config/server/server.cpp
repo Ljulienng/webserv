@@ -14,13 +14,13 @@ void 	Server::start()
 void	Server::createSocket()
 {
 	_socket.setFd(socket(AF_INET, SOCK_STREAM, 0));
-	if (_socket.getFd() == -1)
+	if (_socket.getFd() < 0)
 		throw(std::string("Error: Failed to create socket"));
 }
 
 void	Server::setNonBlock()
 {
-	if (fcntl(_socket.getFd(), F_SETFL, O_NONBLOCK) == -1)
+	if (fcntl(_socket.getFd(), F_SETFL, O_NONBLOCK) < 0)
 		throw(std::string("Error: Failed to set non blocking connection"));
 }
 
@@ -38,7 +38,7 @@ void 	Server::setSocketOptions()
 void	Server::bindSocket()
 {
 	if (bind(_socket.getFd(), (struct sockaddr *)&_socket.getAddr(), sizeof(_socket.getAddr())) < 0)
-			throw(std::string("Error: Failed to bind"));
+		throw(std::string("Error: Failed to bind"));
 }
 
 void	Server::listenSocket()
@@ -129,16 +129,19 @@ void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 	std::map<std::string, std::string>::iterator ite = mapServer.end();
 	int ret;
 	typedef void (Server::* funcPtr)(std::string);
-	funcPtr setData[4] = {	&Server::setName,
+	funcPtr setData[7] = {	&Server::setName,
 							&Server::setIp,
 							&Server::setPort,
-							&Server::setMaxBodySize };
+							&Server::setRoot,
+							&Server::setIndex,
+							&Server::setMaxBodySize,
+							&Server::setUploadPath };
 	while (it != ite)
 	{
 		if ((ret = isValidExpression(it->first, serverExpression)) != -1)
 			(this->*setData[ret])(it->second);
 		else
-			throw (std::string("Error: unknown expression in configuration file"));
+			throw (std::string("Error: unknown expression in configuration file : " + it->first));
 		it++;
 	}
 }
@@ -180,11 +183,28 @@ void	Server::setPort(std::string port)
 	_port = static_cast<unsigned short>(atoi(port.c_str()));
 }
 
+// gerer cas d'erreurs
+void	Server::setRoot(std::string root)
+{
+	_root = root;
+}
+
+// gerer cas d'erreurs
+void	Server::setIndex(std::string index)
+{
+	_index = index;
+}
+
 void	Server::setMaxBodySize(std::string maxBodySize)
 {
 	Str val(maxBodySize);
 
 	_maxBodySize = val.getNum();
+}
+
+void		Server::setUploadPath(std::string uploadPath)
+{
+	_uploadPath = uploadPath;
 }
 
 
@@ -199,11 +219,20 @@ std::string		&Server::getIp()
 unsigned short		&Server::getPort()
 { return _port; }
 
+std::string				&Server::getRoot()
+{ return _root; }
+
+std::string				&Server::getIndex()
+{ return _index; }
+
 std::vector<Location>	&Server::getLocations()
 { return _locations; }
 
 size_t		&Server::getMaxBodySize()
 { return _maxBodySize; }
+
+std::string		&Server::getUploadPath()
+{ return _uploadPath; }
 
 Socket 		&Server::getSocket()
 { return _socket; }
@@ -214,7 +243,10 @@ Socket 		&Server::getSocket()
 Server::Server() : 	_name(),
 					_ip(),
 					_port(),
-					_maxBodySize(),
+					_root(),
+					_index(),
+					_maxBodySize(1000000), // default nginx
+					_uploadPath(),
 					_locations(),
 					_socket()
 					// to be completed if new attributes
@@ -234,7 +266,10 @@ Server &Server::operator=(const Server &src)
 		_name = src._name;
 		_ip = src._ip;
 		_port = src._port;
+		_root = src._root;
+		_index = src._index;
 		_maxBodySize = src._maxBodySize;
+		_uploadPath = src._uploadPath;
 		_locations = src._locations;
 		_socket = src._socket;
 		// to be completed if new attributes
@@ -248,7 +283,10 @@ void	Server::debug(size_t index)
 	std::cout << "\t - name = " << _name << "\n";
 	std::cout << "\t - ip = " << _ip << "\n";
 	std::cout << "\t - port = " << _port << "\n";
+	std::cout << "\t - root = " << _root << "\n";
+	std::cout << "\t - index = " << _index << "\n";
 	std::cout << "\t - maxBodySize = " << _maxBodySize << "\n";
+	std::cout << "\t - uploadPath = " << _uploadPath << "\n";
 	std::cout << "\t - fd socket = " << _socket.getFd() << "\n";
 
 	std::vector<Location>::iterator itLoc = _locations.begin();

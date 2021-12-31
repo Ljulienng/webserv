@@ -2,7 +2,8 @@
 
 void	Hub::start()
 {
-	_config.parse();
+	Configuration::getInstance().parse();
+	// Configuration::getInstance().debug();
 	_startSockets();
 }
 
@@ -11,10 +12,12 @@ void	Hub::start()
 */
 void		Hub::_startSockets()
 {
-	for (size_t i = 0; i < _config.getServers().size(); i++)
+	std::vector<Server> &servers = Configuration::getInstance().getServers();
+
+	for (size_t i = 0; i < servers.size(); i++)
 	{
-		_config.getServers()[i].start();
-		_fds[_nfds].fd = _config.getServers()[i].getSocket().getFd();
+		servers[i].start();
+		_fds[_nfds].fd = servers[i].getSocket().getFd();
 		_fds[_nfds].events = POLLIN;
 		_nfds++;
 	}
@@ -25,21 +28,14 @@ void		Hub::_startSockets()
 */
 void	Hub::process()
 {
-	int pollRet = 1;
-		
-	// call poll and wait an infinite time
-	pollRet = poll(_fds, _nfds, -1);
-	// poll is a blocking function and SIGINT will unblock it
-	if (pollRet < 0)
-	{ // we use EINTR to know if it's a ctrl-c or a poll error
-		if (errno == EINTR)
-			return ;
-		else
-		{
-			_closeAllConnections();
-			exit(EXIT_FAILURE);
-		}
+	int pollRet = pollRet = poll(_fds, _nfds, -1); // call poll and wait an infinite time
+	
+	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
+	{
+		_closeAllConnections();
+		return ;
 	}
+
 	// one or more fd are readable. Need to determine which ones they are
 	for (size_t i = 0; i < _nfds; i++)
 	{
@@ -50,9 +46,8 @@ void	Hub::process()
 		// if revent is POLLIN, there is data waiting to be read
 		if (_fds[i].revents == POLLIN)
 		{
-			// std::cout <<  " POLLIN\n";
 			// if the current fd is one of our servers, we connect a new client (listening descriptor is readable)
-			if (i < _config.getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
+			if (i < Configuration::getInstance().getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
 			{
 				_acceptIncomingConnections(i);
 			}
@@ -66,12 +61,10 @@ void	Hub::process()
 		}
 		else if (_fds[i].revents == POLLOUT)
 		{
-			// std::cout <<  " POLLOUT\n";
 			_sendResponse(i);
 		}
 		else
 		{
-			// std::cout << " ERROR QUIT PROGRAM\n";
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
@@ -86,6 +79,9 @@ void	Hub::process()
 */
 void		Hub::_acceptIncomingConnections(size_t index)
 {
+	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
+	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
+
 	while (42)
 	{
 		if (_nfds == MAX_CONNECTIONS)
@@ -96,10 +92,10 @@ void		Hub::_acceptIncomingConnections(size_t index)
 			break ;
 
 		ClientSocket client;
-		client.setServerName(_config.getServers()[index].getName());
+		client.setServerName(servers[index].getName());
 		client.setFd(acceptRet);
-		client.setPort(_config.getServers()[index].getPort());
-		_config.getClients().push_back(client);
+		client.setPort(servers[index].getPort());
+		clients.push_back(client);
 
 		// add the new incoming connection to the pollfd structure
 		_output("New incoming connection", acceptRet);
@@ -115,16 +111,18 @@ void		Hub::_acceptIncomingConnections(size_t index)
 */
 void		Hub::_receiveRequest(size_t index)
 {
-	size_t				clientIndex = index - _config.getServers().size();
-	int 				bytes = 0;
-	std::vector<char>	buffer(MAX_BUF_LEN);
+	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
+	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
+	size_t						clientIndex = index - servers.size();
+	int 						bytes = 0;
+	std::vector<char>			buffer(MAX_BUF_LEN);
 
 	bytes = recv(_fds[index].fd, &buffer[0], MAX_BUF_LEN, 0);
 	if (bytes < 0)
 		throw std::string("Error: can't receive client request");
 	else if (bytes > 0)
 	{
-		_config.getClients()[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
+		clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
 		while (bytes == MAX_BUF_LEN)
 		{
 			buffer.clear();
@@ -132,15 +130,14 @@ void		Hub::_receiveRequest(size_t index)
 			if (bytes < 0)
 				throw std::string("Error: can't receive client request");
 			else
-				_config.getClients()[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
+				clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
 		}
+		clients[clientIndex].addRequest(); // move here not to create the request if bytes = 0
 	}
 	else //bytes = 0;
 		_closeConnection(clientIndex, CLIENT); // disconnect the client
 
-	// PARSE THE REQUEST
-	_config.getClients()[clientIndex].addRequest();
-	_output("Received a new request", _config.getClients()[clientIndex].getFd());
+	_output("Received a new request", clients[clientIndex].getFd());
 }
 
 /*
@@ -154,22 +151,28 @@ void		Hub::_receiveRequest(size_t index)
 */
 void		Hub::_prepareResponse(size_t index)
 {
-	size_t					clientIndex = index - _config.getServers().size();
-	std::queue<Request>		&requests = _config.getClients()[clientIndex].getRequests();
+	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
+	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
+
+	size_t					clientIndex = index - servers.size();
+	std::queue<Request>		&requests = clients[clientIndex].getRequests();
 
 	while (requests.empty() == false)
 	{
 		Request 	req = requests.front();
 		//req.debug();
-		Response 	resp(req, _config, _config.getClients()[clientIndex].getServerName()); // check errors and build response (thanks to req elements)
+		
+		Response 	response(req, clients[clientIndex].getServerName()); // check errors and build response (thanks to req elements)
+		// to do :  make code cleaner, put only the minimum in Response class :
+		// response = makeResponse(req);
 
 		requests.pop();
 
-		_config.getClients()[clientIndex].getResponses().push(resp);
+		clients[clientIndex].getResponses().push(response);
 	}
 
 	// the socket is now ready to write in addition to reading because we have added a response
-	if (_config.getClients()[clientIndex].getResponses().empty() == false)
+	if (clients[clientIndex].getResponses().empty() == false)
 		_fds[index].events = POLLIN | POLLOUT;
 }
 
@@ -184,23 +187,24 @@ void		Hub::_prepareResponse(size_t index)
 */
 void 		Hub::_sendResponse(size_t index)
 {
-	size_t					clientIndex = index - _config.getServers().size();
-	std::queue<Response>	&responses = _config.getClients()[clientIndex].getResponses();
-	std::string				buffer = _config.getClients()[clientIndex].getBuffer();
+	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
+	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
+	size_t						clientIndex = index - servers.size();
+	std::queue<Response>		&responses = clients[clientIndex].getResponses();
+	std::string					buffer = clients[clientIndex].getBuffer();
 
 	// we process the responses one by one and append them to the client buffer
 	// then delete the response until the queue is empty
 	while (responses.empty() == false)
 	{
-		// process in FIFO order, we process the oldest element first
-		Response response = responses.front();
+		Response response = responses.front(); // process in FIFO order, we process the oldest element first
 
 		// then have to check header and status of the response
 		// ...
 
 		std::string		message = response.getMessage(); // put into a string the response
 		buffer.insert(buffer.end(), message.begin(), message.end()); // append it to the client buffer
-		_output("Response sent", _config.getClients()[clientIndex].getFd());
+		_output("Response sent", clients[clientIndex].getFd());
 		responses.pop(); // delete the response
 	}
 
@@ -208,33 +212,39 @@ void 		Hub::_sendResponse(size_t index)
 	{
 		// we can use send() ( without flag parameter, send is equivalent to write() )
 		// so write into the _fds[i].fd the content of buffer
+		// std::cout << "Response = \n" << &buffer[0] << "\n";
 		int bytes = write(_fds[index].fd, &buffer[0], buffer.size());
 
 		if (bytes <= 0)
-			exit(EXIT_FAILURE); // disconnect each sockets (server and clients) and exit
+		{
+			_closeAllConnections();
+			exit(EXIT_FAILURE);
+		}
 		buffer.erase(buffer.begin(), buffer.begin() + bytes); // clear the buffer
 
-		// finished to write so we are now waiting for reading
-		_fds[index].events = POLLIN;
+		_fds[index].events = POLLIN; // finished to write so we are now waiting for reading
 	}
 }
 
 void		Hub::_closeConnection(size_t index, int type)
 {
+	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
+	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
+
 	if (type == SERVER)
 	{
-		_output("Connection closed - server", _config.getServers()[index].getSocket().getFd());
-		close(_config.getServers()[index].getSocket().getFd());
-		_config.getServers().erase(_config.getServers().begin() + index);
+		_output("Connection closed - server", servers[index].getSocket().getFd());
+		close(servers[index].getSocket().getFd());
+		servers.erase(servers.begin() + index);
 		for (size_t i = index; i < _nfds; i++)
 			_fds[i] = _fds[i + 1];
 	}
 	else 
 	{
-		_output("Connection closed - client", _config.getClients()[index].getFd());
-		close(_config.getClients()[index].getFd());
-		_config.getClients().erase(_config.getClients().begin() + index);
-		for (size_t i = index + _config.getServers().size(); i < _nfds; i++)
+		_output("Connection closed - client", clients[index].getFd());
+		close(clients[index].getFd());
+		clients.erase(clients.begin() + index);
+		for (size_t i = index + servers.size(); i < _nfds; i++)
 			_fds[i] = _fds[i + 1];	
 	}
 	_nfds--;
@@ -242,8 +252,8 @@ void		Hub::_closeConnection(size_t index, int type)
 
 void		Hub::_closeAllConnections()
 {
-	size_t nbOfServers = _config.getServers().size();
-	size_t nbOfClients = _config.getClients().size();
+	size_t 		nbOfServers = Configuration::getInstance().getServers().size();
+	size_t 		nbOfClients = Configuration::getInstance().getClients().size();
 
 	for (size_t index = 0; index < nbOfServers; index++)
 		_closeConnection(0, SERVER);
@@ -261,11 +271,6 @@ void			Hub::_output(std::string msg, int fd)
 void		Hub::setNfds(int nfds)
 { _nfds = nfds; }
 
-
-/* GETTERS */
-Configuration	&Hub::getConfig()
-{ return _config; }
-
 struct pollfd *		Hub::getFds()
 { return _fds; }
 
@@ -274,14 +279,15 @@ size_t		Hub::getNfds()
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-Hub::Hub() : _config(), _nfds() 
+Hub::Hub() : _nfds() 
 			// to be completed if new attributes
 {
 	memset(_fds, 0, sizeof(_fds));
 }
 
-Hub::Hub(std::string configFile) : _config(configFile), _nfds() 
+Hub::Hub(std::string configFile) : _nfds() 
 {
+	Configuration::getInstance().parseConfigPath(configFile);
 	memset(_fds, 0, sizeof(_fds));
 }
 
@@ -290,16 +296,17 @@ Hub::Hub(const Hub &src)
 	*this = src;
 }
 
+// find another way to close connection
+// if fail to bind, try to close connection and segfault
 Hub::~Hub()
 {
-	_closeAllConnections();
+	// _closeAllConnections();
 }
 
 Hub &Hub::operator=(const Hub &src)
 {
 	if (&src != this)
 	{
-		_config = src._config;
 		_nfds = src._nfds;
 		// to be completed if new attributes
 	}

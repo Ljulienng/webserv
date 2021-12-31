@@ -26,7 +26,6 @@ int     main(int ac, char **argv, char **env)
         {
 			Hub hub(argv[1]);
             hub.start(); // parse and setup
-            // hub.getConfig().debug();
             while (g_run)
                 hub.process();           
         }

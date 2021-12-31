@@ -16,7 +16,10 @@ class Server
 		std::string					_name;
 		std::string					_ip;
 		unsigned short				_port;
+		std::string					_root;
+		std::string					_index; //defaultFile
 		size_t						_maxBodySize; 
+		std::string					_uploadPath; // path to upload content with POST
 		std::vector<Location>		_locations;
 		Socket						_socket;
 		
@@ -46,13 +49,19 @@ class Server
 		void		setName(std::string name);
 		void		setIp(std::string ip);
 		void		setPort(std::string port);
+		void		setRoot(std::string root);
+		void		setIndex(std::string index);
 		void		setMaxBodySize(std::string maxBodySize);
+		void		setUploadPath(std::string uploadPath);
 
 		// GETTERS
 		std::string				&getName();
 		std::string				&getIp();
 		unsigned short			&getPort();
+		std::string				&getRoot();
+		std::string				&getIndex();
 		size_t					&getMaxBodySize();
+		std::string				&getUploadPath();
 		std::vector<Location>	&getLocations();
 		Socket 					&getSocket();
 };

@@ -20,8 +20,11 @@ class HttpStatus
         ~HttpStatus();
         HttpStatus &operator=(const HttpStatus &src);	
 
-        std::string     findStatusMessage(size_t code);
+        std::string     findStatusMessage();
 
+        // SETTERS
+        void            setStatus(int status);
+        
         // GETTERS
         size_t          &getCode();
         std::string     &getMessage();
