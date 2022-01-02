@@ -58,7 +58,6 @@ int		Request::verifArg()
 
 	// TRIM ALL WHITESPACE NEWLINE ETC
 	trimChar(_method);
-	trimChar(_path);
 	trimChar(_version);
 
 	// CHECKING VERSION
@@ -103,7 +102,8 @@ int		Request::parseFirstLine(std::string line)
 		std::cerr << "No path/HTTP version" << std::endl;
 		return ((_ret = 400));
 	}
-	_path.assign(arg);
+	trimChar(arg);
+	_path = Uri(arg);
 
 	// ASSIGNING VERSION
 	i = line.find_first_of('\n');
@@ -242,7 +242,7 @@ std::string							&Request::getMethod()
 { return (_method); }
 
 std::string							&Request::getPath()
-{ return (_path); }
+{ return (_path.getPath()); }
 
 std::string							&Request::getVersion()
 { return (_version); }
@@ -310,7 +310,7 @@ void			Request::debug()
 
 	std::cout << "\n***** DEBUG *****\n";
 	std::cout << "_METHOD = " << _method << std::endl;
-	std::cout << "_PATH = " << _path << std::endl;
+	_path.debug();
 	std::cout << "_version = " << _version << std::endl;
 	std::cout << "_ret = " << _ret << std::endl;
 
