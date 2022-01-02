@@ -2,6 +2,7 @@
 # define REQUEST_HPP
 
 #include "webserv.hpp"
+#include "uri.hpp"
 #include "str.hpp"
 
 
@@ -11,7 +12,7 @@ private:
 	// const std::string 	&_rawRequest;
 
 	std::string									_method;
-	std::string									_path;
+	Uri											_path;
 	std::string									_version;
 	std::map<std::string, std::string>			_headers;
 	std::vector<std::pair<std::string, float> >	_acceptedLang; 

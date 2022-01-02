@@ -58,7 +58,6 @@ int		Request::verifArg()
 
 	// TRIM ALL WHITESPACE NEWLINE ETC
 	trimChar(_method);
-	trimChar(_path);
 	trimChar(_version);
 
 	// CHECKING VERSION
@@ -103,7 +102,8 @@ int		Request::parseFirstLine(std::string line)
 		std::cerr << "No path/HTTP version" << std::endl;
 		return ((_ret = 400));
 	}
-	_path.assign(arg);
+	trimChar(arg);
+	_path = Uri(arg);
 
 	// ASSIGNING VERSION
 	i = line.find_first_of('\n');
@@ -186,7 +186,6 @@ void		Request::setAcceptedLanguages()
 	if (value.size() < 5)
 		return ;
 	langVec = splitString(value, ',');
-	// std:: cout << value << std::endl;
 	for (std::vector<std::string>::iterator it = langVec.begin(); it != langVec.end(); it++)
 	{
 		weight = 0.0;
@@ -215,8 +214,11 @@ int			Request::parse(const std::string &request)
 	std::string tmp;
 	size_t 		i = 0;
 
-	// if (!request.size())
-	// 	return (400);
+	if (!request.size())
+	{
+		std::cerr << "Request is empty" << std::endl;
+		return (400);
+	}
 	initHeaders();
 	i = request.find_first_of('\n');
 	line = request.substr(0, i);
@@ -230,7 +232,7 @@ int			Request::parse(const std::string &request)
 	if (tmp.size())
 		tmp.assign(request, i, std::string::npos);
 	parsebody(tmp);
-	// debug();
+	debug();
 	return (_ret);
 }
 
@@ -240,7 +242,7 @@ std::string							&Request::getMethod()
 { return (_method); }
 
 std::string							&Request::getPath()
-{ return (_path); }
+{ return (_path.getPath()); }
 
 std::string							&Request::getVersion()
 { return (_version); }
@@ -308,7 +310,7 @@ void			Request::debug()
 
 	std::cout << "\n***** DEBUG *****\n";
 	std::cout << "_METHOD = " << _method << std::endl;
-	std::cout << "_PATH = " << _path << std::endl;
+	_path.debug();
 	std::cout << "_version = " << _version << std::endl;
 	std::cout << "_ret = " << _ret << std::endl;
 
