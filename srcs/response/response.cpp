@@ -21,7 +21,6 @@ void            Response::_updateMessage()
 }
 
 /* SETTERS */
-
 void        Response::setHeader(std::string key, std::string value)
 {
     _headers.insert(std::pair<std::string, std::string>(key, value));
@@ -35,7 +34,6 @@ void        Response::setContent(std::string content, std::string contentType)
 }
 
 /* GETTERS */
-
 /* get all headers */
 std::map<std::string, std::string>         &Response::getHeaders()
 { return  _headers; }
@@ -244,6 +242,20 @@ void      Response::_dispatchingResponse(Request &request, Server &server, Locat
         _deleteMethodResponse(path, root);
 }
 
+Response::Response() : 
+        _headers(),
+        _httpVersion("HTTP/1.1"),
+        _httpStatus(),
+        _content(),
+        _message()
+{
+    // we set some headers
+    setHeader("Server", "Webserv_42");
+    setHeader("Date", utils::getTimestamp());
+    setHeader("Connection", "keep-alive");
+}
+
+
 Response::Response(Request &request, std::string serverName) : 
         _headers(),
         _httpVersion("HTTP/1.1"),
@@ -262,7 +274,7 @@ Response::Response(Request &request, std::string serverName) :
     std::string root;
     std::string index;
 
-    location.getRoot().empty()  ? root = server.getRoot()   : root = location.getRoot();
+    location.getRoot().empty() ? root = server.getRoot() : root = location.getRoot();
     location.getIndex().empty() ? index = server.getIndex() : index = location.getIndex();
     
     // create a class with the server, location, root, index and all context matching the request

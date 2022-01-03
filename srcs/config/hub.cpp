@@ -162,9 +162,9 @@ void		Hub::_prepareResponse(size_t index)
 		Request 	req = requests.front();
 		//req.debug();
 		
-		Response 	response(req, clients[clientIndex].getServerName()); // check errors and build response (thanks to req elements)
-		// to do :  make code cleaner, put only the minimum in Response class :
-		// response = makeResponse(req);
+		// Response 	response(req, clients[clientIndex].getServerName()); // check errors and build response (thanks to req elements)
+		Response 	response; //(req, clients[clientIndex].getServerName()); // check errors and build response (thanks to req elements)
+		response = constructResponse(req, clients[clientIndex].getServerName());
 
 		requests.pop();
 
