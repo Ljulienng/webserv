@@ -21,6 +21,7 @@ class File
 		~File();
 		File &operator=(const File &src);
 
+		bool						exists();
 		bool						isRegularFile();
 		bool						isDirectory();
 		bool						canReadFile();

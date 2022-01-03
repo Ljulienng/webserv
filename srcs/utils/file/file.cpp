@@ -1,5 +1,12 @@
 #include "file.hpp"
 
+bool	File::exists()
+{
+	if (stat(_filePath.c_str(), &_fileStat) < 0)
+		return false;
+	return true;
+}
+
 bool	File::isRegularFile()
 {
 	if (stat(_filePath.c_str(), &_fileStat) < 0)
