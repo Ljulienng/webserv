@@ -128,13 +128,17 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
 
 Response    postMethodResponse(Response &response, Request &request, t_configMatch &configMatch)
 {
-    File    fileToPost(configMatch.path);
+    File            fileToPost(configMatch.path);
+    std::string     pathToUpload;
 
     // check we have a directory to uploads files else errorResponse
-    // check if "multipart/form-data"
+    if (configMatch.server.getUploadPath() == "")
+        return errorResponse(response, configMatch, 403);
+
+    pathToUpload = configMatch.root + configMatch.server.getUploadPath();
 
     // we create the file
-    if (fileToPost.createFile(url, request.getBody()) < 0)
+    if (!fileToPost.createFile(pathToUpload, request.getBody()))
         return errorResponse(response, configMatch, 500);
     response.setStatus(201);
 

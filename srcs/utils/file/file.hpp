@@ -25,6 +25,8 @@ class File
 		bool						isRegularFile();
 		bool						isDirectory();
 		bool						canReadFile();
+		bool						createFile(std::string filename);
+		bool						createFile(std::string filename, std::string content);
 		std::list<std::string>		buildFilesList();
 		std::string					findContentType(std::string extension);
 		// ...

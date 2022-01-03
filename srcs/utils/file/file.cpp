@@ -32,6 +32,30 @@ bool	File::canReadFile()
 	return true;
 }
 
+bool 	File::createFile(std::string filename)
+{
+	int fd;
+
+	if ((fd = open(filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, 0666)) < 0)
+		return false;
+	close(fd);
+
+	return true;
+}
+
+bool	File::createFile(std::string filename, std::string content)
+{
+	int fd;
+
+	if ((fd = open(filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, 0666)) < 0)
+		return false;
+	write(fd, content.c_str(), content.size());
+	close(fd);
+
+	return true;	
+}
+
+
 /* build the list of files in a directory */
 std::list<std::string>		File::buildFilesList()
 {
