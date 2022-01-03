@@ -21,19 +21,19 @@ class Response
         std::string                         _message; // the formatted message to insert to the buffer
 
         void        _updateMessage();
-        void        _dispatchingResponse(Request &request, Server &server, Location &location, std::string index, std::string root);
-        void        _cgiResponse();
-        void        _getMethodResponse(Location &location, std::string _path, std::string index, std::string root);
-        void        _postMethodResponse();
-        void        _deleteMethodResponse(std::string path, std::string root);
-        void        _buildAutoIndexResponse(std::string path);
-        void        _buildIndexResponse(std::string path, std::string index);
-        void        _redirectionResponse(std::pair<int, std::string> redirection);
-        void        _buildErrorResponse(std::string root, int status);
+        // void        _dispatchingResponse(Request &request, Server &server, Location &location, std::string index, std::string root);
+        // void        _cgiResponse();
+        // void        _getMethodResponse(Location &location, std::string _path, std::string index, std::string root);
+        // void        _postMethodResponse();
+        // void        _deleteMethodResponse(std::string path, std::string root);
+        // void        _buildAutoIndexResponse(std::string path);
+        // void        _buildIndexResponse(std::string path, std::string index);
+        // void        _redirectionResponse(std::pair<int, std::string> redirection);
+        // void        _buildErrorResponse(std::string root, int status);
 
     public :
 		Response();
-        Response(Request &request, std::string serverName);
+        // Response(Request &request, std::string serverName);
 		Response(const Response &src);
 		~Response();
         Response &operator=(const Response &src);	

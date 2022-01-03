@@ -1,15 +1,8 @@
+#include "responseConstructor.hpp"
 
-#include "response.hpp"
-#include "request.hpp"
-#include "server.hpp"
-#include "location.hpp"
-
-std::string     parseUrl(Server &server, Location &location, std::string url, std::string index, std::string root)
+std::string     parseUrl(std::string url, t_configMatch &configMatch)
 {
     std::string newUrl;
-    (void)index;
-    (void)server;
-    (void)location;
 
     // if uri is file ->
     //          - if exist : display content
@@ -29,7 +22,7 @@ std::string     parseUrl(Server &server, Location &location, std::string url, st
     //     newUrl = root + url + index;
     // else                                                         // file or directory without autoindex
     //     newUrl = root + url;
-    newUrl = root + url;
+    newUrl = configMatch.root + url;
     return newUrl;
 }
 
@@ -41,24 +34,26 @@ std::string     getExtension(std::string filename)
     return (filename.substr(index, std::string::npos));
 }
 
-void    _buildErrorResponse(std::string root, int status)
+Response    errorResponse(Response &response, t_configMatch  &configMatch, int status)
 {
     std::string     errorPage = Configuration::getInstance().getErrorPages()[status];
-    File            errorPath(root + errorPage);
+    File            errorPath(configMatch.root + errorPage);
 
-    _httpStatus.setStatus(status);
+    response.getHttpStatus().setStatus(status);
     if (!errorPage.empty() && errorPath.isRegularFile())
     {
-        setContent(errorPath.getFileContent(), "text/html");
+        response.setContent(errorPath.getFileContent(), "text/html");
     }
     else
     {
         std::string defaultErrorPage = html::buildErrorHtmlPage(utils::myItoa(status));
-        setContent(defaultErrorPage, "text/html");
+        response.setContent(defaultErrorPage, "text/html");
     }
+
+    return response;
 }
 
-Response    _buildAutoIndexResponse(Response &response, std::string path)
+Response    autoIndexResponse(Response &response, std::string path)
 {
     std::string autoIndexPage;
 
@@ -69,7 +64,7 @@ Response    _buildAutoIndexResponse(Response &response, std::string path)
     return response;
 }
 
-Response    _buildIndexResponse(Response &response,std::string path, std::string index)
+Response    indexResponse(Response &response,std::string path, std::string index)
 {
     File indexFile(path + index);
     Mime indexExtension(getExtension(index));
@@ -80,13 +75,14 @@ Response    _buildIndexResponse(Response &response,std::string path, std::string
     return response;
 }
 
-Response    _cgiResponse(Response &response)
+Response    cgiResponse(Response &response, t_configMatch  &configMatch)
 {
+    (void)configMatch;
     std::cout << "Need to execute CGI\n";
     return response;
 }
 
-Response    _redirectionResponse(Response &response, std::pair<int, std::string> redirection)
+Response    redirectionResponse(Response &response, std::pair<int, std::string> redirection)
 {
     std::string redirectionPage;
 
@@ -99,7 +95,7 @@ Response    _redirectionResponse(Response &response, std::pair<int, std::string>
     return response;
 }
 
-Response    _getMethodResponse(Response &response, Location &location, std::string _path, std::string index, std::string root)
+Response    getMethodResponse(Response &response, std::string _path, t_configMatch &configMatch)
 {
     File        path(_path);
     
@@ -112,22 +108,47 @@ Response    _getMethodResponse(Response &response, Location &location, std::stri
         response.setContent(path.getFileContent(), extension.getMime()); // set content-type + content-length + content
         return response;
     }
-    else if (path.isDirectory() && location.getAutoindex())
+    else if (path.isDirectory() && configMatch.location.getAutoindex())
     {
         std::cout << "Directory -> autoindex\n";
-        return _buildAutoIndexResponse(_path);
+        return autoIndexResponse(response, _path);
     }
-    else if (path.isDirectory() && !location.getAutoindex() && !index.empty() && (location.getPath() == "/"))
+    else if (path.isDirectory() && !configMatch.location.getAutoindex() && !configMatch.index.empty() && (configMatch.location.getPath() == "/"))
     {
         std::cout << "Directory -> index\n";
-        return _buildIndexResponse(_path, index);
+        return indexResponse(response, _path, configMatch.index);
 
     }
     else // not found
     {
         std::cout << "Error not found\n";
-        return _buildErrorResponse(root, 404); // send error response and page 404.html
+        return errorResponse(response, configMatch, 404); // send error response and page 404.html
     }
+}
+
+Response    postMethodResponse(Response &response, t_configMatch &configMatch)
+{
+    (void)configMatch;
+    return response;
+}
+
+Response    deleteMethodResponse(Response &response, std::string path, t_configMatch &configMatch)
+{
+    File    fileToDelete(path);
+
+    if (fileToDelete.isRegularFile())
+    {
+       if (remove(path.c_str()) == 0)
+        {
+            response.getHttpStatus().setStatus(200);
+            response.setContent(html::buildPage("Method DELETE ok : file successfully deleted"), "text/html");
+            return response;
+        }
+        else
+            return errorResponse(response, configMatch, 204);
+    }
+    else
+        return errorResponse(response, configMatch, 204);
 }
 
 /*
@@ -139,23 +160,23 @@ Response    _getMethodResponse(Response &response, Location &location, std::stri
 **      - redirection
 **      - error
 */
-Response    _dispatchingResponse(Response &response, Request &request, Server &server, Location &location, std::string index, std::string root)
+Response    dispatchingResponse(Response &response, Request &request, t_configMatch  &configMatch)
 {
     // then we need to transform the uri request to match in the server
-    std::string path = parseUrl(server, location, request.getPath(), index, root); //TO IMPLEMENT
+    std::string path = parseUrl(request.getPath(), configMatch); //TO IMPLEMENT
 
     if (request.getPath().find(Configuration::getInstance().getCgi().first) != std::string::npos
         && (request.getMethod() == "GET" || request.getMethod() == "POST"))
-        return _cgiResponse(response);
-    else if (location.getRedirection().first > 0 && !location.getRedirection().second.empty())
-        return _redirectionResponse(response, location.getRedirection());
+        return cgiResponse(response, configMatch);
+    else if (configMatch.location.getRedirection().first > 0 && !configMatch.location.getRedirection().second.empty())
+        return redirectionResponse(response, configMatch.location.getRedirection());
     else if (request.getMethod() == "GET")
-        return _getMethodResponse(response, location, path, index, root);
+        return getMethodResponse(response, path, configMatch);
     else if (request.getMethod() == "POST")
-        return_postMethodResponse(response);
+        return postMethodResponse(response, configMatch);
     else if (request.getMethod() == "DELETE")
-        return _deleteMethodResponse(response, path, root);
-    return _buildErrorResponse(root, 404);
+        return deleteMethodResponse(response, path, configMatch);
+    return errorResponse(response, configMatch, 404);
 }
 
 Response    constructResponse(Request &request, std::string serverName)
@@ -165,13 +186,14 @@ Response    constructResponse(Request &request, std::string serverName)
     std::string index;
 
     // first need to get the server and location to use for this response (context)
-    Server &server = Configuration::getInstance().findServer(serverName);
-    Location &location = server.findLocation(request.getPath());
-    location.getRoot().empty() ? root = server.getRoot() : root = location.getRoot();
-    location.getIndex().empty() ? index = server.getIndex() : index = location.getIndex();
+    t_configMatch   configMatch;
+    configMatch.server = Configuration::getInstance().findServer(serverName);
+    configMatch.location = configMatch.server.findLocation(request.getPath());
+    configMatch.location.getRoot().empty() ? configMatch.root = configMatch.server.getRoot() : configMatch.root = configMatch.location.getRoot();
+    configMatch.location.getIndex().empty() ? configMatch.index = configMatch.server.getIndex() : configMatch.index = configMatch.location.getIndex();
     
     // create a class with the server, location, root, index and all context matching the request
-    response = _dispatchingResponse(response, request, server, location, index, root);
+    response = dispatchingResponse(response, request, configMatch);
 
     return response;
 }

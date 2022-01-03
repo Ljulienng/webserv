@@ -3,6 +3,7 @@
 
 #include "webserv.hpp"
 #include "configuration.hpp"
+#include "responseConstructor.hpp"
 
 #define SERVER 0
 #define CLIENT 1

@@ -7,6 +7,7 @@ SRC_FILES	= 	webserv.cpp					\
 				uri.cpp						\
 				html.cpp					\
 				response.cpp				\
+				responseConstructor.cpp		\
 				clientSocket.cpp			\
 				socket.cpp					\
 				httpStatus.cpp				\
@@ -21,9 +22,10 @@ INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/config/server/server.hpp						\
 				srcs/config/hub.hpp									\
 				srcs/config/request/request.hpp						\
-				srcs/config/request/uri.hpp						\
+				srcs/config/request/uri.hpp							\
 				srcs/html/html.hpp									\
 				srcs/response/response.hpp							\
+				srcs/response/responseConstructor.hpp				\
 				srcs/socket/clientSocket.hpp						\
 				srcs/socket/socket.hpp								\
 				srcs/httpStatus/httpStatus.hpp						\
