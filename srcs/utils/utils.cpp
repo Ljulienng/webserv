@@ -2,6 +2,7 @@
 
 namespace utils {
 
+    // rfc 2616 : 3.3.1
     std::string    getTimestamp()
     {
         time_t      rawTime;
@@ -10,7 +11,7 @@ namespace utils {
 
         time(&rawTime);
         timeinfo = gmtime(&rawTime);
-        strftime(currentTime, 50, "%Y-%m-%d  %T GMT", timeinfo);
+        strftime(currentTime, 50, "%a, %d %b %Y %T GMT", timeinfo);
 
         return currentTime;
     }
