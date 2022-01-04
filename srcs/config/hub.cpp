@@ -160,10 +160,9 @@ void		Hub::_prepareResponse(size_t index)
 	while (requests.empty() == false)
 	{
 		Request 	req = requests.front();
-		//req.debug();
+		// req.debug();
 		
-		// Response 	response(req, clients[clientIndex].getServerName()); // check errors and build response (thanks to req elements)
-		Response 	response; //(req, clients[clientIndex].getServerName()); // check errors and build response (thanks to req elements)
+		Response 	response;
 		response = constructResponse(req, clients[clientIndex].getServerName());
 
 		requests.pop();
