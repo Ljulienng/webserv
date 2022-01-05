@@ -1,15 +1,8 @@
 #include "responseConstructor.hpp"
 
-std::string     getRelativePath(std::string path)
+std::string     getServerPath(std::string uri, t_configMatch &configMatch)
 {
-    (void)path;
-    return path;
-}
-
-std::string     parseUri(std::string uri, t_configMatch &configMatch)
-{
-    std::string newUri;
-    //std::string relativePath = getRelativePath(uri);
+    std::string path;
 
     // if uri is file ->
     //          - if exist : display content
@@ -22,15 +15,9 @@ std::string     parseUri(std::string uri, t_configMatch &configMatch)
     //                                      - if default file : display
     //                                      - else : 404 error
 
-    // test
-    // File    indexFile(root + url + index);
-    
-    // if (url[url.size() - 1] == '/' && indexFile.isRegularFile())    // if directory and directory/index exist
-    //     newUrl = root + url + index;
-    // else                                                         // file or directory without autoindex
-    //     newUrl = root + url;
-    newUri = configMatch.root + uri;
-    return newUri;
+    path = configMatch.root + uri;
+
+    return path;
 }
 
 std::string     getExtension(std::string filename)
@@ -190,8 +177,8 @@ Response    dispatchingResponse(Response &response, Request &request, t_configMa
 
     if (path.isDirectory() && configMatch.path[configMatch.path.size() - 1] != '/')
         return redirectionResponse(response, std::pair<int, std::string>(301, request.getPath() + "/"));
-    else if (Configuration::getInstance().getCgi().first == ".php"
-        && request.getPath().find(Configuration::getInstance().getCgi().first) != std::string::npos
+    else if (configMatch.server.getCgi().first == ".php"
+        && request.getPath().find(configMatch.server.getCgi().first) != std::string::npos
         && (request.getMethod() == "GET" || request.getMethod() == "POST"))
         return cgiResponse(response, configMatch);
     else if (configMatch.location.getRedirection().first > 0 && !configMatch.location.getRedirection().second.empty())
@@ -217,7 +204,7 @@ Response    constructResponse(Request &request, std::string serverName)
     configMatch.location = configMatch.server.findLocation(request.getPath());
     configMatch.location.getRoot().empty() ? configMatch.root = configMatch.server.getRoot() : configMatch.root = configMatch.location.getRoot();
     configMatch.location.getIndex().empty() ? configMatch.index = configMatch.server.getIndex() : configMatch.index = configMatch.location.getIndex();
-    configMatch.path = parseUri(request.getPath(), configMatch); // transform the uri request to match in the server
+    configMatch.path = getServerPath(request.getPath(), configMatch); // transform the uri request to match in the server
 
     // create a class with the server, location, root, index and all context matching the request
     response = dispatchingResponse(response, request, configMatch);

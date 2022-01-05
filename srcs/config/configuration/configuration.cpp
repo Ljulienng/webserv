@@ -161,7 +161,7 @@ size_t	Configuration::_parseServer(str_ite it, str_ite ite)
 					{
 						str_ite	end(++it);
 						for (; *end != '"'; end++);
-						if (isValidExpression(std::string(it--, end), locationExpression) != -1) // si prochain mot fait partie des mots cles (definir enum)
+						if (isValidExpression(std::string(it--, end), locationExpression) != -1)
 							it += _parseLocation(it, ite, server);
 						it++;
 					}
@@ -174,7 +174,7 @@ size_t	Configuration::_parseServer(str_ite it, str_ite ite)
 		}
 		it++;
 	}
-	
+	std::cout << "map size = " << mapServer.size() << "\n";
 	server.setServerDatas(mapServer);
 
 	// add the new server to the array of servers
@@ -249,7 +249,7 @@ void	Configuration::parse()
 		}
 		it++;
 	}
-	setConfigDatas(mapConfig);
+	// setConfigDatas(mapConfig);
 }
 
 /*
@@ -265,39 +265,7 @@ Server 		&Configuration::findServer(std::string serverName)
 	return *serverMatch;
 }
 
-/* SETTERS */
-void	Configuration::setConfigDatas(std::map<std::string, std::string> mapConfig)
-{
-	std::map<std::string, std::string>::iterator it = mapConfig.begin();
-	std::map<std::string, std::string>::iterator ite = mapConfig.end();
-	int ret;
-	typedef void (Configuration::* funcPtr)(std::string);
-	funcPtr setData[1] = {	&Configuration::setCgi };
-	while (it != ite)
-	{
-		if ((ret = isValidExpression(it->first, configExpression)) != -1)
-				(this->*setData[ret])(it->second);
-		else
-			throw (std::string("Error: unknown expression in configuration file : " + it->first));
-		it++;
-	}
-}
-
-void	Configuration::setCgi(std::string cgi)
-{
-	Str	cgiElements(cgi);
-	
-	if (cgiElements.getTokens().size() != 2 || cgiElements.getTokens()[0][0] != '.')
-		throw (std::string("Error: bad cgi format in configuration file"));
-	_cgi.first = cgiElements.getTokens()[0];
-	_cgi.second = cgiElements.getTokens()[1];
-}
-
-
 /* GETTERS */
-std::pair<std::string, std::string>		&Configuration::getCgi()
-{ return _cgi; }
-
 std::map<int, std::string>		&Configuration::getErrorPages()
 { return _errorPages; }
 
@@ -311,7 +279,6 @@ std::vector<ClientSocket>	&Configuration::getClients()
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 Configuration::Configuration() : Singleton(),
 									_configFile(),
-									_cgi(),
 									_errorPages(),
 									_servers(),
 									_clients()
@@ -321,7 +288,6 @@ Configuration::Configuration() : Singleton(),
 Configuration::Configuration(std::string configFile) :
 									Singleton(),
 									_configFile(configFile),
-									_cgi(),
 									_errorPages(),
 									_servers(),
 									_clients()					
@@ -342,7 +308,6 @@ Configuration &Configuration::operator=(const Configuration &src)
 	if (&src != this)
 	{
 		_configFile = src._configFile;
-		_cgi = src._cgi;
 		_errorPages = src._errorPages;
 		_servers = src._servers;
 		_clients = src._clients;
@@ -372,7 +337,6 @@ void	Configuration::debug()
 {
 	std::cout << "\n***** DEBUG *****\n";
 	std::cout << "CONFIG (general scope) =>\n";
-	std::cout << " - cgi =  1->" << _cgi.first << "  2->" << _cgi.second << "\n";
 	std::map<int, std::string>::iterator itErr = _errorPages.begin();
 	for (; itErr != _errorPages.end(); itErr++)
 		std::cout << " - errorPages = " << itErr->first << ":" << itErr->second << "\n";

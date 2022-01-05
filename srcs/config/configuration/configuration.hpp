@@ -23,7 +23,6 @@ class Configuration : public Singleton<Configuration>
     private :
 
 		std::string							_configFile;
-		std::pair<std::string, std::string>	_cgi;
 		std::map<int, std::string>			_errorPages;
 		std::vector<Server>					_servers;
 		std::vector<ClientSocket>			_clients;
@@ -51,15 +50,10 @@ class Configuration : public Singleton<Configuration>
 		Server 		&findServer(std::string serverName);
 		void		debug();
 
-		// SETTERS
-		void		setConfigDatas(std::map<std::string, std::string> mapConfig);
-		void		setCgi(std::string cgi);
-
 		// GETTERS
-		std::pair<std::string, std::string>		&getCgi();
-		std::map<int, std::string>				&getErrorPages();
-		std::vector<Server>						&getServers();
-		std::vector<ClientSocket>				&getClients();
+		std::map<int, std::string>		&getErrorPages();
+		std::vector<Server>				&getServers();
+		std::vector<ClientSocket>		&getClients();
 };
 
 #endif

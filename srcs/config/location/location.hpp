@@ -53,7 +53,6 @@ class Location
 int isValidExpression(std::string expression, const char **validExpressions);
 
 static const char* configExpression[] = {
-	"cgi",
 	"error_pages",
 	"server",
 	0
@@ -67,6 +66,7 @@ static const char* serverExpression[] = {
 	"index",
 	"max_body_size",
 	"upload_path",
+	"cgi",
 	"location",
 	0
 };

@@ -129,19 +129,22 @@ void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 	std::map<std::string, std::string>::iterator ite = mapServer.end();
 	int ret;
 	typedef void (Server::* funcPtr)(std::string);
-	funcPtr setData[7] = {	&Server::setName,
+	funcPtr setData[8] = {	&Server::setName,
 							&Server::setIp,
 							&Server::setPort,
 							&Server::setRoot,
 							&Server::setIndex,
 							&Server::setMaxBodySize,
-							&Server::setUploadPath };
+							&Server::setUploadPath,
+							&Server::setCgi };
 	while (it != ite)
 	{
+		std::cout << "it->second = " << it->second << "\n";
 		if ((ret = isValidExpression(it->first, serverExpression)) != -1)
 			(this->*setData[ret])(it->second);
 		else
 			throw (std::string("Error: unknown expression in configuration file : " + it->first));
+		std::cout << "loop\n";
 		it++;
 	}
 }
@@ -207,6 +210,15 @@ void		Server::setUploadPath(std::string uploadPath)
 	_uploadPath = uploadPath;
 }
 
+void	Server::setCgi(std::string cgi)
+{
+	Str	cgiElements(cgi);
+	
+	if (cgiElements.getTokens().size() != 2 || cgiElements.getTokens()[0][0] != '.')
+		throw (std::string("Error: bad cgi format in configuration file"));
+	_cgi.first = cgiElements.getTokens()[0];
+	_cgi.second = cgiElements.getTokens()[1];
+}
 
 /* GETTERS */
 
@@ -237,6 +249,9 @@ std::string		&Server::getUploadPath()
 Socket 		&Server::getSocket()
 { return _socket; }
 
+std::pair<std::string, std::string>		&Server::getCgi()
+{ return _cgi; }
+
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
@@ -248,7 +263,8 @@ Server::Server() : 	_name(),
 					_maxBodySize(1000000), // default nginx
 					_uploadPath(),
 					_locations(),
-					_socket()
+					_socket(),
+					_cgi()
 					// to be completed if new attributes
 {}
 
@@ -272,6 +288,7 @@ Server &Server::operator=(const Server &src)
 		_uploadPath = src._uploadPath;
 		_locations = src._locations;
 		_socket = src._socket;
+		_cgi = src._cgi;
 		// to be completed if new attributes
 	}
 	return (*this);
@@ -288,6 +305,7 @@ void	Server::debug(size_t index)
 	std::cout << "\t - maxBodySize = " << _maxBodySize << "\n";
 	std::cout << "\t - uploadPath = " << _uploadPath << "\n";
 	std::cout << "\t - fd socket = " << _socket.getFd() << "\n";
+	std::cout << "\t - cgi =  1->" << _cgi.first << "  2->" << _cgi.second << "\n";
 
 	std::vector<Location>::iterator itLoc = _locations.begin();
 	for (size_t i = 0; itLoc != _locations.end(); itLoc++, i++)
