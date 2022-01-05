@@ -132,14 +132,18 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     pathToUpload = configMatch.root + configMatch.server.getUploadPath();
 
     // we create the file
-    if (!fileToPost.createFile(pathToUpload, request.getBody()))
+    std::cout << "[postMethodResponse] configMatch.path = " << configMatch.path << "\n";
+    std::cout << "[postMethodResponse] path to upload = " << pathToUpload + "/post.php" << "\n";
+    if (!fileToPost.createFile(pathToUpload + "/post.php", request.getBody()))
         return errorResponse(response, configMatch, 500);
     response.setStatus(201);
 
     // we indicate the url of the resource we created thanks to "location" header
-    response.setHeader("Location", request.getPath());
-    html::buildRedirectionPage(std::pair<int, std::string>(201, request.getPath()));
+    // response.setHeader("Location", request.getPath()); // need to send the full uri : http://127.0.0.1:8080/file.ext
+    response.setHeader("Location", "http://127.0.0.1:9000/test/post.php"); //test
     
+    response.setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, request.getPath())), "text/html");
+   
     return response;
 }
 

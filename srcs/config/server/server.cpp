@@ -139,12 +139,10 @@ void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 							&Server::setCgi };
 	while (it != ite)
 	{
-		std::cout << "it->second = " << it->second << "\n";
 		if ((ret = isValidExpression(it->first, serverExpression)) != -1)
 			(this->*setData[ret])(it->second);
 		else
 			throw (std::string("Error: unknown expression in configuration file : " + it->first));
-		std::cout << "loop\n";
 		it++;
 	}
 }

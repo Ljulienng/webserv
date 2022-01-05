@@ -174,7 +174,6 @@ size_t	Configuration::_parseServer(str_ite it, str_ite ite)
 		}
 		it++;
 	}
-	std::cout << "map size = " << mapServer.size() << "\n";
 	server.setServerDatas(mapServer);
 
 	// add the new server to the array of servers
@@ -249,7 +248,6 @@ void	Configuration::parse()
 		}
 		it++;
 	}
-	// setConfigDatas(mapConfig);
 }
 
 /*
