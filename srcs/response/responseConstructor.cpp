@@ -123,26 +123,33 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
 Response    postMethodResponse(Response &response, Request &request, t_configMatch &configMatch)
 {
     File            fileToPost(configMatch.path);
-    std::string     pathToUpload;
+    size_t          lastSlash = configMatch.path.find_last_of('/');
+    std::string     filename = std::string(configMatch.path.begin() + lastSlash, configMatch.path.end());
+    std::string     pathToUpload = configMatch.root + configMatch.server.getUploadPath() + filename;
 
     // check we have a directory to uploads files else errorResponse
     if (configMatch.server.getUploadPath() == "")
         return errorResponse(response, configMatch, 403);
 
-    pathToUpload = configMatch.root + configMatch.server.getUploadPath();
 
     // we create the file
-    std::cout << "[postMethodResponse] configMatch.path = " << configMatch.path << "\n";
-    std::cout << "[postMethodResponse] path to upload = " << pathToUpload + "/post.php" << "\n";
-    if (!fileToPost.createFile(pathToUpload + "/post.php", request.getBody()))
+    // std::cout << "[postMethodResponse] configMatch.path = " << configMatch.path << "\n";
+    
+    
+    // std::cout << "filename = " << filename << "\n";
+
+    // std::cout << "[postMethodResponse] path to upload = " << pathToUpload << "\n";
+    if (!fileToPost.createFile(pathToUpload, request.getBody()))
         return errorResponse(response, configMatch, 500);
     response.setStatus(201);
 
     // we indicate the url of the resource we created thanks to "location" header
     // response.setHeader("Location", request.getPath()); // need to send the full uri : http://127.0.0.1:8080/file.ext
-    response.setHeader("Location", "http://127.0.0.1:9000/test/post.php"); //test
+    std::string fullUri = "http://" + configMatch.server.getIp() + ":" + utils::myItoa(configMatch.server.getPort()) + request.getPath();
+    // std::cout << "[postMethodResponse] fullUri = " << fullUri << "\n";
+    response.setHeader("Location", fullUri); //provisoire en attendant de l'avoir via la requete
     
-    response.setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, request.getPath())), "text/html");
+    response.setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, pathToUpload)), "text/html");
    
     return response;
 }
