@@ -120,6 +120,14 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     }
 }
 
+bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodRequired)
+{
+    for (size_t i = 0; i < methods.size(); i++)
+        if (methods[i] == methodRequired)
+            return true;
+    return false;
+}
+
 Response    postMethodResponse(Response &response, Request &request, t_configMatch &configMatch)
 {
     File            fileToPost(configMatch.path);
@@ -127,9 +135,13 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     std::string     filename = std::string(configMatch.path.begin() + lastSlash, configMatch.path.end());
     std::string     pathToUpload = configMatch.root + configMatch.server.getUploadPath() + filename;
 
+    // CHECK IF IT'S AN ALLOWED METHOD
+    if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "POST"))
+        return errorResponse(response, configMatch, 405); // method not allowed
+
     // check we have a directory to uploads files else errorResponse
     if (configMatch.server.getUploadPath() == "")
-        return errorResponse(response, configMatch, 403);
+        return errorResponse(response, configMatch, 403); // forbidden
 
 
     // we create the file
