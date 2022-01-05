@@ -1,8 +1,15 @@
 #include "responseConstructor.hpp"
 
-std::string     parseUrl(std::string url, t_configMatch &configMatch)
+std::string     getRelativePath(std::string path)
 {
-    std::string newUrl;
+    (void)path;
+    return path;
+}
+
+std::string     parseUri(std::string uri, t_configMatch &configMatch)
+{
+    std::string newUri;
+    //std::string relativePath = getRelativePath(uri);
 
     // if uri is file ->
     //          - if exist : display content
@@ -22,8 +29,8 @@ std::string     parseUrl(std::string url, t_configMatch &configMatch)
     //     newUrl = root + url + index;
     // else                                                         // file or directory without autoindex
     //     newUrl = root + url;
-    newUrl = configMatch.root + url;
-    return newUrl;
+    newUri = configMatch.root + uri;
+    return newUri;
 }
 
 std::string     getExtension(std::string filename)
@@ -179,7 +186,11 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
 */
 Response    dispatchingResponse(Response &response, Request &request, t_configMatch  &configMatch)
 {
-    if (Configuration::getInstance().getCgi().first == ".php"
+    File        path(configMatch.path);
+
+    if (path.isDirectory() && configMatch.path[configMatch.path.size() - 1] != '/')
+        return redirectionResponse(response, std::pair<int, std::string>(301, request.getPath() + "/"));
+    else if (Configuration::getInstance().getCgi().first == ".php"
         && request.getPath().find(Configuration::getInstance().getCgi().first) != std::string::npos
         && (request.getMethod() == "GET" || request.getMethod() == "POST"))
         return cgiResponse(response, configMatch);
@@ -206,7 +217,7 @@ Response    constructResponse(Request &request, std::string serverName)
     configMatch.location = configMatch.server.findLocation(request.getPath());
     configMatch.location.getRoot().empty() ? configMatch.root = configMatch.server.getRoot() : configMatch.root = configMatch.location.getRoot();
     configMatch.location.getIndex().empty() ? configMatch.index = configMatch.server.getIndex() : configMatch.index = configMatch.location.getIndex();
-    configMatch.path = parseUrl(request.getPath(), configMatch); // transform the uri request to match in the server
+    configMatch.path = parseUri(request.getPath(), configMatch); // transform the uri request to match in the server
 
     // create a class with the server, location, root, index and all context matching the request
     response = dispatchingResponse(response, request, configMatch);
