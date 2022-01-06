@@ -150,7 +150,7 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     
     // std::cout << "filename = " << filename << "\n";
 
-    // std::cout << "[postMethodResponse] path to upload = " << pathToUpload << "\n";
+    // std::cout << "[postMethodResponse] body = " << request.getBody() << "\n";
     if (!fileToPost.createFile(pathToUpload, request.getBody()))
         return errorResponse(response, configMatch, 500);
     response.setStatus(201);
