@@ -205,7 +205,8 @@ void		Request::parsebody(const std::string &request)
 
 	// Looking for the line that separates the header and the body of the http request
 	j = request.find("\r\n\r\n");
-	_body.assign(request, j + 4, std::string::npos);
+	if (_headers["Content-Length"] != "")
+		_body.assign(request, j + 4, atoi(_headers["Content-Length"].c_str()));
 }
 
 int			Request::parse(const std::string &request)
@@ -321,6 +322,6 @@ void			Request::debug()
 	for (it2 = _acceptedLang.begin(); it2 != _acceptedLang.end(); it2++)
 		std::cout << (*it2).first << " = " << (*it2).second << std::endl;
 	std::cout << "\n***** BODY *****\n";
-	std::cout << _body << std::endl;
+	std::cout << _body;
 	std::cout << "\n***** END OF DEBUG *****\n";
 }
