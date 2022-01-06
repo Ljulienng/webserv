@@ -204,8 +204,8 @@ void		Request::parsebody(const std::string &request)
 	size_t j = 0;
 
 	// Looking for the line that separates the header and the body of the http request
-	j = request.find_first_of("\r\n\r\n");
-	_body.assign(request, j + 3, std::string::npos);
+	j = request.find("\r\n\r\n");
+	_body.assign(request, j + 4, std::string::npos);
 }
 
 int			Request::parse(const std::string &request)
