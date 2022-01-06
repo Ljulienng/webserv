@@ -104,7 +104,7 @@ File::File(std::string filePath) :
 	if (isRegularFile())
 	{
 		std::ifstream ifs;
-		ifs.open(filePath.c_str());
+		ifs.open(filePath.c_str(), std::ifstream::in);
 		std::getline(ifs, _fileContent, '\0');
 		ifs.close();
 	}

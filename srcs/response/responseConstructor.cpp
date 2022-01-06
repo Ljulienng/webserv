@@ -92,7 +92,7 @@ Response    redirectionResponse(Response &response, std::pair<int, std::string> 
 Response    getMethodResponse(Response &response, t_configMatch &configMatch)
 {
     File        path(configMatch.path);
-    
+
     if (path.isRegularFile())
     {
         std::cout << "File -> ok regular file\n";

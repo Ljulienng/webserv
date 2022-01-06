@@ -10,9 +10,9 @@
 class File
 {
     private :
-		std::string			_filePath;
-		std::string			_fileContent;
-		struct stat			_fileStat;
+		std::string					_filePath;
+		std::string					_fileContent;
+		struct stat					_fileStat;
 
     public :
         File();
