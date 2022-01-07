@@ -128,6 +128,13 @@ bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodReq
     return false;
 }
 
+Response    multipart(Response &response, Request &request, t_configMatch &configMatch)
+{
+    (void)response;(void)request;(void)configMatch;
+    std::cout << "[multipart]\n";
+    return response;
+}
+
 Response    postMethodResponse(Response &response, Request &request, t_configMatch &configMatch)
 {
     File            fileToPost(configMatch.path);
@@ -143,13 +150,13 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     if (configMatch.server.getUploadPath() == "")
         return errorResponse(response, configMatch, 403); // forbidden
 
+    // check if it's a multipart/form-data
+    if (request.getHeader("Content-Type").find("multipart/form-data") != std::string::npos)
+        return multipart(response, request, configMatch);
 
     // we create the file
     // std::cout << "[postMethodResponse] configMatch.path = " << configMatch.path << "\n";
-    
-    
     // std::cout << "filename = " << filename << "\n";
-
     // std::cout << "[postMethodResponse] body = " << request.getBody() << "\n";
     if (!fileToPost.createFile(pathToUpload, request.getBody()))
         return errorResponse(response, configMatch, 500);
