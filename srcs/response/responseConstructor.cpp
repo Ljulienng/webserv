@@ -143,11 +143,15 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
         return errorResponse(response, configMatch, 400);
     boundary.erase(0, 9);
 
+    
     // check if the content is ok and get content original file (without headers and boundary)
+    // parseMultipart(request, boundary);
 
     // get the filename to upload thanks to the headers "filename="
+    // std::string filename = getFilename();
 
     // create and write content into the new file
+    // writeInUploadFile(filename, ... )
 
     // set status and content
 
