@@ -128,14 +128,22 @@ bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodReq
     return false;
 }
 
-Response    multipart(Response &response, Request &request, t_configMatch &configMatch)
+Response    multipart(Response &response, Request &request, t_configMatch &configMatch, std::string contentTypeHeader)
 {
     (void)response;(void)request;(void)configMatch;
     std::cout << "[multipart]\n";
 
-    // check that we have the 2 parts -> "Content-type: multipart/form-data, boundary"
+    // check that we have the 2 parts -> "Content-type: multipart/form-data; boundary"
+    if (contentTypeHeader.find(";") == std::string::npos)
+        return errorResponse(response, configMatch, 400);
+    std::string     contentType = contentTypeHeader.substr(0, contentTypeHeader.find_first_of(";"));
+    std::string     boundary = contentTypeHeader.substr(contentTypeHeader.find_first_of(";") + 1, std::string::npos);
 
-    // check if the content is ok
+    if (boundary.substr(0, 9) != "boundary=")
+        return errorResponse(response, configMatch, 400);
+    boundary.erase(0, 9);
+
+    // check if the content is ok and get content original file (without headers and boundary)
 
     // get the filename to upload thanks to the headers "filename="
 
@@ -163,7 +171,7 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
 
     // check if it's a multipart/form-data
     if (request.getHeader("Content-Type").find("multipart/form-data") != std::string::npos)
-        return multipart(response, request, configMatch);
+        return multipart(response, request, configMatch, request.getHeader("Content-Type"));
 
     // we create the file
     // std::cout << "[postMethodResponse] configMatch.path = " << configMatch.path << "\n";
