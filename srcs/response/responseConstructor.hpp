@@ -18,6 +18,12 @@ typedef struct  s_configMatch
 
 }               t_configMatch;
 
+typedef struct  s_multipart
+{
+    std::map<std::string, std::string>  headers;
+    std::vector<unsigned char>          content;
+    size_t                              length;
+}               t_multipart;
 
 Response    constructResponse(Request &request, std::string serverName);
 

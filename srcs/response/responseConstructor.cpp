@@ -128,9 +128,34 @@ bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodReq
     return false;
 }
 
+void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string boundary)
+{
+    std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
+    size_t     contentLength = atoi(request.getHeader("Content-Length").c_str()); //a revoir, imprecis ?
+    size_t				i = 0;
+
+    while (i + boundary.size() + 6 < contentLength)
+    {
+        i += boundary.size() + 2;   // skip boundary + /r/n
+        t_multipart     part; // one part on the multipart
+
+        while (1)                  // parse headers
+        {
+            if ()
+        }
+
+        while (i + boundary.size() + 4 < contentLength) // parse content
+        {
+
+        }
+
+    }
+    
+
+}
+
 Response    multipart(Response &response, Request &request, t_configMatch &configMatch, std::string contentTypeHeader)
 {
-    (void)response;(void)request;(void)configMatch;
     std::cout << "[multipart]\n";
 
     // check that we have the 2 parts -> "Content-type: multipart/form-data; boundary"
@@ -145,7 +170,8 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
 
     
     // check if the content is ok and get content original file (without headers and boundary)
-    // parseMultipart(request, boundary);
+    std::list<t_multipart> parts;
+    parseMultipart(parts, request, boundary);
 
     // get the filename to upload thanks to the headers "filename="
     // std::string filename = getFilename();
