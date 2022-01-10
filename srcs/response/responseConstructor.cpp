@@ -132,6 +132,17 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
 {
     (void)response;(void)request;(void)configMatch;
     std::cout << "[multipart]\n";
+
+    // check that we have the 2 parts -> "Content-type: multipart/form-data, boundary"
+
+    // check if the content is ok
+
+    // get the filename to upload thanks to the headers "filename="
+
+    // create and write content into the new file
+
+    // set status and content
+
     return response;
 }
 
