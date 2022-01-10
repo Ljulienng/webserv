@@ -129,25 +129,43 @@ bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodReq
 }
 
 void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string boundary)
-{
+{   (void)p;
     std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
-    size_t     contentLength = atoi(request.getHeader("Content-Length").c_str()); //a revoir, imprecis ?
-    size_t				i = 0;
+    size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str()); //a revoir, imprecis ?
+    size_t				        i = 0;
 
     while (i + boundary.size() + 6 < contentLength)
     {
-        i += boundary.size() + 2;   // skip boundary + /r/n
+        i += boundary.size() + 4;   // skip boundary + \r\n + "--"
         t_multipart     part; // one part on the multipart
-
+        // std::cout << "content[i] : " << content[i] << "\n";
         while (1)                  // parse headers
         {
-            if ()
+            size_t start = i;
+            while (!(content[i] == '\r' && content[i + 1] == '\n'))
+                i++;
+            if (content[i] == '\r' && content[i + 1] == '\n')
+            {   
+                // std::cout << "find delim in [" << std::string(content.begin() + start, content.begin() + i) << "]\n";
+                size_t  delim = std::string(content.begin() + start, content.begin() + i).find_first_of(":");
+                // std::cout << "start : " << start << "   delim : " << delim << "\n";
+                part.headers[std::string(content.begin() + start, content.begin() + start + delim)] = std::string(content.begin() + start + delim + 2, content.begin() + i);
+                std::cout << "header : [" <<  part.headers[std::string(content.begin() + start, content.begin() + start + delim)] << "]\n";
+                i += 2;
+                if (content[i] == '\r' && content[i + 1] == '\n')
+                {
+                    i += 2;
+                    break ;     // end of headers
+                }
+            }
         }
 
-        while (i + boundary.size() + 4 < contentLength) // parse content
-        {
+        // std::cout << "content[i] : " << content[i] << "\n";
+        // while (i + boundary.size() + 4 < contentLength) // parse content
+        // {
 
-        }
+        // }
+        break ; // test
 
     }
     
