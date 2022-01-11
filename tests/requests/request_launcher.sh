@@ -16,22 +16,22 @@ if [ "$TYPE" = "get" ]; then
     read HEADER_PATH
     echo -n "Enter url : "
     read URL
-    if [ "$HEADER_PATH" != ""]; then
-        curl -v -H @$HEADER_PATH $URL
-    else
+    if [ -z "$HEADER_PATH" ]; then  # arg is empty
         curl -v $URL
+    else
+        curl -v -H @$HEADER_PATH $URL
     fi
-elif [ $TYPE = "post" ]; then
+elif [ "$TYPE" = "post" ]; then
     echo -n "Enter headers path if you need : "
     read HEADER_PATH
     echo -n "Enter body path : "
     read BODY_PATH
-    if [ "$HEADER_PATH" != ""]; then
-        curl -X POST -v -H @$HEADER_PATH -d @$BODY_PATH localhost:9000/test/post.php
-    else
+    if [ -z "$HEADER_PATH" ]; then # arg is empty
         curl -X POST -v -d @$BODY_PATH localhost:9000/test/post.php
+    else
+        curl -X POST -v -H @$HEADER_PATH -d @$BODY_PATH localhost:9000/test/post.php
     fi
-elif [ $TYPE = "delete" ]; then
+elif [ "$TYPE" = "delete" ]; then
     echo  "delete method not implemented yet"
 else
     echo  "Only this methods are accepted : get, post ans delete"
