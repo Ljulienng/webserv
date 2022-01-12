@@ -20,23 +20,17 @@ std::string     getServerPath(std::string uri, t_configMatch &configMatch)
     return path;
 }
 
-std::string     getExtension(std::string filename)
-{
-    size_t index = filename.find_last_of(".") + 1;
-    if (index == std::string::npos)
-        return NULL;
-    return (filename.substr(index, std::string::npos));
-}
-
 Response    errorResponse(Response &response, t_configMatch  &configMatch, int status)
 {
-    std::string     errorPage = Configuration::getInstance().getErrorPages()[status];
-    File            errorPath(configMatch.root + errorPage);
-
-    response.getHttpStatus().setStatus(status);
-    if (!errorPage.empty() && errorPath.isRegularFile())
+    std::map<int, std::string>::iterator  errorPage = Configuration::getInstance().getErrorPages().find(status);
+    
+    response.setStatus(status);
+    if (errorPage != Configuration::getInstance().getErrorPages().end()
+        && !errorPage->second.empty())
     {
-        response.setContent(errorPath.getFileContent(), "text/html");
+        File    errorPath(configMatch.root + errorPage->second);
+        if (errorPath.isRegularFile())
+            response.setContent(errorPath.getFileContent(), "text/html");
     }
     else
     {
@@ -63,7 +57,7 @@ Response    indexResponse(Response &response,std::string path, std::string index
     File indexFile(path + index);
     Mime indexExtension(getExtension(index));
 
-    response.getHttpStatus().setStatus(200);
+    response.setStatus(200);
     response.setContent(indexFile.getFileContent(), indexExtension.getMime()); // set content-type + content-length + content
     
     return response;
@@ -130,7 +124,7 @@ bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodReq
 void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string boundary)
 {   (void)p;
     std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
-    size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str()); //a revoir, imprecis ?
+    size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str());
     size_t				        i = 0;
     // std::cout << "contentLength : " << contentLength << "\n";
     // std::cout << "body size : " << content.size() << "\n";
@@ -165,7 +159,7 @@ void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string 
             }
         }
 
-        part.content = &content[i]; // on se servira du part.length pour delimiter la fin
+        part.content = &content[i];
         part.length = 0;
         while (i + boundary.size() + 4 < contentLength) // parse content
         {

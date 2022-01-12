@@ -37,7 +37,7 @@ class File
 		struct stat		&getfileStat();
 };
 
-void 		appendToFile(const std::string &path, const char *content, size_t n);
-
+void 			appendToFile(const std::string &path, const char *content, size_t n);
+std::string     getExtension(std::string filename);
 
 #endif

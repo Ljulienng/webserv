@@ -134,3 +134,11 @@ void 	appendToFile(const std::string &path, const char *content, size_t n)
 	file.write(content, n);
 	file.close();
 }
+
+std::string     getExtension(std::string filename)
+{
+    size_t index = filename.find_last_of(".") + 1;
+    if (index == std::string::npos)
+        return NULL;
+    return (filename.substr(index, std::string::npos));
+}
