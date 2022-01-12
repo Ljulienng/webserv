@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>post</title>
+    </head>
+
+    <body>
+        <h1>POST method</h1>
+        <h3>Post a message</h3>
+            <form method="post" action="post.php">
+                Message : <input type="text" name="message" autofocus required>
+                <input type="submit" value="send">
+            </form><br>
+        <h3>Upload a file</h3> 
+            <form method="post" enctype="multipart/form-data" action="post.php">
+                Select a file : <input type="file" name="file" id="fileToUpload">
+                <input type="submit" value="send">
+            </form><br>
+
+    </body>
+</html>
