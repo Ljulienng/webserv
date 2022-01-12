@@ -12,21 +12,21 @@ fi
 
 
 if [ "$TYPE" = "get" ]; then
-    echo -n "Enter headers path if you need : "
+    echo -n "Enter header_path if you need : "
     read HEADER_PATH
     echo -n "Enter url : "
     read URL
-    if [ -z "$HEADER_PATH" ]; then  # arg is empty
+    if [ -z "$HEADER_PATH" ]; then
         curl -v $URL
     else
         curl -v -H @$HEADER_PATH $URL
     fi
 elif [ "$TYPE" = "post" ]; then
-    echo -n "Enter headers path if you need : "
+    echo -n "Enter header_path if you need : "
     read HEADER_PATH
-    echo -n "Enter body path : "
+    echo -n "Enter body_path : "
     read BODY_PATH
-    if [ -z "$HEADER_PATH" ]; then # arg is empty
+    if [ -z "$HEADER_PATH" ]; then
         curl -X POST -v -d @$BODY_PATH localhost:9000/test/post.php
     else
         curl -X POST -v -H @$HEADER_PATH -d @$BODY_PATH localhost:9000/test/post.php

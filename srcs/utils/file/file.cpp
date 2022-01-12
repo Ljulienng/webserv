@@ -55,14 +55,6 @@ bool	File::createFile(std::string filename, std::string content)
 	return true;	
 }
 
-void appendToFile(const std::string &path, const char *content, size_t n)
-{
-	std::ofstream file;
-	file.open(path.c_str(), std::ofstream::binary);
-	file.write(content, n);
-	file.close();
-}
-
 /* build the list of files in a directory */
 std::list<std::string>		File::buildFilesList()
 {
@@ -132,4 +124,13 @@ File &File::operator=(const File &src)
 		_fileStat = src._fileStat;
 	}
 	return (*this);
+}
+
+/* NON MEMBERS*/
+void 	appendToFile(const std::string &path, const char *content, size_t n)
+{
+	std::ofstream file;
+	file.open(path.c_str(), std::ofstream::binary);
+	file.write(content, n);
+	file.close();
 }

@@ -135,8 +135,7 @@ void		Hub::_receiveRequest(size_t index)
 		// clients[clientIndex].addRequest(); // move here not to create the request if bytes = 0
 		if (bytes < MAX_BUF_LEN)
 		{
-			clients[clientIndex].addRequest(); // move here not to create the request if bytes = 0
-			std::cout << "BUFFER:\n" << clients[clientIndex].getBuffer() << "\n";
+			clients[clientIndex].addRequest();
 			_output("Received a new request", clients[clientIndex].getFd());
 		}
 	}

@@ -80,7 +80,7 @@ Response    redirectionResponse(Response &response, std::pair<int, std::string> 
 {
     std::string redirectionPage;
 
-    std::cout << "Redirection " << redirection.first << " -> " << redirection.second << "\n";
+    // std::cout << "Redirection " << redirection.first << " -> " << redirection.second << "\n";
     response.setStatus(redirection.first);
     response.setHeader("Location", redirection.second);
     redirectionPage = html::buildRedirectionPage(redirection);
@@ -99,7 +99,7 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
         Mime    extension(getExtension(configMatch.path));
 
         response.setStatus(200);
-        response.setContent(path.getFileContent(), extension.getMime()); // set content-type + content-length + content
+        response.setContent(path.getFileContent(), extension.getMime());
         return response;
     }
     else if (path.isDirectory() && configMatch.location.getAutoindex())
@@ -111,12 +111,11 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     {
         std::cout << "Directory -> index\n";
         return indexResponse(response, configMatch.path, configMatch.index);
-
     }
     else
     {
         std::cout << "Error not found\n";
-        return errorResponse(response, configMatch, 404); // send error response and page 404.html
+        return errorResponse(response, configMatch, 404);
     }
 }
 
@@ -133,8 +132,8 @@ void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string 
     std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
     size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str()); //a revoir, imprecis ?
     size_t				        i = 0;
-    std::cout << "contentLength : " << contentLength << "\n";
-    std::cout << "body size : " << content.size() << "\n";
+    // std::cout << "contentLength : " << contentLength << "\n";
+    // std::cout << "body size : " << content.size() << "\n";
 
     while (i + boundary.size() + 6 <= contentLength)
     {
@@ -146,8 +145,7 @@ void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string 
         }
         i += 2;
 
-        t_multipart     part; // one part on the multipart
-        // std::cout << "content[i] : " << content[i] << "\n";
+        t_multipart     part;       // one part on the multipart
         while (1)                  // parse headers
         {
             size_t start = i;
@@ -158,7 +156,6 @@ void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string 
                 std::string headerline(content.begin() + start, content.begin() + i); 
                 std::vector<std::string>    headeParts = splitString(headerline, ':');
                 part.headers[headeParts[0]] = headeParts[1];
-                // std::cout << "header : [" <<  part.headers[headeParts[0]] << "]\n";
                 i += 2;
                 if (content[i] == '\r' && content[i + 1] == '\n')
                 {
@@ -172,26 +169,34 @@ void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string 
         part.length = 0;
         while (i + boundary.size() + 4 < contentLength) // parse content
         {
-            if (content[i] == '-' && content[i + 1] == '-')
-                std::cout << "BOUNDARY FOUND\n";
             if (content[i] == '\r' && content[i + 1] == '\n'
             && content[i + 2] == '-' && content[i + 3] == '-'
 			&& !::strncmp(boundary.c_str(), reinterpret_cast<const char*>(&content[i + 4]), boundary.size()))
             {
                 i += 2;
-                std::cout << "BOUNDARY FOUND\n";
                 break ;
             }
             ++i;
             ++part.length;
         }
-        // std::cout << "CONTENT :\n";
-        // for (size_t i = 0; i < part.length; ++i)
-        //     std::cout << part.content[i];
         p.push_back(part);
     }
-    
+}
 
+std::string t_multipart::getFilename() const
+{
+    std::map<std::string, std::string>::const_iterator contentDisp = headers.find("Content-Disposition");
+    
+    if (contentDisp == headers.end())
+        return "";
+    size_t i = contentDisp->second.find("filename=\"");
+    if (i == std::string::npos)
+        return "";
+    i += 10;
+    size_t start = i;
+    while (contentDisp->second[i] != '\"')
+        i++;
+    return std::string(contentDisp->second.begin() + start, contentDisp->second.begin() + i);
 }
 
 Response    multipart(Response &response, Request &request, t_configMatch &configMatch, std::string contentTypeHeader)
@@ -207,30 +212,24 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
     if (boundary.substr(0, 9) != "boundary=")
         return errorResponse(response, configMatch, 400);
     boundary.erase(0, 9);
-
     
     // check if the content is ok and get content original file (without headers and boundary)
     std::list<t_multipart> parts;
     parseMultipart(parts, request, boundary);
 
-    // get the filename to upload thanks to the headers "filename="
+    // create and write content into the new file for each part
     std::list<t_multipart>::iterator it = parts.begin();
 	while (it != parts.end())
     {
         std::string filename = it->getFilename();
-        // std::cout << "UPLOAD PATH = " << configMatch.root + configMatch.server.getUploadPath() + "/filename.txt"<< "\n";
-        appendToFile(configMatch.root + configMatch.server.getUploadPath() + "/README.md", reinterpret_cast<char*>(it->content), it->length);
-		
+        if (filename.empty())
+            return errorResponse(response, configMatch, 400);
+        appendToFile(configMatch.root + configMatch.server.getUploadPath() + "/" + filename, reinterpret_cast<char*>(it->content), it->length);
         ++it;
     }
 
     response.setStatus(201);
 	response.setContent(html::buildPage("File upload"), "text/html");
-
-    // create and write content into the new file
-    // writeInUploadFile(filename, ... )
-
-    // set status and content
 
     return response;
 }
@@ -242,21 +241,18 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     std::string     filename = std::string(configMatch.path.begin() + lastSlash, configMatch.path.end());
     std::string     pathToUpload = configMatch.root + configMatch.server.getUploadPath() + filename;
 
-    // CHECK IF IT'S AN ALLOWED METHOD
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "POST"))
         return errorResponse(response, configMatch, 405); // method not allowed
+
     // check we have a directory to uploads files else errorResponse
     if (configMatch.server.getUploadPath() == "")
-        return errorResponse(response, configMatch, 403); // forbidden
+        return errorResponse(response, configMatch, 403);
 
     // check if it's a multipart/form-data
     if (request.getHeader("Content-Type").find("multipart/form-data") != std::string::npos)
         return multipart(response, request, configMatch, request.getHeader("Content-Type"));
 
     // we create the file
-    // std::cout << "[postMethodResponse] configMatch.path = " << configMatch.path << "\n";
-    // std::cout << "filename = " << filename << "\n";
-    // std::cout << "[postMethodResponse] body = " << request.getBody() << "\n";
     if (!fileToPost.createFile(pathToUpload, request.getBody()))
         return errorResponse(response, configMatch, 500);
     response.setStatus(201);
@@ -265,7 +261,7 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     // response.setHeader("Location", request.getPath()); // need to send the full uri : http://127.0.0.1:8080/file.ext
     std::string fullUri = "http://" + configMatch.server.getIp() + ":" + utils::myItoa(configMatch.server.getPort()) + request.getPath();
     // std::cout << "[postMethodResponse] fullUri = " << fullUri << "\n";
-    response.setHeader("Location", fullUri); //provisoire en attendant de l'avoir via la requete
+    response.setHeader("Location", fullUri); // PROVISOIRE EN ATTENDANT DE L'AVOIR VIA LA REQUETE
     
     response.setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, pathToUpload)), "text/html");
    
