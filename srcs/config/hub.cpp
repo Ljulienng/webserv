@@ -123,21 +123,25 @@ void		Hub::_receiveRequest(size_t index)
 	else if (bytes > 0)
 	{
 		clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
-		while (bytes == MAX_BUF_LEN)
+		// while (bytes == MAX_BUF_LEN)
+		// {
+		// 	buffer.clear();
+		// 	bytes = recv(_fds[index].fd, &buffer[0], MAX_BUF_LEN, 0);
+		// 	if (bytes < 0)
+		// 		throw std::string("Error: can't receive client request");
+		// 	else
+		// 		clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
+		// }
+		// clients[clientIndex].addRequest(); // move here not to create the request if bytes = 0
+		if (bytes < MAX_BUF_LEN)
 		{
-			buffer.clear();
-			bytes = recv(_fds[index].fd, &buffer[0], MAX_BUF_LEN, 0);
-			if (bytes < 0)
-				throw std::string("Error: can't receive client request");
-			else
-				clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
+			clients[clientIndex].addRequest(); // move here not to create the request if bytes = 0
+			std::cout << "BUFFER:\n" << clients[clientIndex].getBuffer() << "\n";
+			_output("Received a new request", clients[clientIndex].getFd());
 		}
-		clients[clientIndex].addRequest(); // move here not to create the request if bytes = 0
 	}
 	else //bytes = 0;
-		_closeConnection(clientIndex, CLIENT); // disconnect the client
-
-	_output("Received a new request", clients[clientIndex].getFd());
+			_closeConnection(clientIndex, CLIENT); // disconnect the client
 }
 
 /*
@@ -160,7 +164,7 @@ void		Hub::_prepareResponse(size_t index)
 	while (requests.empty() == false)
 	{
 		Request 	req = requests.front();
-		req.debug();
+		// req.debug();
 		
 		Response 	response;
 		response = constructResponse(req, clients[clientIndex].getServerName());

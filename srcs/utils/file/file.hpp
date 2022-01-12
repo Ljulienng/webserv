@@ -37,4 +37,7 @@ class File
 		struct stat		&getfileStat();
 };
 
+void 		appendToFile(const std::string &path, const char *content, size_t n);
+
+
 #endif

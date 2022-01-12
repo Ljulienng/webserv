@@ -133,10 +133,19 @@ void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string 
     std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
     size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str()); //a revoir, imprecis ?
     size_t				        i = 0;
+    std::cout << "contentLength : " << contentLength << "\n";
+    std::cout << "body size : " << content.size() << "\n";
 
-    while (i + boundary.size() + 6 < contentLength)
+    while (i + boundary.size() + 6 <= contentLength)
     {
-        i += boundary.size() + 4;   // skip boundary + \r\n + "--"
+        i += boundary.size() + 2;   // skip boundary
+        if (content[i] == '-' && content[i + 1] == '-')
+        {
+            i += 4;
+            break ;
+        }
+        i += 2;
+
         t_multipart     part; // one part on the multipart
         // std::cout << "content[i] : " << content[i] << "\n";
         while (1)                  // parse headers
@@ -158,14 +167,16 @@ void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string 
                 }
             }
         }
-        
+
         part.content = &content[i]; // on se servira du part.length pour delimiter la fin
         part.length = 0;
         while (i + boundary.size() + 4 < contentLength) // parse content
         {
+            if (content[i] == '-' && content[i + 1] == '-')
+                std::cout << "BOUNDARY FOUND\n";
             if (content[i] == '\r' && content[i + 1] == '\n'
             && content[i + 2] == '-' && content[i + 3] == '-'
-			&& !std::strncmp(boundary.c_str(), reinterpret_cast<const char*>(&content[i + 4]), boundary.size()))
+			&& !::strncmp(boundary.c_str(), reinterpret_cast<const char*>(&content[i + 4]), boundary.size()))
             {
                 i += 2;
                 std::cout << "BOUNDARY FOUND\n";
@@ -203,7 +214,18 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
     parseMultipart(parts, request, boundary);
 
     // get the filename to upload thanks to the headers "filename="
-    // std::string filename = getFilename();
+    std::list<t_multipart>::iterator it = parts.begin();
+	while (it != parts.end())
+    {
+        std::string filename = it->getFilename();
+        // std::cout << "UPLOAD PATH = " << configMatch.root + configMatch.server.getUploadPath() + "/filename.txt"<< "\n";
+        appendToFile(configMatch.root + configMatch.server.getUploadPath() + "/README.md", reinterpret_cast<char*>(it->content), it->length);
+		
+        ++it;
+    }
+
+    response.setStatus(201);
+	response.setContent(html::buildPage("File upload"), "text/html");
 
     // create and write content into the new file
     // writeInUploadFile(filename, ... )
@@ -223,7 +245,6 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     // CHECK IF IT'S AN ALLOWED METHOD
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "POST"))
         return errorResponse(response, configMatch, 405); // method not allowed
-
     // check we have a directory to uploads files else errorResponse
     if (configMatch.server.getUploadPath() == "")
         return errorResponse(response, configMatch, 403); // forbidden
