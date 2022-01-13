@@ -34,7 +34,7 @@ Response    errorResponse(Response &response, t_configMatch  &configMatch, int s
     }
     else
     {
-        std::string defaultErrorPage = html::buildErrorHtmlPage(utils::myItoa(status));
+        std::vector<unsigned char> defaultErrorPage = html::buildErrorHtmlPage(utils::myItoa(status));
         response.setContent(defaultErrorPage, "text/html");
     }
 
@@ -43,7 +43,7 @@ Response    errorResponse(Response &response, t_configMatch  &configMatch, int s
 
 Response    autoIndexResponse(Response &response, std::string path)
 {
-    std::string autoIndexPage;
+    std::vector<unsigned char> autoIndexPage;
 
     response.setStatus(200);
     autoIndexPage = html::buildAutoIndexPage(path);
@@ -72,7 +72,7 @@ Response    cgiResponse(Response &response, t_configMatch  &configMatch)
 
 Response    redirectionResponse(Response &response, std::pair<int, std::string> redirection)
 {
-    std::string redirectionPage;
+    std::vector<unsigned char> redirectionPage;
 
     // std::cout << "Redirection " << redirection.first << " -> " << redirection.second << "\n";
     response.setStatus(redirection.first);
@@ -101,9 +101,9 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
         std::cout << "Directory -> autoindex\n";
         return autoIndexResponse(response, configMatch.path);
     }
-    else if (path.isDirectory() && !configMatch.location.getAutoindex() && !configMatch.index.empty() && (configMatch.location.getPath() == "/"))
+    else if (path.isDirectory() && !configMatch.location.getAutoindex() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
     {
-        std::cout << "Directory -> index\n";
+        std::cout << "Directory -> index\n";     
         return indexResponse(response, configMatch.path, configMatch.index);
     }
     else
@@ -122,7 +122,7 @@ bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodReq
 }
 
 void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string boundary)
-{   (void)p;
+{
     std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
     size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str());
     size_t				        i = 0;

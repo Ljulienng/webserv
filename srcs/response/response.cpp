@@ -17,7 +17,8 @@ void    Response::_updateMessage()
     _message += "\r\n";
     
     // append content
-    _message += _content;
+    // _message += _content;
+    _message += std::string(_content.begin(), _content.end());
 }
 
 /* SETTERS */
@@ -26,7 +27,14 @@ void    Response::setHeader(std::string key, std::string value)
     _headers.insert(std::pair<std::string, std::string>(key, value));
 }
 
-void    Response::setContent(std::string content, std::string contentType)
+// void    Response::setContent(std::string content, std::string contentType)
+// {
+//     _content = content;
+//     setHeader("Content-Type", contentType);
+//     setHeader("Content-Length", utils::myItoa(content.size()));
+// }
+
+void    Response::setContent(std::vector<unsigned char> content, std::string contentType)
 {
     _content = content;
     setHeader("Content-Type", contentType);
@@ -58,7 +66,10 @@ std::string     &Response::getHttpVersion()
 HttpStatus      &Response::getHttpStatus()
 { return _httpStatus; }
 
-std::string     &Response::getContent()
+// std::string     &Response::getContent()
+// { return  _content; }
+
+std::vector<unsigned char>     &Response::getContent()
 { return  _content; }
 
 std::string     &Response::getMessage()
