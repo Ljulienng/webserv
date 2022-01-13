@@ -20,6 +20,14 @@ std::string     getServerPath(std::string uri, t_configMatch &configMatch)
     return path;
 }
 
+bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodRequired)
+{
+    for (size_t i = 0; i < methods.size(); i++)
+        if (methods[i] == methodRequired)
+            return true;
+    return false;
+}
+
 Response    errorResponse(Response &response, t_configMatch  &configMatch, int status)
 {
     std::map<int, std::string>::iterator  errorPage = Configuration::getInstance().getErrorPages().find(status);
@@ -87,6 +95,9 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
 {
     File        path(configMatch.path);
 
+    if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "GET"))
+        return errorResponse(response, configMatch, 405); // method not allowed
+
     if (path.isRegularFile())
     {
         std::cout << "File -> ok regular file\n";
@@ -101,7 +112,7 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
         std::cout << "Directory -> autoindex\n";
         return autoIndexResponse(response, configMatch.path);
     }
-    else if (path.isDirectory() && !configMatch.location.getAutoindex() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
+    else if (path.isDirectory() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
     {
         std::cout << "Directory -> index\n";     
         return indexResponse(response, configMatch.path, configMatch.index);
@@ -111,14 +122,6 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
         std::cout << "Error not found\n";
         return errorResponse(response, configMatch, 404);
     }
-}
-
-bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodRequired)
-{
-    for (size_t i = 0; i < methods.size(); i++)
-        if (methods[i] == methodRequired)
-            return true;
-    return false;
 }
 
 void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string boundary)
