@@ -8,11 +8,10 @@
 
 namespace html {
 
-std::string     buildPage(std::string message);
-std::string     buildAutoIndexPage(std::string path);
-std::string     buildRedirectionPage(std::pair<int, std::string> redirection);
-std::string     buildErrorHtmlPage(std::string content);
-
+std::vector<unsigned char>     buildPage(std::string message);
+std::vector<unsigned char>     buildAutoIndexPage(std::string path);
+std::vector<unsigned char>     buildRedirectionPage(std::pair<int, std::string> redirection);
+std::vector<unsigned char>     buildErrorHtmlPage(std::string content);
 
 }; // namespace html
 

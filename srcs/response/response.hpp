@@ -17,7 +17,7 @@ class Response
         std::map<std::string, std::string>  _headers;
         std::string                         _httpVersion;
         HttpStatus                          _httpStatus;
-        std::string                         _content;
+        std::vector<unsigned char>          _content;
         std::string                         _message; // the formatted message to insert to the buffer
 
         void        _updateMessage();
@@ -30,7 +30,7 @@ class Response
 
         // SETTERS
         void                                setHeader(std::string key, std::string value);
-        void                                setContent(std::string content, std::string contentType);
+        void                                setContent(std::vector<unsigned char> content, std::string contentType);
         void                                setStatus(int status);
         
         // GETTERS
@@ -38,7 +38,7 @@ class Response
         std::string                         getHeader(std::string key);
         std::string                         &getHttpVersion();
         HttpStatus                          &getHttpStatus();
-        std::string                         &getContent();
+        std::vector<unsigned char>          &getContent();
         std::string                         &getMessage();
 };
 

@@ -2,9 +2,9 @@
 
 namespace html {
 
-std::string     buildPage(std::string message)
+std::vector<unsigned char>     buildPage(std::string message)
 {
-    std::string     page;
+    std::string  page;
 
     page =
         "<html>\n"
@@ -18,10 +18,10 @@ std::string     buildPage(std::string message)
         "   </body>\n"
         "</html>\n";
 
-    return page;
+    return std::vector<unsigned char>(page.begin(), page.end());
 }
 
-std::string     buildAutoIndexPage(std::string path)
+std::vector<unsigned char>     buildAutoIndexPage(std::string path)
 {
     File                                dir(path);
     std::list<std::string>              files = dir.buildFilesList();
@@ -48,10 +48,11 @@ std::string     buildAutoIndexPage(std::string path)
     "   </body>\n"
     "</html>\n";
 
-    return autoIndexPage;
+    return std::vector<unsigned char>(autoIndexPage.begin(), autoIndexPage.end());
 }
 
-std::string     buildRedirectionPage(std::pair<int, std::string> redirection)
+std::vector<unsigned char>     buildRedirectionPage(std::pair<int, std::string> redirection)
+
 {
     std::string     redirectionPage;
     HttpStatus      status(redirection.first);
@@ -69,11 +70,11 @@ std::string     buildRedirectionPage(std::pair<int, std::string> redirection)
         "   </body>\n"
         "</html>\n";
 
-    return redirectionPage;
+    return std::vector<unsigned char>(redirectionPage.begin(), redirectionPage.end());
 }
 
 
-std::string     buildErrorHtmlPage(std::string content)
+std::vector<unsigned char>     buildErrorHtmlPage(std::string content)
 {
     std::string     errorPage;
 
@@ -89,7 +90,7 @@ std::string     buildErrorHtmlPage(std::string content)
         "   </body>\n"
         "</html>\n";
 
-    return errorPage;
+    return std::vector<unsigned char>(errorPage.begin(), errorPage.end());
 }
 
 

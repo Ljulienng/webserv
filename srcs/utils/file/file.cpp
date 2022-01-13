@@ -77,17 +77,52 @@ std::string	File::findContentType(std::string extension)
 	return (mime.findMime(extension));
 }
 
+/*
+** if we call this function, we are sure that _filepath is a directory
+*/
+bool	File::fileIsInDirectory(std::string filename)
+{
+	std::list<std::string> listFiles = buildFilesList();
+	std::list<std::string>::iterator begin = listFiles.begin();
+	for ( ; begin != listFiles.end(); ++begin)
+		if (*begin == filename)
+			return true;
+	return false;
+}
+
 
 /* GETTERS */
 std::string		&File::getFilePath()
 { return _filePath; }
 
-std::string		&File::getFileContent()
+std::vector<unsigned char>	&File::getFileContent()
 { return _fileContent; }
 
 struct stat		&File::getfileStat()
 { return _fileStat; }
 
+void	File::readFile()
+{
+	char	buf[BUF_SIZE + 1] = {0};
+	int 	fd;
+	size_t	i;
+	size_t	ret;
+	
+	fd = open(_filePath.c_str(), O_RDONLY);
+	if (fd < 0)
+		return ;
+	while ((ret = read(fd, buf, BUF_SIZE)) > 0)
+	{
+		for (size_t j = 0; j < ret; ++j)
+			_fileContent.push_back(buf[j]);
+		i = 0;
+		while (i < BUF_SIZE)
+			buf[i++] = 0;
+	}
+	if (ret < 0)
+		return ;
+	close(fd);
+}
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 File::File() :
@@ -99,14 +134,9 @@ File::File(std::string filePath) :
 	_filePath(filePath),
 	_fileContent(),
 	_fileStat()
-{
+{	
 	if (isRegularFile())
-	{
-		std::ifstream ifs;
-		ifs.open(filePath.c_str(), std::ifstream::in);
-		std::getline(ifs, _fileContent, '\0');
-		ifs.close();
-	}
+		readFile();
 }
 
 File::File(const File &src)
@@ -121,6 +151,7 @@ File &File::operator=(const File &src)
 	if (&src != this)
 	{
 		_filePath = src._filePath;
+		_fileContent = src._fileContent;
 		_fileStat = src._fileStat;
 	}
 	return (*this);
