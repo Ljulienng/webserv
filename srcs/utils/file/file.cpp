@@ -134,8 +134,7 @@ File::File(std::string filePath) :
 	_filePath(filePath),
 	_fileContent(),
 	_fileStat()
-{
-	
+{	
 	if (isRegularFile())
 		readFile();
 }
@@ -152,6 +151,7 @@ File &File::operator=(const File &src)
 	if (&src != this)
 	{
 		_filePath = src._filePath;
+		_fileContent = src._fileContent;
 		_fileStat = src._fileStat;
 	}
 	return (*this);
