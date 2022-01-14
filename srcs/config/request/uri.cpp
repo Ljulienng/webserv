@@ -2,6 +2,21 @@
 
 /* PARSER */
 
+void 	Uri::createUrl(std::map<std::string, std::string> headers, std::string path)
+{
+	std::string url;
+	std::string scheme = "http";
+	std::string host = headers["Host"];
+
+	if (_authority._host == "" && host != "")
+		_authority._host = host;
+	if (_path == "" && path != "")
+		_path = path;
+	url = scheme + "://" + _authority._host + path;
+	// std::cout << "url = " << url << "\n";
+	_url = url;
+}
+
 void	Uri::urlParser(const std::string &url)
 {
 	std::string		newUrl;
@@ -9,6 +24,7 @@ void	Uri::urlParser(const std::string &url)
 	bool			has_autho;
 
 	_scheme = url.substr(0, index);
+			std::cout << "URL = " << url << std::endl;
 	url.find("://") != std::string::npos ? has_autho = true : has_autho = false;
 	if (has_autho == true)
 	{
@@ -25,8 +41,8 @@ void	Uri::urlParser(const std::string &url)
 			_authority._host = newUrl.substr(0, index);
 			newUrl.assign(newUrl, index + 1, std::string::npos);
 			size_t indexEnd =  newUrl.find_first_of("/");
-			_authority._port = newUrl.substr(index, indexEnd);
-			newUrl.assign(newUrl, indexEnd + 1, std::string::npos);
+			_authority._port = newUrl.substr(0, indexEnd);
+			newUrl.assign(newUrl, indexEnd, std::string::npos);
 		}
 		else
 		{
@@ -59,6 +75,9 @@ void	Uri::urlParser(const std::string &url)
 
 /* GETTERS */
 
+std::string							&Uri::getUrl()
+{ return (_url); }
+
 std::string							&Uri::getScheme()
 { return (_scheme); }
 
@@ -84,6 +103,7 @@ std::string							&Uri::getFragment()
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
 Uri::Uri()
+: _url(""), _scheme(""), _path(""), _query(""), _fragment("")
 { }
 
 Uri::Uri(const Uri &uri)
@@ -102,6 +122,7 @@ Uri::~Uri()
 
 Uri		&Uri::operator=(const Uri &obj)
 {
+	_url = obj._url;
 	_scheme = obj._scheme;
 	_authority._userInfo = obj._authority._userInfo;
 	_authority._host = obj._authority._host;

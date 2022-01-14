@@ -1,5 +1,39 @@
 #include "clientSocket.hpp"
 
+
+/**/
+int				ClientSocket::verifBuffer()
+{
+	std::cout << _buffer;
+	if (_buffer.find("\r\n\r\n") == std::string::npos)
+		return (1);
+	if (_buffer.find("Content-Length: ") == std::string::npos)
+	{
+		if (_buffer.find("Transfer-Encoding: chunked") != std::string::npos)
+		{
+			size_t i = _buffer.find("0\r\n\r\n");
+			if (i != std::string::npos && i == _buffer.size() - 5)
+				return (0);
+			else
+				return (1);
+		}
+		else
+			return (1);
+	}
+	else
+	{
+		size_t contentLength = atoi(_buffer.substr(_buffer.find("Content-Length: "), 26).c_str());
+		std::string	body = _buffer.substr(_buffer.find("\r\n\r\n") + 4, std::string::npos);
+
+		if (body.size() > contentLength)
+		{
+			// std::cerr << "Body size exceeds the content-length specified\n";
+			return (1);
+		}
+		return (0);
+	}
+}
+
 void            ClientSocket::addRequest()
 {
 	Request newRequest(_buffer);
