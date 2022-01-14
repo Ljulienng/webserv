@@ -3,7 +3,6 @@
 void	Hub::start()
 {
 	Configuration::getInstance().parse();
-	// Configuration::getInstance().debug();
 	_startSockets();
 }
 
@@ -123,21 +122,24 @@ void		Hub::_receiveRequest(size_t index)
 	else if (bytes > 0)
 	{
 		clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
-		while (bytes == MAX_BUF_LEN)
+		// while (bytes == MAX_BUF_LEN)
+		// {
+		// 	buffer.clear();
+		// 	bytes = recv(_fds[index].fd, &buffer[0], MAX_BUF_LEN, 0);
+		// 	if (bytes < 0)
+		// 		throw std::string("Error: can't receive client request");
+		// 	else
+		// 		clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
+		// }
+		// clients[clientIndex].addRequest(); // move here not to create the request if bytes = 0
+		if (bytes < MAX_BUF_LEN)
 		{
-			buffer.clear();
-			bytes = recv(_fds[index].fd, &buffer[0], MAX_BUF_LEN, 0);
-			if (bytes < 0)
-				throw std::string("Error: can't receive client request");
-			else
-				clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
+			clients[clientIndex].addRequest();
+			_output("Received a new request", clients[clientIndex].getFd());
 		}
-		clients[clientIndex].addRequest(); // move here not to create the request if bytes = 0
 	}
 	else //bytes = 0;
-		_closeConnection(clientIndex, CLIENT); // disconnect the client
-
-	_output("Received a new request", clients[clientIndex].getFd());
+			_closeConnection(clientIndex, CLIENT); // disconnect the client
 }
 
 /*
@@ -198,20 +200,19 @@ void 		Hub::_sendResponse(size_t index)
 	{
 		Response response = responses.front(); // process in FIFO order, we process the oldest element first
 
-		// then have to check header and status of the response
+		// then have to check header and status of the request
 		// ...
 
 		std::string		message = response.getMessage(); // put into a string the response
 		buffer.insert(buffer.end(), message.begin(), message.end()); // append it to the client buffer
 		_output("Response sent", clients[clientIndex].getFd());
-		responses.pop(); // delete the response
+		responses.pop();
 	}
 
 	if (buffer.empty() == false)
 	{
 		// we can use send() ( without flag parameter, send is equivalent to write() )
 		// so write into the _fds[i].fd the content of buffer
-		// std::cout << "Response = \n" << &buffer[0] << "\n";
 		int bytes = write(_fds[index].fd, &buffer[0], buffer.size());
 
 		if (bytes <= 0)
@@ -221,8 +222,9 @@ void 		Hub::_sendResponse(size_t index)
 		}
 		buffer.erase(buffer.begin(), buffer.begin() + bytes); // clear the buffer
 
-		_fds[index].events = POLLIN; // finished to write so we are now waiting for reading
 	}
+	if (buffer.empty())
+		_fds[index].events = POLLIN; // finished to write so we are now waiting for reading
 }
 
 void		Hub::_closeConnection(size_t index, int type)
@@ -250,14 +252,19 @@ void		Hub::_closeConnection(size_t index, int type)
 }
 
 void		Hub::_closeAllConnections()
-{
+{	
 	size_t 		nbOfServers = Configuration::getInstance().getServers().size();
 	size_t 		nbOfClients = Configuration::getInstance().getClients().size();
 
-	for (size_t index = 0; index < nbOfServers; index++)
-		_closeConnection(0, SERVER);
-	for (size_t index = 0; index < nbOfClients; index++)
-		_closeConnection(0, CLIENT);
+	// condition to be sure we don't try to close the connection
+	// when there has been a problem (fail to bind for exemple)
+	if (_nfds == nbOfServers + nbOfClients)
+	{
+		for (size_t index = 0; index < nbOfServers; index++)
+			_closeConnection(0, SERVER);
+		for (size_t index = 0; index < nbOfClients; index++)
+			_closeConnection(0, CLIENT);
+	}
 }
 
 void			Hub::_output(std::string msg, int fd)
@@ -295,11 +302,9 @@ Hub::Hub(const Hub &src)
 	*this = src;
 }
 
-// find another way to close connection
-// if fail to bind, try to close connection and segfault
 Hub::~Hub()
 {
-	// _closeAllConnections();
+	_closeAllConnections();
 }
 
 Hub &Hub::operator=(const Hub &src)

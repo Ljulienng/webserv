@@ -20,27 +20,29 @@ std::string     getServerPath(std::string uri, t_configMatch &configMatch)
     return path;
 }
 
-std::string     getExtension(std::string filename)
+bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodRequired)
 {
-    size_t index = filename.find_last_of(".") + 1;
-    if (index == std::string::npos)
-        return NULL;
-    return (filename.substr(index, std::string::npos));
+    for (size_t i = 0; i < methods.size(); i++)
+        if (methods[i] == methodRequired)
+            return true;
+    return false;
 }
 
 Response    errorResponse(Response &response, t_configMatch  &configMatch, int status)
 {
-    std::string     errorPage = Configuration::getInstance().getErrorPages()[status];
-    File            errorPath(configMatch.root + errorPage);
-
-    response.getHttpStatus().setStatus(status);
-    if (!errorPage.empty() && errorPath.isRegularFile())
+    std::map<int, std::string>::iterator  errorPage = Configuration::getInstance().getErrorPages().find(status);
+    
+    response.setStatus(status);
+    if (errorPage != Configuration::getInstance().getErrorPages().end()
+        && !errorPage->second.empty())
     {
-        response.setContent(errorPath.getFileContent(), "text/html");
+        File    errorPath(configMatch.root + errorPage->second);
+        if (errorPath.isRegularFile())
+            response.setContent(errorPath.getFileContent(), "text/html");
     }
     else
     {
-        std::string defaultErrorPage = html::buildErrorHtmlPage(utils::myItoa(status));
+        std::vector<unsigned char> defaultErrorPage = html::buildErrorHtmlPage(utils::myItoa(status));
         response.setContent(defaultErrorPage, "text/html");
     }
 
@@ -49,7 +51,7 @@ Response    errorResponse(Response &response, t_configMatch  &configMatch, int s
 
 Response    autoIndexResponse(Response &response, std::string path)
 {
-    std::string autoIndexPage;
+    std::vector<unsigned char> autoIndexPage;
 
     response.setStatus(200);
     autoIndexPage = html::buildAutoIndexPage(path);
@@ -63,7 +65,7 @@ Response    indexResponse(Response &response,std::string path, std::string index
     File indexFile(path + index);
     Mime indexExtension(getExtension(index));
 
-    response.getHttpStatus().setStatus(200);
+    response.setStatus(200);
     response.setContent(indexFile.getFileContent(), indexExtension.getMime()); // set content-type + content-length + content
     
     return response;
@@ -78,9 +80,9 @@ Response    cgiResponse(Response &response, t_configMatch  &configMatch)
 
 Response    redirectionResponse(Response &response, std::pair<int, std::string> redirection)
 {
-    std::string redirectionPage;
+    std::vector<unsigned char> redirectionPage;
 
-    std::cout << "Redirection " << redirection.first << " -> " << redirection.second << "\n";
+    // std::cout << "Redirection " << redirection.first << " -> " << redirection.second << "\n";
     response.setStatus(redirection.first);
     response.setHeader("Location", redirection.second);
     redirectionPage = html::buildRedirectionPage(redirection);
@@ -93,13 +95,16 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
 {
     File        path(configMatch.path);
 
+    if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "GET"))
+        return errorResponse(response, configMatch, 405); // method not allowed
+
     if (path.isRegularFile())
     {
         std::cout << "File -> ok regular file\n";
         Mime    extension(getExtension(configMatch.path));
 
         response.setStatus(200);
-        response.setContent(path.getFileContent(), extension.getMime()); // set content-type + content-length + content
+        response.setContent(path.getFileContent(), extension.getMime());
         return response;
     }
     else if (path.isDirectory() && configMatch.location.getAutoindex())
@@ -107,25 +112,123 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
         std::cout << "Directory -> autoindex\n";
         return autoIndexResponse(response, configMatch.path);
     }
-    else if (path.isDirectory() && !configMatch.location.getAutoindex() && !configMatch.index.empty() && (configMatch.location.getPath() == "/"))
+    else if (path.isDirectory() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
     {
-        std::cout << "Directory -> index\n";
+        std::cout << "Directory -> index\n";     
         return indexResponse(response, configMatch.path, configMatch.index);
-
     }
     else
     {
         std::cout << "Error not found\n";
-        return errorResponse(response, configMatch, 404); // send error response and page 404.html
+        return errorResponse(response, configMatch, 404);
     }
 }
 
-bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodRequired)
+void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string boundary)
 {
-    for (size_t i = 0; i < methods.size(); i++)
-        if (methods[i] == methodRequired)
-            return true;
-    return false;
+    std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
+    size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str());
+    size_t				        i = 0;
+    // std::cout << "contentLength : " << contentLength << "\n";
+    // std::cout << "body size : " << content.size() << "\n";
+
+    while (i + boundary.size() + 6 <= contentLength)
+    {
+        i += boundary.size() + 2;   // skip boundary
+        if (content[i] == '-' && content[i + 1] == '-')
+        {
+            i += 4;
+            break ;
+        }
+        i += 2;
+
+        t_multipart     part;       // one part on the multipart
+        while (1)                  // parse headers
+        {
+            size_t start = i;
+            while (!(content[i] == '\r' && content[i + 1] == '\n'))
+                i++;
+            if (content[i] == '\r' && content[i + 1] == '\n')
+            {   
+                std::string headerline(content.begin() + start, content.begin() + i); 
+                std::vector<std::string>    headeParts = splitString(headerline, ':');
+                part.headers[headeParts[0]] = headeParts[1];
+                i += 2;
+                if (content[i] == '\r' && content[i + 1] == '\n')
+                {
+                    i += 2;
+                    break ;     // end of headers
+                }
+            }
+        }
+
+        part.content = &content[i];
+        part.length = 0;
+        while (i + boundary.size() + 4 < contentLength) // parse content
+        {
+            if (content[i] == '\r' && content[i + 1] == '\n'
+            && content[i + 2] == '-' && content[i + 3] == '-'
+			&& !::strncmp(boundary.c_str(), reinterpret_cast<const char*>(&content[i + 4]), boundary.size()))
+            {
+                i += 2;
+                break ;
+            }
+            ++i;
+            ++part.length;
+        }
+        p.push_back(part);
+    }
+}
+
+std::string t_multipart::getFilename() const
+{
+    std::map<std::string, std::string>::const_iterator contentDisp = headers.find("Content-Disposition");
+    
+    if (contentDisp == headers.end())
+        return "";
+    size_t i = contentDisp->second.find("filename=\"");
+    if (i == std::string::npos)
+        return "";
+    i += 10;
+    size_t start = i;
+    while (contentDisp->second[i] != '\"')
+        i++;
+    return std::string(contentDisp->second.begin() + start, contentDisp->second.begin() + i);
+}
+
+Response    multipart(Response &response, Request &request, t_configMatch &configMatch, std::string contentTypeHeader)
+{
+    std::cout << "[multipart]\n";
+
+    // check that we have the 2 parts -> "Content-type: multipart/form-data; boundary"
+    if (contentTypeHeader.find(";") == std::string::npos)
+        return errorResponse(response, configMatch, 400);
+    std::string     contentType = contentTypeHeader.substr(0, contentTypeHeader.find_first_of(";"));
+    std::string     boundary = contentTypeHeader.substr(contentTypeHeader.find_first_of(";") + 1, std::string::npos);
+
+    if (boundary.substr(0, 9) != "boundary=")
+        return errorResponse(response, configMatch, 400);
+    boundary.erase(0, 9);
+    
+    // check if the content is ok and get content original file (without headers and boundary)
+    std::list<t_multipart> parts;
+    parseMultipart(parts, request, boundary);
+
+    // create and write content into the new file for each part
+    std::list<t_multipart>::iterator it = parts.begin();
+	while (it != parts.end())
+    {
+        std::string filename = it->getFilename();
+        if (filename.empty())
+            return errorResponse(response, configMatch, 400);
+        appendToFile(configMatch.root + configMatch.server.getUploadPath() + "/" + filename, reinterpret_cast<char*>(it->content), it->length);
+        ++it;
+    }
+
+    response.setStatus(201);
+	response.setContent(html::buildPage("File upload"), "text/html");
+
+    return response;
 }
 
 Response    postMethodResponse(Response &response, Request &request, t_configMatch &configMatch)
@@ -135,22 +238,18 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     std::string     filename = std::string(configMatch.path.begin() + lastSlash, configMatch.path.end());
     std::string     pathToUpload = configMatch.root + configMatch.server.getUploadPath() + filename;
 
-    // CHECK IF IT'S AN ALLOWED METHOD
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "POST"))
         return errorResponse(response, configMatch, 405); // method not allowed
 
     // check we have a directory to uploads files else errorResponse
     if (configMatch.server.getUploadPath() == "")
-        return errorResponse(response, configMatch, 403); // forbidden
+        return errorResponse(response, configMatch, 403);
 
+    // check if it's a multipart/form-data
+    if (request.getHeader("Content-Type").find("multipart/form-data") != std::string::npos)
+        return multipart(response, request, configMatch, request.getHeader("Content-Type"));
 
     // we create the file
-    // std::cout << "[postMethodResponse] configMatch.path = " << configMatch.path << "\n";
-    
-    
-    // std::cout << "filename = " << filename << "\n";
-
-    // std::cout << "[postMethodResponse] body = " << request.getBody() << "\n";
     if (!fileToPost.createFile(pathToUpload, request.getBody()))
         return errorResponse(response, configMatch, 500);
     response.setStatus(201);
@@ -159,7 +258,7 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     // response.setHeader("Location", request.getPath()); // need to send the full uri : http://127.0.0.1:8080/file.ext
     std::string fullUri = "http://" + configMatch.server.getIp() + ":" + utils::myItoa(configMatch.server.getPort()) + request.getPath();
     // std::cout << "[postMethodResponse] fullUri = " << fullUri << "\n";
-    response.setHeader("Location", fullUri); //provisoire en attendant de l'avoir via la requete
+    response.setHeader("Location", fullUri); // PROVISOIRE EN ATTENDANT DE L'AVOIR VIA LA REQUETE
     
     response.setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, pathToUpload)), "text/html");
    
