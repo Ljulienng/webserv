@@ -211,7 +211,6 @@ void	Configuration::parse()
 
 	if (!_checkConfigScope(it, ite))
 		throw std::string("Error: bad format : config scope");
-	//std::cout << "it = " << *(it + 2) << "\n";
 	if (*it++ != '{')
 		throw std::string("Error: bad format : config scope");
 	while (it != ite)
@@ -230,7 +229,7 @@ void	Configuration::parse()
 					{
 						str_ite		end(++it);
 						for (; *end != '"'; end++);
-						if (isValidExpression(std::string(it--, end), serverExpression) != -1) // si prochain mot fait partie des mots cles (definir enum)
+						if (isValidExpression(std::string(it--, end), serverExpression) != -1)
 							it += _parseServer(it, ite);
 						it++;
 					}

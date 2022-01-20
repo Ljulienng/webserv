@@ -53,7 +53,7 @@ Response    autoIndexResponse(Response &response, std::string path)
 {
     std::vector<unsigned char> autoIndexPage;
 
-    response.setStatus(200);
+    response.setStatus(OK);
     autoIndexPage = html::buildAutoIndexPage(path);
     response.setContent(autoIndexPage, "text/html");
     
@@ -65,7 +65,7 @@ Response    indexResponse(Response &response,std::string path, std::string index
     File indexFile(path + index);
     Mime indexExtension(getExtension(index));
 
-    response.setStatus(200);
+    response.setStatus(OK);
     response.setContent(indexFile.getFileContent(), indexExtension.getMime()); // set content-type + content-length + content
     
     return response;
@@ -84,38 +84,34 @@ Response    cgiResponse(Response &response, t_configMatch  &configMatch)
     std::cout << "Execute CGI\n";
 
     // 4)
-    std::string cgiResponse = "Blabla:\r\nContent-type:html\r\nStatus:200 ok\r\n\r\nbody is here"; // a remplacer par le retour de Julien
+    std::string cgiResponse = "Blabla:\r\nContent-type:html\r\nStatus:200ok\r\n\r\nbody is here"; // a remplacer par le retour de Julien
     size_t i = 0;
     
-    // only need 2 headers (content-type and status) and body
     while (cgiResponse.find("\r\n", i) != std::string::npos)
     {
-        std::cout << "line len = " << cgiResponse.find("\r\n", i) - i << "\n";
         if (cgiResponse.find("Content-type:", i) == i)
-            {
-                std::cout << "content type found\n";
                 response.setHeader("Content-type", cgiResponse.substr(i + 13, cgiResponse.find("\r\n", i) - i - 13));
-            }
         if (cgiResponse.find("Status:", i) == i)
         {
-            std::cout << "status found\n";
-            response.setStatus(atoi(cgiResponse.substr(i + 7, 3).c_str()));
+            int code = strtol(cgiResponse.substr(i + 7, 3).c_str(), NULL, 10);
+            code == 0 ? response.setStatus(OK) : response.setStatus(code);
         }
-        std::cout << "i = " << i << "    found \\r\\n : " << cgiResponse.find("\r\n", i) << "\n";
         i += cgiResponse.find("\r\n", i) - i + 2;
         if (cgiResponse.find("\r\n", i) == i)
         {
-            std::cout << "end headers\n";
             i += 2;
             break ;
         }
     }
-    std::cout << "YOUHOU\n";
     std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
+
+    // 5)
+    if (response.getHttpStatus().getCode() >= 400)
+        return errorResponse(response, configMatch, response.getHttpStatus().getCode());
     response.setContent(body, response.getHeader("Content-type"));
-    std::cout << "Content-type = " << response.getHeader("Content-type") << "\n";
-    std::cout << "Status = " << response.getHttpStatus().getCode() << "\n";
-    std::cout << "Body = " << std::string(response.getContent().begin(), response.getContent().end()) << "\n";
+    // std::cout << "Content-type = " << response.getHeader("Content-type") << "\n";
+    // std::cout << "Status = " << response.getHttpStatus().getCode() << "\n";
+    // std::cout << "Body = " << std::string(response.getContent().begin(), response.getContent().end()) << "\n";
     return response;
 }
 
@@ -137,14 +133,14 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     File        path(configMatch.path);
 
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "GET"))
-        return errorResponse(response, configMatch, 405); // method not allowed
+        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED); // method not allowed
 
     if (path.isRegularFile())
     {
         std::cout << "File -> ok regular file\n";
         Mime    extension(getExtension(configMatch.path));
 
-        response.setStatus(200);
+        response.setStatus(OK);
         response.setContent(path.getFileContent(), extension.getMime());
         return response;
     }
@@ -161,7 +157,7 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     else
     {
         std::cout << "Error not found\n";
-        return errorResponse(response, configMatch, 404);
+        return errorResponse(response, configMatch, NOT_FOUND);
     }
 }
 
@@ -243,12 +239,12 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
 
     // check that we have the 2 parts -> "Content-type: multipart/form-data; boundary"
     if (contentTypeHeader.find(";") == std::string::npos)
-        return errorResponse(response, configMatch, 400);
+        return errorResponse(response, configMatch, BAD_REQUEST);
     std::string     contentType = contentTypeHeader.substr(0, contentTypeHeader.find_first_of(";"));
     std::string     boundary = contentTypeHeader.substr(contentTypeHeader.find_first_of(";") + 1, std::string::npos);
 
     if (boundary.substr(0, 9) != "boundary=")
-        return errorResponse(response, configMatch, 400);
+        return errorResponse(response, configMatch, BAD_REQUEST);
     boundary.erase(0, 9);
     
     // check if the content is ok and get content original file (without headers and boundary)
@@ -261,7 +257,7 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
     {
         std::string filename = it->getFilename();
         if (filename.empty())
-            return errorResponse(response, configMatch, 400);
+            return errorResponse(response, configMatch, BAD_REQUEST);
         appendToFile(configMatch.root + configMatch.server.getUploadPath() + "/" + filename, reinterpret_cast<char*>(it->content), it->length);
         ++it;
     }
@@ -280,11 +276,11 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     std::string     pathToUpload = configMatch.root + configMatch.server.getUploadPath() + filename;
 
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "POST"))
-        return errorResponse(response, configMatch, 405); // method not allowed
+        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED); // method not allowed
 
     // check we have a directory to uploads files else errorResponse
     if (configMatch.server.getUploadPath() == "")
-        return errorResponse(response, configMatch, 403);
+        return errorResponse(response, configMatch, FORBIDDEN);
 
     // check if it's a multipart/form-data
     if (request.getHeader("Content-Type").find("multipart/form-data") != std::string::npos)
@@ -292,8 +288,8 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
 
     // we create the file
     if (!fileToPost.createFile(pathToUpload, request.getBody()))
-        return errorResponse(response, configMatch, 500);
-    response.setStatus(201);
+        return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
+    response.setStatus(CREATED);
 
     // we indicate the url of the resource we created thanks to "location" header
     // response.setHeader("Location", request.getPath()); // need to send the full uri : http://127.0.0.1:8080/file.ext
@@ -314,15 +310,15 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
     {
        if (remove(configMatch.path.c_str()) == 0)
         {
-            response.setStatus(200);
+            response.setStatus(OK);
             response.setContent(html::buildPage("Method DELETE ok : file successfully deleted"), "text/html");
             return response;
         }
         else
-            return errorResponse(response, configMatch, 204);
+            return errorResponse(response, configMatch, NO_CONTENT);
     }
     else
-        return errorResponse(response, configMatch, 204);
+        return errorResponse(response, configMatch, NO_CONTENT);
 }
 
 /*
@@ -339,7 +335,7 @@ Response    dispatchingResponse(Response &response, Request &request, t_configMa
     File        path(configMatch.path);
 
     if (path.isDirectory() && configMatch.path[configMatch.path.size() - 1] != '/')
-        return redirectionResponse(response, std::pair<int, std::string>(301, request.getPath() + "/"));
+        return redirectionResponse(response, std::pair<int, std::string>(MOVED_PERMANENTLY, request.getPath() + "/"));
     else if (configMatch.server.getCgi().first == ".php"
         && request.getPath().find(configMatch.server.getCgi().first) != std::string::npos
         && (request.getMethod() == "GET" || request.getMethod() == "POST"))
@@ -352,7 +348,7 @@ Response    dispatchingResponse(Response &response, Request &request, t_configMa
         return postMethodResponse(response, request, configMatch);
     else if (request.getMethod() == "DELETE")
         return deleteMethodResponse(response, configMatch);
-    return errorResponse(response, configMatch, 404);
+    return errorResponse(response, configMatch, NOT_FOUND);
 }
 
 Response    constructResponse(Request &request, std::string serverName)
