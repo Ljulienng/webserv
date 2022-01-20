@@ -71,10 +71,51 @@ Response    indexResponse(Response &response,std::string path, std::string index
     return response;
 }
 
+/*
+** 1) set env variables [Julien]
+** 2) execute cgi [Julien]
+** 3) get cgi response in stdin and put it in a vector<unsigned char> [Julien]
+** 4) parse the cgi response [Elie]
+** 5) build the server response [Elie]
+*/
 Response    cgiResponse(Response &response, t_configMatch  &configMatch)
 {
     (void)configMatch;
-    std::cout << "Need to execute CGI\n";
+    std::cout << "Execute CGI\n";
+
+    // 4)
+    std::string cgiResponse = "Blabla:\r\nContent-type:html\r\nStatus:200 ok\r\n\r\nbody is here"; // a remplacer par le retour de Julien
+    size_t i = 0;
+    
+    // only need 2 headers (content-type and status) and body
+    while (cgiResponse.find("\r\n", i) != std::string::npos)
+    {
+        std::cout << "line len = " << cgiResponse.find("\r\n", i) - i << "\n";
+        if (cgiResponse.find("Content-type:", i) == i)
+            {
+                std::cout << "content type found\n";
+                response.setHeader("Content-type", cgiResponse.substr(i + 13, cgiResponse.find("\r\n", i) - i - 13));
+            }
+        if (cgiResponse.find("Status:", i) == i)
+        {
+            std::cout << "status found\n";
+            response.setStatus(atoi(cgiResponse.substr(i + 7, 3).c_str()));
+        }
+        std::cout << "i = " << i << "    found \\r\\n : " << cgiResponse.find("\r\n", i) << "\n";
+        i += cgiResponse.find("\r\n", i) - i + 2;
+        if (cgiResponse.find("\r\n", i) == i)
+        {
+            std::cout << "end headers\n";
+            i += 2;
+            break ;
+        }
+    }
+    std::cout << "YOUHOU\n";
+    std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
+    response.setContent(body, response.getHeader("Content-type"));
+    std::cout << "Content-type = " << response.getHeader("Content-type") << "\n";
+    std::cout << "Status = " << response.getHttpStatus().getCode() << "\n";
+    std::cout << "Body = " << std::string(response.getContent().begin(), response.getContent().end()) << "\n";
     return response;
 }
 
