@@ -125,6 +125,8 @@ std::string	Request::nextLine(const std::string &request, size_t &i)
 	std::string	line;
 	size_t		j = request.find_first_of("\n", i);
 
+	if (j == std::string::npos)
+		return ("\r");
 	for (size_t k = i; k < j; k++)
 		line.push_back(request[k]);
 	// line.assign(request, i, j);
@@ -229,7 +231,7 @@ void		Request::initUri()
 {
 	_uri.createUrl(_headers, _path);
 	_uri.urlParser(_uri.getUrl());
-	_uri.debug();
+	// _uri.debug();
 }
 
 int			Request::parse(const std::string &request)
@@ -310,7 +312,7 @@ Uri									&Request::getUri()
 */
 
 Request::Request(const std::string &request) :
-	_method(""), _path(""), _version(""), _headers(), _body(""), _ret(0)
+	_method(""), _path(""), _version(""), _headers(), _body(""), _ret(200)
 {
 	parse(request);
 }

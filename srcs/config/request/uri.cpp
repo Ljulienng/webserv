@@ -24,7 +24,6 @@ void	Uri::urlParser(const std::string &url)
 	bool			has_autho;
 
 	_scheme = url.substr(0, index);
-			std::cout << "URL = " << url << std::endl;
 	url.find("://") != std::string::npos ? has_autho = true : has_autho = false;
 	if (has_autho == true)
 	{
