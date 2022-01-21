@@ -49,6 +49,7 @@ public:
 	std::map<std::string, std::string>	&getHeaders();
 	std::string                         getHeader(std::string key);
 	std::string							&getBody();
+	Uri									&getUri();
 
 	/* DEBUG */
 	void								debug();

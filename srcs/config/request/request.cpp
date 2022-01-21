@@ -254,7 +254,6 @@ int			Request::parse(const std::string &request)
 	parseHeader(tmp, i);
 	setAcceptedLanguages();
 	initUri();
-	std::cout << "went there" << std::endl;
 	if (tmp.size())
 		tmp.assign(request, i, std::string::npos);
 	if (_headers["Transfer-Encoding"] == "chunked")
@@ -289,6 +288,9 @@ std::string         Request::getHeader(std::string key)
 
 std::string							&Request::getBody()
 { return (_body); }
+
+Uri									&Request::getUri()
+{ return (_uri); }
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
