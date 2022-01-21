@@ -38,7 +38,10 @@ void            ClientSocket::addRequest()
 {
 	Request newRequest(_buffer);
 
-	_requests.push(newRequest);
+	if (newRequest.getRet() == 200)
+		_requests.push(newRequest);
+	else
+		std::cerr << "Incorrect Request\n";
 	_buffer.clear();
 }
 

@@ -294,6 +294,9 @@ std::string							&Request::getBody()
 Uri									&Request::getUri()
 { return (_uri); }
 
+int									Request::getRet()
+{ return (_ret); }
+
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 

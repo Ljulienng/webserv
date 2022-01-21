@@ -50,6 +50,7 @@ public:
 	std::string                         getHeader(std::string key);
 	std::string							&getBody();
 	Uri									&getUri();
+	int									getRet();
 
 	/* DEBUG */
 	void								debug();
