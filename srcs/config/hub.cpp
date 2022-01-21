@@ -30,7 +30,7 @@ void	Hub::process()
 	int pollRet = pollRet = poll(_fds, _nfds, -1); // call poll and wait an infinite time
 	
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
-	{
+	{	
 		_closeAllConnections();
 		return ;
 	}
@@ -63,7 +63,7 @@ void	Hub::process()
 			_sendResponse(i);
 		}
 		else
-		{
+		{std::cout << "CLOSECONNECTION1\n";
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
