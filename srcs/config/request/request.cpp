@@ -29,6 +29,7 @@ void	Request::initHeaders()
 	_headers["Accept-Language"] = "";
 
 	// Information for the body message
+	_headers["Transfer-Encoding"] = "";
 	_headers["Content-Length"] = "";
 	_headers["Content-Type"] = "";
 	_headers["Content-Encoding"] = "";
@@ -103,7 +104,7 @@ int		Request::parseFirstLine(std::string line)
 		return ((_ret = 400));
 	}
 	trimChar(arg);
-	_path = Uri(arg);
+	_path = arg;
 
 	// ASSIGNING VERSION
 	i = line.find_first_of('\n');
@@ -199,6 +200,21 @@ void		Request::setAcceptedLanguages()
 	}
 }
 
+void		Request::parseChunkedBody(const std::string &request)
+{
+	size_t			i = 0;
+	std::string		chunks = request.substr(request.find("\r\n\r\n") + 4, request.find("0\r\n\r\n") + 5);
+	long			chunkSize = strtol(chunks.substr(i, chunks.find("\r\n", i) + 2).c_str(), NULL, 16);
+
+	while (chunkSize > 0)
+	{
+		i = chunks.find("\r\n", i) + 2;
+		_body.append(i, chunkSize);
+		i += chunkSize + 2;
+		chunkSize = strtol(chunks.substr(i, chunks.find("\r\n", i) + 2).c_str(), NULL, 16);
+	}
+}
+
 void		Request::parsebody(const std::string &request)
 {
 	size_t j = 0;
@@ -207,6 +223,13 @@ void		Request::parsebody(const std::string &request)
 	j = request.find("\r\n\r\n");
 	if (_headers["Content-Length"] != "")
 		_body.assign(request, j + 4, atoi(_headers["Content-Length"].c_str()));
+}
+
+void		Request::initUri()
+{
+	_uri.createUrl(_headers, _path);
+	_uri.urlParser(_uri.getUrl());
+	_uri.debug();
 }
 
 int			Request::parse(const std::string &request)
@@ -230,9 +253,13 @@ int			Request::parse(const std::string &request)
 	// Parsing each line of the header assigning values to the corresponding keys
 	parseHeader(tmp, i);
 	setAcceptedLanguages();
+	initUri();
 	if (tmp.size())
 		tmp.assign(request, i, std::string::npos);
-	parsebody(tmp);
+	if (_headers["Transfer-Encoding"] == "chunked")
+		parseChunkedBody(tmp);
+	else
+		parsebody(tmp);
 	// debug();
 	return (_ret);
 }
@@ -243,7 +270,7 @@ std::string							&Request::getMethod()
 { return (_method); }
 
 std::string							&Request::getPath()
-{ return (_path.getPath()); }
+{ return (_path); }
 
 std::string							&Request::getVersion()
 { return (_version); }
@@ -261,6 +288,9 @@ std::string         Request::getHeader(std::string key)
 
 std::string							&Request::getBody()
 { return (_body); }
+
+Uri									&Request::getUri()
+{ return (_uri); }
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
@@ -311,7 +341,7 @@ void			Request::debug()
 
 	std::cout << "\n***** DEBUG *****\n";
 	std::cout << "_METHOD = " << _method << std::endl;
-	_path.debug();
+	// _url.debug();
 	std::cout << "_version = " << _version << std::endl;
 	std::cout << "_ret = " << _ret << std::endl;
 

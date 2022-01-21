@@ -12,7 +12,8 @@ private:
 	// const std::string 	&_rawRequest;
 
 	std::string									_method;
-	Uri											_path;
+	std::string									_path;
+	Uri											_uri;
 	std::string									_version;
 	std::map<std::string, std::string>			_headers;
 	std::vector<std::pair<std::string, float> >	_acceptedLang; 
@@ -34,7 +35,9 @@ public:
 	void			storeKeyValue(const std::string &line);
 	int				parseHeader(const std::string &request, size_t &i);
 	void			setAcceptedLanguages();
+	void			parseChunkedBody(const std::string &request);
 	void			parsebody(const std::string &request);
+	void			initUri();
 	int 			parse(const std::string &request);
 
 	/* GETTERS */
@@ -46,6 +49,7 @@ public:
 	std::map<std::string, std::string>	&getHeaders();
 	std::string                         getHeader(std::string key);
 	std::string							&getBody();
+	Uri									&getUri();
 
 	/* DEBUG */
 	void								debug();
