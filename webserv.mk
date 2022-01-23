@@ -14,7 +14,8 @@ SRC_FILES	= 	webserv.cpp					\
 				file.cpp					\
 				mime.cpp					\
 				str.cpp						\
-				utils.cpp
+				utils.cpp					\
+				cgiConstructor.cpp
 
 INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/config/configuration/configuration.hpp			\
@@ -33,4 +34,5 @@ INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/utils/mime/mime.hpp							\
 				srcs/utils/singleton/singleton.hpp					\
 				srcs/utils/str/str.hpp								\
-				srcs/utils/utils.hpp
+				srcs/utils/utils.hpp								\
+				srcs/cgi/cgiConstructor.hpp
