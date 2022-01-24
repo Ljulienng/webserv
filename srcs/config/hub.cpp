@@ -97,7 +97,7 @@ void		Hub::_acceptIncomingConnections(size_t index)
 		clients.push_back(client);
 
 		// add the new incoming connection to the pollfd structure
-		_output("New incoming connection", acceptRet);
+		log::logEvent("New incoming connection", acceptRet);
 		_fds[_nfds].fd = acceptRet;
 		_fds[_nfds].events = POLLIN;
 		_nfds++;
@@ -135,7 +135,7 @@ void		Hub::_receiveRequest(size_t index)
 		if (bytes < MAX_BUF_LEN)
 		{
 			clients[clientIndex].addRequest();
-			_output("Received a new request", clients[clientIndex].getFd());
+			log::logEvent("Received a new request", clients[clientIndex].getFd());
 		}
 	}
 	else //bytes = 0;
@@ -205,7 +205,7 @@ void 		Hub::_sendResponse(size_t index)
 
 		std::string		message = response.getMessage(); // put into a string the response
 		buffer.insert(buffer.end(), message.begin(), message.end()); // append it to the client buffer
-		_output("Response sent", clients[clientIndex].getFd());
+		log::logEvent("Response sent", clients[clientIndex].getFd());
 		responses.pop();
 	}
 
@@ -234,7 +234,7 @@ void		Hub::_closeConnection(size_t index, int type)
 
 	if (type == SERVER)
 	{
-		_output("Connection closed - server", servers[index].getSocket().getFd());
+		log::logEvent("Connection closed [server]", servers[index].getSocket().getFd());
 		close(servers[index].getSocket().getFd());
 		servers.erase(servers.begin() + index);
 		for (size_t i = index; i < _nfds; i++)
@@ -242,7 +242,7 @@ void		Hub::_closeConnection(size_t index, int type)
 	}
 	else 
 	{
-		_output("Connection closed - client", clients[index].getFd());
+		log::logEvent("Connection closed [client]", clients[index].getFd());
 		close(clients[index].getFd());
 		clients.erase(clients.begin() + index);
 		for (size_t i = index + servers.size(); i < _nfds; i++)
@@ -266,12 +266,6 @@ void		Hub::_closeAllConnections()
 			_closeConnection(0, CLIENT);
 	}
 }
-
-void			Hub::_output(std::string msg, int fd)
-{
-	std::cout << " [ fd " << fd << " ]  " << ORG << msg  << RESET << std::endl;
-}
-
 
 /* SETTERS */
 void		Hub::setNfds(int nfds)

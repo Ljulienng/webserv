@@ -5,7 +5,8 @@
 #include "httpStatus.hpp"
 #include "request.hpp"
 #include "html.hpp"
-#include "utils.hpp"
+#include "str.hpp"
+#include "log.hpp"
 
 class Configuration;
 class Server;

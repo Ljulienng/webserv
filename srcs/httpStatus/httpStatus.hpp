@@ -2,7 +2,7 @@
 # define HTTPSTATUS_HPP
 
 #include "webserv.hpp"
-#include "utils.hpp"
+#include "str.hpp"
 
 class HttpStatus
 {

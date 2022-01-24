@@ -98,7 +98,7 @@ void            HttpStatus::setStatus(int status)
 {
 	_code = status;
 	if (_existingStatus.find(_code) == _existingStatus.end())
-		throw (std::string("Error to set HTTP status : code " + utils::myItoa(_code) + " doesn't exist"));
+		throw (std::string("Error to set HTTP status : code " + myItoa(_code) + " doesn't exist"));
 	_message = _existingStatus.find(_code)->second;
 }
 

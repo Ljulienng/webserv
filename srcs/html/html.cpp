@@ -61,7 +61,7 @@ std::vector<unsigned char>     buildRedirectionPage(std::pair<int, std::string> 
         "<html>\n"
         "   <head>\n"
         "       <meta charset=\"UTF-8\" />\n"
-        "       <title> Redirection " + utils::myItoa(redirection.first) + " " + status.findStatusMessage() +  "</title>\n"
+        "       <title> Redirection " + myItoa(redirection.first) + " " + status.findStatusMessage() +  "</title>\n"
         "   </head>\n"
         "   <body>\n"
         "       <p>\n"

@@ -1,6 +1,6 @@
-#include "utils.hpp"
+#include "log.hpp"
 
-namespace utils {
+namespace log { 
 
     // rfc 2616 : 3.3.1
     std::string    getTimestamp()
@@ -16,12 +16,9 @@ namespace utils {
         return currentTime;
     }
 
-    std::string     myItoa(size_t number)
+    void			logEvent(std::string msg, int fd)
     {
-        std::stringstream   stream;
-
-        stream << number;
-        return stream.str();
+        std::cout << "[ fd " << fd << " ]  " << ORG << msg  << RESET << std::endl;
     }
 
 }

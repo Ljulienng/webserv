@@ -4,7 +4,7 @@
 #include "webserv.hpp"
 #include "file.hpp"
 #include "httpStatus.hpp"
-#include "utils.hpp"
+#include "str.hpp"
 
 namespace html {
 

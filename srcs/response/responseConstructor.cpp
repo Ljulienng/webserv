@@ -44,7 +44,7 @@ Response    errorResponse(Response &response, t_configMatch  &configMatch, int s
         }
     }
 
-    std::vector<unsigned char> defaultErrorPage = html::buildErrorHtmlPage(utils::myItoa(status));
+    std::vector<unsigned char> defaultErrorPage = html::buildErrorHtmlPage(myItoa(status));
     response.setContent(defaultErrorPage, "text/html");
 
     return response;
@@ -136,7 +136,7 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
 
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "GET"))
         return errorResponse(response, configMatch, METHOD_NOT_ALLOWED); // method not allowed
-
+    std::cout << "File path" << configMatch.path << "\n";
     if (path.isRegularFile())
     {
         std::cout << "File -> ok regular file\n";
@@ -293,7 +293,7 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
 
     // we indicate the url of the resource we created thanks to "location" header
     // response.setHeader("Location", request.getPath()); // need to send the full uri : http://127.0.0.1:8080/file.ext
-    std::string fullUri = "http://" + configMatch.server.getIp() + ":" + utils::myItoa(configMatch.server.getPort()) + request.getPath();
+    std::string fullUri = "http://" + configMatch.server.getIp() + ":" + myItoa(configMatch.server.getPort()) + request.getPath();
     // std::cout << "[postMethodResponse] fullUri = " << fullUri << "\n";
     response.setHeader("Location", fullUri); // PROVISOIRE EN ATTENDANT DE L'AVOIR VIA LA REQUETE
     
@@ -304,6 +304,9 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
 
 Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
 {
+    if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "DELETE"))
+        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED); // method not allowed
+    
     File    fileToDelete(configMatch.path);
 
     if (fileToDelete.exists())
@@ -364,7 +367,7 @@ Response    constructResponse(Request &request, std::string serverName)
     configMatch.location.getRoot().empty() ? configMatch.root = configMatch.server.getRoot() : configMatch.root = configMatch.location.getRoot();
     configMatch.location.getIndex().empty() ? configMatch.index = configMatch.server.getIndex() : configMatch.index = configMatch.location.getIndex();
     configMatch.path = getServerPath(request.getPath(), configMatch); // transform the uri request to match in the server
-
+    std::cout << "URI request = " << request.getUri().getQuery() << "\n";
     // create a class with the server, location, root, index and all context matching the request
     response = dispatchingResponse(response, request, configMatch);
 
