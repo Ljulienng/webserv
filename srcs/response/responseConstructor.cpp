@@ -81,19 +81,17 @@ Response    indexResponse(Response &response,std::string path, std::string index
 */
 Response    cgiResponse(Response &response, Request &request, t_configMatch  &configMatch)
 {
-    (void)configMatch;
     std::cout << "Execute CGI\n";
-
-
 
     // 4)
     cgiConstructor  cgi;
     cgi.initHeaders(request, configMatch);
     std::vector<unsigned char> ret = cgi.execCgi();
-    std::string cgiResponse = std::string(ret.begin(), ret.end());
+    std::string cgiResponse = std::string(ret.begin(), ret.end()); // provisoire
 
     /***** TEST *********/
-//    std::string cgiResponse = "Blabla:\r\nContent-type:html\r\nStatus:200ok\r\n\r\nbody is here"; // a remplacer par le retour de Julien
+    //    std::string cgiResponse = "Blabla:\r\nContent-type:html\r\nStatus:200ok\r\n\r\nbody is here"; // a remplacer par le retour de Julien
+    /*************************/
     size_t i = 0;
     
     while (cgiResponse.find("\r\n", i) != std::string::npos)
@@ -113,7 +111,6 @@ Response    cgiResponse(Response &response, Request &request, t_configMatch  &co
         }
     }
     std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
-    /*************************/
 
     // 5)
     if (response.getHttpStatus().getCode() >= 400)
