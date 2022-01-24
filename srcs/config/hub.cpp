@@ -43,7 +43,7 @@ void	Hub::process()
 			continue;
 		
 		// if revent is POLLIN, there is data waiting to be read
-		if (_fds[i].revents == POLLIN)
+		if (_fds[i].revents & POLLIN)
 		{
 			// if the current fd is one of our servers, we connect a new client (listening descriptor is readable)
 			if (i < Configuration::getInstance().getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
@@ -58,12 +58,12 @@ void	Hub::process()
 				_prepareResponse(i);
 			}
 		}
-		else if (_fds[i].revents == POLLOUT)
+		else if (_fds[i].revents & POLLOUT)
 		{
 			_sendResponse(i);
 		}
 		else
-		{std::cout << "CLOSECONNECTION1\n";
+		 {std::cout << "CLOSECONNECTION1\n";
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}

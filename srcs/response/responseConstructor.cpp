@@ -157,6 +157,10 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     else
     {
         std::cout << "Error not found\n";
+        std::cout << "Path = " << configMatch.path << "\n";
+        std::cout << "isDirectory = " << path.isDirectory() << "\n";
+        std::cout << "getAutoindex = " << configMatch.location.getAutoindex() << "\n";
+        std::cout << "index = " << configMatch.index.empty() << "\n";
         return errorResponse(response, configMatch, NOT_FOUND);
     }
 }
