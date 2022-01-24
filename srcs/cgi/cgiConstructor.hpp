@@ -15,9 +15,10 @@ class cgiConstructor
 		std::vector<unsigned char>			_newBody;
 		std::string							_cgiPath;
 
-		cgiConstructor();
+		// cgiConstructor();
 
 	public:
+		cgiConstructor();
 		cgiConstructor(const cgiConstructor &obj);
 		cgiConstructor(const Request &request);
 

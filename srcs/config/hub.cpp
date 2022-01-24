@@ -63,7 +63,7 @@ void	Hub::process()
 			_sendResponse(i);
 		}
 		else
-		 {std::cout << "CLOSECONNECTION1\n";
+		 {
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}

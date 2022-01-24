@@ -38,13 +38,14 @@ Response    errorResponse(Response &response, t_configMatch  &configMatch, int s
     {
         File    errorPath(configMatch.root + errorPage->second);
         if (errorPath.isRegularFile())
+        {
             response.setContent(errorPath.getFileContent(), "text/html");
+            return response;
+        }
     }
-    else
-    {
-        std::vector<unsigned char> defaultErrorPage = html::buildErrorHtmlPage(utils::myItoa(status));
-        response.setContent(defaultErrorPage, "text/html");
-    }
+
+    std::vector<unsigned char> defaultErrorPage = html::buildErrorHtmlPage(utils::myItoa(status));
+    response.setContent(defaultErrorPage, "text/html");
 
     return response;
 }
@@ -78,13 +79,21 @@ Response    indexResponse(Response &response,std::string path, std::string index
 ** 4) parse the cgi response [Elie]
 ** 5) build the server response [Elie]
 */
-Response    cgiResponse(Response &response, t_configMatch  &configMatch)
+Response    cgiResponse(Response &response, Request &request, t_configMatch  &configMatch)
 {
     (void)configMatch;
     std::cout << "Execute CGI\n";
 
+
+
     // 4)
-    std::string cgiResponse = "Blabla:\r\nContent-type:html\r\nStatus:200ok\r\n\r\nbody is here"; // a remplacer par le retour de Julien
+    cgiConstructor  cgi;
+    cgi.initHeaders(request, configMatch);
+    std::vector<unsigned char> ret = cgi.execCgi();
+    std::string cgiResponse = std::string(ret.begin(), ret.end());
+
+    /***** TEST *********/
+//    std::string cgiResponse = "Blabla:\r\nContent-type:html\r\nStatus:200ok\r\n\r\nbody is here"; // a remplacer par le retour de Julien
     size_t i = 0;
     
     while (cgiResponse.find("\r\n", i) != std::string::npos)
@@ -104,26 +113,22 @@ Response    cgiResponse(Response &response, t_configMatch  &configMatch)
         }
     }
     std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
+    /*************************/
 
     // 5)
     if (response.getHttpStatus().getCode() >= 400)
         return errorResponse(response, configMatch, response.getHttpStatus().getCode());
     response.setContent(body, response.getHeader("Content-type"));
-    // std::cout << "Content-type = " << response.getHeader("Content-type") << "\n";
-    // std::cout << "Status = " << response.getHttpStatus().getCode() << "\n";
-    // std::cout << "Body = " << std::string(response.getContent().begin(), response.getContent().end()) << "\n";
+
     return response;
 }
 
 Response    redirectionResponse(Response &response, std::pair<int, std::string> redirection)
 {
-    std::vector<unsigned char> redirectionPage;
-
     // std::cout << "Redirection " << redirection.first << " -> " << redirection.second << "\n";
     response.setStatus(redirection.first);
     response.setHeader("Location", redirection.second);
-    redirectionPage = html::buildRedirectionPage(redirection);
-    response.setContent(redirectionPage, "text/html");
+    response.setContent(html::buildRedirectionPage(redirection), "text/html");
 
     return response;
 }
@@ -157,10 +162,6 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     else
     {
         std::cout << "Error not found\n";
-        std::cout << "Path = " << configMatch.path << "\n";
-        std::cout << "isDirectory = " << path.isDirectory() << "\n";
-        std::cout << "getAutoindex = " << configMatch.location.getAutoindex() << "\n";
-        std::cout << "index = " << configMatch.index.empty() << "\n";
         return errorResponse(response, configMatch, NOT_FOUND);
     }
 }
@@ -170,8 +171,6 @@ void    parseMultipart(std::list<t_multipart> &p, Request &request, std::string 
     std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
     size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str());
     size_t				        i = 0;
-    // std::cout << "contentLength : " << contentLength << "\n";
-    // std::cout << "body size : " << content.size() << "\n";
 
     while (i + boundary.size() + 6 <= contentLength)
     {
@@ -343,7 +342,7 @@ Response    dispatchingResponse(Response &response, Request &request, t_configMa
     else if (configMatch.server.getCgi().first == ".php"
         && request.getPath().find(configMatch.server.getCgi().first) != std::string::npos
         && (request.getMethod() == "GET" || request.getMethod() == "POST"))
-        return cgiResponse(response, configMatch);
+        return cgiResponse(response, request, configMatch);
     else if (configMatch.location.getRedirection().first > 0 && !configMatch.location.getRedirection().second.empty())
         return redirectionResponse(response, configMatch.location.getRedirection());
     else if (request.getMethod() == "GET")
