@@ -136,7 +136,7 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
 
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "GET"))
         return errorResponse(response, configMatch, METHOD_NOT_ALLOWED); // method not allowed
-    std::cout << "File path" << configMatch.path << "\n";
+    // std::cout << "File path" << configMatch.path << "\n";
     if (path.isRegularFile())
     {
         std::cout << "File -> ok regular file\n";
@@ -367,7 +367,8 @@ Response    constructResponse(Request &request, std::string serverName)
     configMatch.location.getRoot().empty() ? configMatch.root = configMatch.server.getRoot() : configMatch.root = configMatch.location.getRoot();
     configMatch.location.getIndex().empty() ? configMatch.index = configMatch.server.getIndex() : configMatch.index = configMatch.location.getIndex();
     configMatch.path = getServerPath(request.getPath(), configMatch); // transform the uri request to match in the server
-    std::cout << "URI request = " << request.getUri().getQuery() << "\n";
+    // std::cout << "REQUEST = " << request.getPath() << "\n";
+    // request.getUri().debug();
     // create a class with the server, location, root, index and all context matching the request
     response = dispatchingResponse(response, request, configMatch);
 
