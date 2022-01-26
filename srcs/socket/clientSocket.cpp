@@ -37,7 +37,7 @@ int				ClientSocket::verifBuffer()
 void            ClientSocket::addRequest()
 {
 	Request newRequest(_buffer);
-
+	
 	if (newRequest.getRet() == 200)
 		_requests.push(newRequest);
 	else

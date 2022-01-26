@@ -56,7 +56,8 @@ void	Uri::urlParser(const std::string &url)
 			if (newUrl.find_first_of("?") != std::string::npos)
 			{
 				index = newUrl.find_first_of("?");
-				_query = newUrl.substr(0, index);
+				_path = newUrl.substr(0, index);
+				_query = newUrl.substr(index, newUrl.find_first_of("#"));
 			}
 			if (newUrl.find_first_of("#") != std::string::npos)
 			{
