@@ -138,6 +138,11 @@ std::vector<unsigned char>			cgiConstructor::getBody()
 cgiConstructor::cgiConstructor()
 {}
 
+cgiConstructor::cgiConstructor(const Request &request, const t_configMatch &t_configMatch)
+{
+	initHeaders(request, t_configMatch);
+}
+
 cgiConstructor::cgiConstructor(const cgiConstructor &obj) :
 _env(obj._env), _envArray(obj._envArray)
 {}
