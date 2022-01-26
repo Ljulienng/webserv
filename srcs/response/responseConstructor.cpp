@@ -135,7 +135,7 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
 
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "GET"))
         return errorResponse(response, configMatch, METHOD_NOT_ALLOWED);
-    std::cout << "File path" << configMatch.path << "\n";
+
     if (path.isRegularFile())
     {
         std::cout << "File -> ok regular file\n";
@@ -294,11 +294,8 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     response.setStatus(CREATED);
 
     // we indicate the url of the resource we created thanks to "location" header
-    // response.setHeader("Location", request.getPath()); // need to send the full uri : http://127.0.0.1:8080/file.ext
-    std::string fullUri = "http://" + configMatch.server.getIp() + ":" + myItoa(configMatch.server.getPort()) + request.getPath();
-    // std::cout << "[postMethodResponse] fullUri = " << fullUri << "\n";
-    response.setHeader("Location", fullUri); // PROVISOIRE EN ATTENDANT DE L'AVOIR VIA LA REQUETE
-    
+    // std::cout << "[postMethodResponse] fullUri = " <<  request.getUri().getUrl() << "\n";
+    response.setHeader("Location", request.getUri().getUrl()); // need to send the full uri : http://127.0.0.1:8080/file.php   
     response.setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, pathToUpload)), "text/html");
    
     return response;
@@ -307,7 +304,7 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
 Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
 {
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "DELETE"))
-        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED); // method not allowed
+        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED);
     
     File    fileToDelete(configMatch.path);
 
@@ -319,8 +316,7 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
             response.setContent(html::buildPage("Method DELETE ok : file successfully deleted"), "text/html");
             return response;
         }
-        else
-            return errorResponse(response, configMatch, NO_CONTENT);
+        return errorResponse(response, configMatch, NO_CONTENT);
     }
     else
         return errorResponse(response, configMatch, NO_CONTENT);
