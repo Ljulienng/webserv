@@ -357,8 +357,6 @@ Response    dispatchingResponse(Response &response, Request &request, t_configMa
 Response    constructResponse(Request &request, std::string serverName)
 {
     Response    response;
-    std::string root;
-    std::string index;
 
     // first need to get the server and location to use for this response (context)
     t_configMatch   configMatch;
@@ -367,10 +365,6 @@ Response    constructResponse(Request &request, std::string serverName)
     configMatch.location.getRoot().empty() ? configMatch.root = configMatch.server.getRoot() : configMatch.root = configMatch.location.getRoot();
     configMatch.location.getIndex().empty() ? configMatch.index = configMatch.server.getIndex() : configMatch.index = configMatch.location.getIndex();
     configMatch.path = getServerPath(request.getPath(), configMatch); // transform the uri request to match in the server
-    // std::cout << "REQUEST = " << request.getPath() << "\n";
-    // request.getUri().debug();
-    // create a class with the server, location, root, index and all context matching the request
-    response = dispatchingResponse(response, request, configMatch);
 
-    return response;
+    return dispatchingResponse(response, request, configMatch);
 }
