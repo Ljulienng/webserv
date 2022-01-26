@@ -29,5 +29,6 @@ std::string					&removeChar(std::string &str, char c);
 std::string					&trimChar(std::string &str);
 bool 						isDelim(char c, std::string delimiters);
 std::vector<std::string>	tokenize(std::string str, std::string delim);
+std::string    				myItoa(size_t number);
 
 #endif

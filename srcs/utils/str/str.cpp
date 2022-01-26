@@ -72,6 +72,13 @@ size_t		Str::getNum()
 	return atoi(_string.c_str());
 }
 
+std::string     myItoa(size_t number)
+{
+	std::stringstream   stream;
+
+	stream << number;
+	return stream.str();
+}
 
 std::string		&Str::getStr()
 { return _string; }

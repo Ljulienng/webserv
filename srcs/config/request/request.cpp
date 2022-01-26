@@ -167,7 +167,7 @@ int			Request::parseHeader(const std::string &request, size_t &i)
 {
 
 	std::string line;
-
+	
 	line = nextLine(request, i);
 	while (request.size() != 0 && _ret != 400 && line != "\r" && line.size())
 	{

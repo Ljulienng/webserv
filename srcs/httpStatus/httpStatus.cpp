@@ -11,6 +11,8 @@ std::string     HttpStatus::findStatusMessage()
 
 void    HttpStatus::_setExistingStatus()
 {
+	_existingStatus[0] = "No status";
+
 	// INFORMATION
 	_existingStatus[100] = "Continue";
 	_existingStatus[101] = "Switching Protocols";
@@ -95,6 +97,8 @@ void    HttpStatus::_setExistingStatus()
 void            HttpStatus::setStatus(int status)
 {
 	_code = status;
+	if (_existingStatus.find(_code) == _existingStatus.end())
+		throw (std::string("Error to set HTTP status : code " + myItoa(_code) + " doesn't exist"));
 	_message = _existingStatus.find(_code)->second;
 }
 

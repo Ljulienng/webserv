@@ -145,5 +145,6 @@ void	Uri::debug()
 	std::cout << "_path = " << _path << std::endl;
 	std::cout << "_query = " << _query << std::endl;
 	std::cout << "_fragment = " << _fragment << std::endl;
+	std::cout << "_url = " << _url << std::endl;
 	std::cout << "***** URI DEBUG END*****\n\n";
 }

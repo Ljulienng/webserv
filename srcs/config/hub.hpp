@@ -4,6 +4,7 @@
 #include "webserv.hpp"
 #include "configuration.hpp"
 #include "responseConstructor.hpp"
+#include "log.hpp"
 
 #define SERVER 0
 #define CLIENT 1
@@ -27,12 +28,14 @@ class Hub
 		void 				_sendResponse(size_t index);
 		void				_closeConnection(size_t index, int type);
 		void				_closeAllConnections();
-		void				_output(std::string msg, int fd);
+		bool				_isReadytoRead(size_t i);
+		bool				_isError(size_t i);
+		bool				_isReadyToWrite(size_t i);
 
+		Hub();
 
     public :
 	
-		Hub();
 		Hub(std::string configFile);
 		Hub(const Hub &src);
 		~Hub();		

@@ -12,9 +12,9 @@ SRC_FILES	= 	webserv.cpp					\
 				socket.cpp					\
 				httpStatus.cpp				\
 				file.cpp					\
+				log.cpp						\
 				mime.cpp					\
 				str.cpp						\
-				utils.cpp					\
 				cgiConstructor.cpp
 
 INC_FILES	= 	srcs/webserv.hpp									\
@@ -31,8 +31,8 @@ INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/socket/socket.hpp								\
 				srcs/httpStatus/httpStatus.hpp						\
 				srcs/utils/file/file.hpp							\
+				srcs/utils/log/log.hpp								\
 				srcs/utils/mime/mime.hpp							\
 				srcs/utils/singleton/singleton.hpp					\
 				srcs/utils/str/str.hpp								\
-				srcs/utils/utils.hpp								\
 				srcs/cgi/cgiConstructor.hpp

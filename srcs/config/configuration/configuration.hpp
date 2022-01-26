@@ -27,7 +27,6 @@ class Configuration : public Singleton<Configuration>
 		std::vector<Server>					_servers;
 		std::vector<ClientSocket>			_clients;
 
-		// void 		_parseConfigPath(); 
 		void		_cleanSpaces(std::string &buf);
 		size_t		_parseServer(str_ite it, str_ite ite);
 		size_t		_parseErrorPages(str_ite it, str_ite ite);
@@ -45,7 +44,7 @@ class Configuration : public Singleton<Configuration>
 		~Configuration();	
 		Configuration &operator=(const Configuration &src);
 
-		void 		parseConfigPath(std::string configFile); //test singleton
+		void 		parseConfigPath(std::string configFile);
 		void		parse();
 		Server 		&findServer(std::string serverName);
 		void		debug();
