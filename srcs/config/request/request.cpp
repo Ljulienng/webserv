@@ -208,15 +208,15 @@ void		Request::parseChunkedBody(const std::string &request)
 	std::string		chunks = request.substr(request.find("\r\n\r\n") + 4, request.find("0\r\n\r\n") + 5);
 	long			chunkSize = strtol(chunks.substr(i, chunks.find("\r\n", i) + 2).c_str(), NULL, 16);
 
-	// std::cout << request;
-	// std::cout << "Chunksize = " << chunkSize << " CHUNKS = " << chunks << std::endl;
+	std::cout << request;
+	std::cout << "Chunksize = " << chunkSize << " CHUNKS = " << chunks << std::endl;
 
 
 	while (chunkSize > 0)
 	{
 		i = chunks.find("\r\n", i) + 2;
 		_body.append(chunks.substr(i, chunkSize));
-		// std::cout << "i = " << i << "\n_body = " << _body <<  std::endl;
+		std::cout << "i = " << i << "\n_body = " << _body <<  std::endl;
 		i += chunkSize + 2;
 		chunkSize = strtol(chunks.substr(i, chunks.find("\r\n", i) + 2).c_str(), NULL, 16);
 	}
