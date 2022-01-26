@@ -134,15 +134,18 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     File        path(configMatch.path);
 
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "GET"))
-        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED); // method not allowed
-    // std::cout << "File path" << configMatch.path << "\n";
+        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED);
+    std::cout << "File path" << configMatch.path << "\n";
     if (path.isRegularFile())
     {
         std::cout << "File -> ok regular file\n";
         Mime    extension(getExtension(configMatch.path));
-
+        
         response.setStatus(OK);
-        response.setContent(path.getFileContent(), extension.getMime());
+        if (getExtension(configMatch.path) == "php") // display content file if no cgi
+            response.setContent(path.getFileContent(), "text/plain");
+        else
+            response.setContent(path.getFileContent(), extension.getMime());
         return response;
     }
     else if (path.isDirectory() && configMatch.location.getAutoindex())
@@ -363,7 +366,7 @@ Response    constructResponse(Request &request, std::string serverName)
     configMatch.location = configMatch.server.findLocation(request.getPath());
     configMatch.location.getRoot().empty() ? configMatch.root = configMatch.server.getRoot() : configMatch.root = configMatch.location.getRoot();
     configMatch.location.getIndex().empty() ? configMatch.index = configMatch.server.getIndex() : configMatch.index = configMatch.location.getIndex();
-    configMatch.path = getServerPath(request.getPath(), configMatch); // transform the uri request to match in the server
+    configMatch.path = getServerPath(request.getUri().getPath(), configMatch); // transform the uri request to match in the server
 
     return dispatchingResponse(response, request, configMatch);
 }
