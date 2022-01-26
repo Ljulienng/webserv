@@ -7,6 +7,7 @@
 #include "server.hpp"
 #include "location.hpp"
 
+class cgiConstructor;
 
 typedef struct  s_configMatch
 {
@@ -27,5 +28,7 @@ typedef struct  s_multipart
 }               t_multipart;
 
 Response    constructResponse(Request &request, std::string serverName);
+
+#include "cgiConstructor.hpp"
 
 #endif

@@ -22,6 +22,15 @@ void		Hub::_startSockets()
 	}
 }
 
+bool	Hub::_isReadytoRead(size_t i)
+{ return (_fds[i].revents & POLLIN) == POLLIN; }
+
+bool	Hub::_isError(size_t i)
+{ return (_fds[i].revents & POLLERR) == POLLERR || (_fds[i].revents & POLLHUP) == POLLHUP; }
+
+bool	Hub::_isReadyToWrite(size_t i)
+{ return (_fds[i].revents & POLLOUT) == POLLOUT; }
+
 /*
 ** main loop
 */
@@ -30,7 +39,7 @@ void	Hub::process()
 	int pollRet = pollRet = poll(_fds, _nfds, -1); // call poll and wait an infinite time
 	
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
-	{
+	{	
 		_closeAllConnections();
 		return ;
 	}
@@ -38,12 +47,11 @@ void	Hub::process()
 	// one or more fd are readable. Need to determine which ones they are
 	for (size_t i = 0; i < _nfds; i++)
 	{
-		// loop to find the fd that returned POLLIN and determine whether it's the listening or the active connection
+		// if value of fd < 0, events is ignored and revents == 0
 		if (_fds[i].revents == 0)
 			continue;
-		
 		// if revent is POLLIN, there is data waiting to be read
-		if (_fds[i].revents == POLLIN)
+		else if (_isReadytoRead(i))
 		{
 			// if the current fd is one of our servers, we connect a new client (listening descriptor is readable)
 			if (i < Configuration::getInstance().getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
@@ -58,12 +66,17 @@ void	Hub::process()
 				_prepareResponse(i);
 			}
 		}
-		else if (_fds[i].revents == POLLOUT)
+		// disconnect socket
+		else if (_isError(i))
+		{
+			_closeConnection(i, CLIENT);
+		}
+		else if (_isReadyToWrite(i))
 		{
 			_sendResponse(i);
 		}
 		else
-		{
+		 {
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
@@ -97,7 +110,7 @@ void		Hub::_acceptIncomingConnections(size_t index)
 		clients.push_back(client);
 
 		// add the new incoming connection to the pollfd structure
-		_output("New incoming connection", acceptRet);
+		log::logEvent("New incoming connection", acceptRet);
 		_fds[_nfds].fd = acceptRet;
 		_fds[_nfds].events = POLLIN;
 		_nfds++;
@@ -135,7 +148,7 @@ void		Hub::_receiveRequest(size_t index)
 		if (bytes < MAX_BUF_LEN)
 		{
 			clients[clientIndex].addRequest();
-			_output("Received a new request", clients[clientIndex].getFd());
+			log::logEvent("Received a new request", clients[clientIndex].getFd());
 		}
 	}
 	else //bytes = 0;
@@ -205,7 +218,7 @@ void 		Hub::_sendResponse(size_t index)
 
 		std::string		message = response.getMessage(); // put into a string the response
 		buffer.insert(buffer.end(), message.begin(), message.end()); // append it to the client buffer
-		_output("Response sent", clients[clientIndex].getFd());
+		log::logEvent("Response sent", clients[clientIndex].getFd());
 		responses.pop();
 	}
 
@@ -234,7 +247,7 @@ void		Hub::_closeConnection(size_t index, int type)
 
 	if (type == SERVER)
 	{
-		_output("Connection closed - server", servers[index].getSocket().getFd());
+		log::logEvent("Connection closed [server]", servers[index].getSocket().getFd());
 		close(servers[index].getSocket().getFd());
 		servers.erase(servers.begin() + index);
 		for (size_t i = index; i < _nfds; i++)
@@ -242,7 +255,7 @@ void		Hub::_closeConnection(size_t index, int type)
 	}
 	else 
 	{
-		_output("Connection closed - client", clients[index].getFd());
+		log::logEvent("Connection closed [client]", clients[index].getFd());
 		close(clients[index].getFd());
 		clients.erase(clients.begin() + index);
 		for (size_t i = index + servers.size(); i < _nfds; i++)
@@ -267,12 +280,6 @@ void		Hub::_closeAllConnections()
 	}
 }
 
-void			Hub::_output(std::string msg, int fd)
-{
-	std::cout << " [ fd " << fd << " ]  " << ORG << msg  << RESET << std::endl;
-}
-
-
 /* SETTERS */
 void		Hub::setNfds(int nfds)
 { _nfds = nfds; }
@@ -285,11 +292,7 @@ size_t		Hub::getNfds()
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-Hub::Hub() : _nfds() 
-			// to be completed if new attributes
-{
-	memset(_fds, 0, sizeof(_fds));
-}
+Hub::Hub() {}
 
 Hub::Hub(std::string configFile) : _nfds() 
 {

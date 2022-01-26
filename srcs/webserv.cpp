@@ -1,5 +1,3 @@
-//Main file
-
 #include <signal.h>
 #include <iostream>
 #include "hub.hpp"

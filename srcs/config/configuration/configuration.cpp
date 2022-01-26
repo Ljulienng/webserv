@@ -14,18 +14,6 @@ void 		Configuration::parseConfigPath(std::string configFile)
 		throw std::string("Error : can't read configuration file");
 }
 
-// void	Configuration::_parseConfigPath()
-// {
-// 	File 	file(_configFile);
-
-// 	if (_configFile.find(".conf") != _configFile.size() - 5 || _configFile.size() < 6)
-// 		throw std::string("Error : the configuration file must be a <something.conf> file");
-// 	if (file.isRegularFile() == false)
-// 		throw std::string("Error : the configuration file is not a regular file");
-// 	if (file.canReadFile() == false)
-// 		throw std::string("Error : can't read configuration file");
-// }
-
 /*
 ** remove spaces in the configuration file except beetween 2 quotes to make parsing easier
 */
@@ -211,7 +199,6 @@ void	Configuration::parse()
 
 	if (!_checkConfigScope(it, ite))
 		throw std::string("Error: bad format : config scope");
-	//std::cout << "it = " << *(it + 2) << "\n";
 	if (*it++ != '{')
 		throw std::string("Error: bad format : config scope");
 	while (it != ite)
@@ -230,7 +217,7 @@ void	Configuration::parse()
 					{
 						str_ite		end(++it);
 						for (; *end != '"'; end++);
-						if (isValidExpression(std::string(it--, end), serverExpression) != -1) // si prochain mot fait partie des mots cles (definir enum)
+						if (isValidExpression(std::string(it--, end), serverExpression) != -1)
 							it += _parseServer(it, ite);
 						it++;
 					}
@@ -290,9 +277,7 @@ Configuration::Configuration(std::string configFile) :
 									_servers(),
 									_clients()					
 									// to be completed if new attributes
-{
-	// _parseConfigPath();
-}
+{}
 
 Configuration::Configuration(const Configuration &src)
 {

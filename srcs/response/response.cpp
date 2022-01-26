@@ -30,7 +30,7 @@ void    Response::setContent(std::vector<unsigned char> content, std::string con
 {
     _content = content;
     setHeader("Content-Type", contentType);
-    setHeader("Content-Length", utils::myItoa(content.size()));
+    setHeader("Content-Length", myItoa(content.size()));
 }
 
 void    Response::setStatus(int status)
@@ -77,7 +77,7 @@ Response::Response() :
         _message()
 {
     setHeader("Server", "Webserv_42");
-    setHeader("Date", utils::getTimestamp());
+    setHeader("Date", log::getTimestamp());
     setHeader("Connection", "keep-alive");
 }
 

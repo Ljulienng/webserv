@@ -216,6 +216,11 @@ void	Server::setCgi(std::string cgi)
 		throw (std::string("Error: bad cgi format in configuration file"));
 	_cgi.first = cgiElements.getTokens()[0];
 	_cgi.second = cgiElements.getTokens()[1];
+
+	File cgiExec(_cgi.second);
+	
+	if (!cgiExec.isRegularFile())
+		throw (std::string("Error: cgi executable is not a regular file"));
 }
 
 /* GETTERS */
