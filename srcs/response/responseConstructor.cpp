@@ -67,7 +67,7 @@ Response    indexResponse(Response &response,std::string path, std::string index
     Mime indexExtension(getExtension(index));
 
     response.setStatus(OK);
-    response.setContent(indexFile.getFileContent(), indexExtension.getMime()); // set content-type + content-length + content
+    response.setContent(indexFile.getFileContent(), indexExtension.getMime());
     
     return response;
 }
@@ -84,8 +84,7 @@ Response    cgiResponse(Response &response, Request &request, t_configMatch  &co
     std::cout << "Execute CGI\n";
 
     // 4)
-    cgiConstructor  cgi;
-    cgi.initHeaders(request, configMatch);
+    cgiConstructor  cgi(request, configMatch);
     std::vector<unsigned char> ret = cgi.execCgi();
     std::string cgiResponse = std::string(ret.begin(), ret.end()); // provisoire
 
@@ -262,7 +261,7 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
         ++it;
     }
 
-    response.setStatus(201);
+    response.setStatus(CREATED);
 	response.setContent(html::buildPage("File upload"), "text/html");
 
     return response;
