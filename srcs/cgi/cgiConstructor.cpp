@@ -3,7 +3,7 @@
 /*
 * Initialize environnement variables required for cgi using request informations
 */
-void	cgiConstructor::initHeaders(Request &request, t_configMatch &configMatch)
+void	cgiConstructor::initHeaders(Request &request,  t_configMatch &configMatch)
 {
 	_env["AUTH_TYPE"] = request.getHeader("Authorization");
 	_env["CONTENT_TYPE"] = request.getHeader("Content-Type");
@@ -137,6 +137,11 @@ std::vector<unsigned char>			cgiConstructor::getBody()
 
 cgiConstructor::cgiConstructor()
 {}
+
+cgiConstructor::cgiConstructor(Request &request, t_configMatch &t_configMatch)
+{
+	initHeaders(request, t_configMatch);
+}
 
 cgiConstructor::cgiConstructor(const cgiConstructor &obj) :
 _env(obj._env), _envArray(obj._envArray)

@@ -19,9 +19,9 @@ class cgiConstructor
 
 	public:
 		cgiConstructor(const cgiConstructor &obj);
-		cgiConstructor(const Request &request);
+		cgiConstructor(Request &request, t_configMatch &t_configMatch);
 
-		void								initHeaders(Request &request,  t_configMatch &configMatch);
+		void								initHeaders(Request &request, t_configMatch &configMatch);
 		std::vector<unsigned char>			execCgi();
 		~cgiConstructor();
 		void								parse(long fd[2]);
