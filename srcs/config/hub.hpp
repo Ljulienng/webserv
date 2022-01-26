@@ -28,11 +28,14 @@ class Hub
 		void 				_sendResponse(size_t index);
 		void				_closeConnection(size_t index, int type);
 		void				_closeAllConnections();
+		bool				_isReadytoRead(size_t i);
+		bool				_isError(size_t i);
+		bool				_isReadyToWrite(size_t i);
 
+		Hub();
 
     public :
 	
-		Hub();
 		Hub(std::string configFile);
 		Hub(const Hub &src);
 		~Hub();		

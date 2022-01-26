@@ -22,6 +22,15 @@ void		Hub::_startSockets()
 	}
 }
 
+bool	Hub::_isReadytoRead(size_t i)
+{ return (_fds[i].revents & POLLIN) == POLLIN; }
+
+bool	Hub::_isError(size_t i)
+{ return (_fds[i].revents & POLLERR) == POLLERR || (_fds[i].revents & POLLHUP) == POLLHUP; }
+
+bool	Hub::_isReadyToWrite(size_t i)
+{ return (_fds[i].revents & POLLOUT) == POLLOUT; }
+
 /*
 ** main loop
 */
@@ -38,12 +47,11 @@ void	Hub::process()
 	// one or more fd are readable. Need to determine which ones they are
 	for (size_t i = 0; i < _nfds; i++)
 	{
-		// loop to find the fd that returned POLLIN and determine whether it's the listening or the active connection
+		// if value of fd < 0, events is ignored and revents == 0
 		if (_fds[i].revents == 0)
 			continue;
-		
 		// if revent is POLLIN, there is data waiting to be read
-		if (_fds[i].revents & POLLIN)
+		else if (_isReadytoRead(i))
 		{
 			// if the current fd is one of our servers, we connect a new client (listening descriptor is readable)
 			if (i < Configuration::getInstance().getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
@@ -58,7 +66,12 @@ void	Hub::process()
 				_prepareResponse(i);
 			}
 		}
-		else if (_fds[i].revents & POLLOUT)
+		// disconnect socket
+		else if (_isError(i))
+		{
+			_closeConnection(i, CLIENT);
+		}
+		else if (_isReadyToWrite(i))
 		{
 			_sendResponse(i);
 		}
@@ -279,11 +292,7 @@ size_t		Hub::getNfds()
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-Hub::Hub() : _nfds() 
-			// to be completed if new attributes
-{
-	memset(_fds, 0, sizeof(_fds));
-}
+Hub::Hub() {}
 
 Hub::Hub(std::string configFile) : _nfds() 
 {
