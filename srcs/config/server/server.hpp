@@ -3,6 +3,7 @@
 
 #include "webserv.hpp"
 #include "location.hpp"
+#include "file.hpp"
 #include "str.hpp"
 #include "socket.hpp"
 
