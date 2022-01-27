@@ -32,15 +32,13 @@ void	cgiConstructor::initHeaders(Request &request,  t_configMatch &configMatch)
 	* Store the argument variables in an array for excve usage
 	*/
 
-	_argArray = new char *[3];
+	_argArray = new char *[2];
 
 	// _argArray[0] = new char[_cgiPath.size() + 1];
 	// strcpy(_argArray[0], _cgiPath.c_str());
-	// _argArray[1] = new char[request.getPath().size() + 1];
-	// strcpy(_argArray[1], request.getPath().c_str());
-	_argArray[0] = NULL;
+	_argArray[0] = new char[request.getPath().size() + 1];
+	strcpy(_argArray[0], request.getPath().c_str());
 	_argArray[1] = NULL;
-	_argArray[2] = NULL;
 
 	/*
 	* Store the environnement variables in an array for excve usage
@@ -93,10 +91,8 @@ std::vector<unsigned char>		cgiConstructor::execCgi()
 		lseek(fd[WRITE], 0, SEEK_SET); // Change the file offset to the beginning of the file
 		dup2(fd[WRITE], STDIN_FILENO);
 		dup2(fd[READ], STDOUT_FILENO);
-		// execve(_cgiPath.c_str(), null, _envArray);
 		if ((execve(_cgiPath.c_str(), _argArray, _envArray)) == -1)
 			throw (std::string("Can't execute the script")); // Error 500 to assign
-	// std::cout << "went here after clean" <<  std::endl;
 	}
 	else
 		parse(fd);
