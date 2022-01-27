@@ -15,7 +15,7 @@ void	cgiConstructor::initHeaders(Request &request,  t_configMatch &configMatch)
 	_env["SERVER_SOFTWARE"] = "Webserver/1.0";
 	_env["REQUEST_METHOD"] = request.getMethod();
 	_env["PATH_INFO"] = request.getPath();
-	_env["PATH_TRANSLATED"] = request.getPath();;
+	_env["PATH_TRANSLATED"] = request.getPath();
 	_env["SCRIPT_NAME"] = request.getPath();
 	_env["QUERY_STRING"] = request.getUri().getQuery();
 	_env["REDIRECT_STATUS"] = "200";

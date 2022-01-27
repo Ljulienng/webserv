@@ -87,7 +87,7 @@ Response    cgiResponse(Response &response, Request &request, t_configMatch  &co
     cgiConstructor  cgi(request, configMatch);
     std::vector<unsigned char> ret = cgi.execCgi();
     std::string cgiResponse = std::string(ret.begin(), ret.end()); // provisoire
-
+    std::cout << "cgi response = \n" << cgiResponse << "\n";
     /***** TEST *********/
     //    std::string cgiResponse = "Blabla:\r\nContent-type:html\r\nStatus:200ok\r\n\r\nbody is here"; // a remplacer par le retour de Julien
     /*************************/
