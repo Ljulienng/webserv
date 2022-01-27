@@ -9,6 +9,7 @@ class cgiConstructor
 {
 	private:
 		std::map<std::string, std::string>	_env;
+		char								**_argArray;
 		char								**_envArray;
 		std::string							_body;
 		std::string							_tmp;

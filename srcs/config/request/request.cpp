@@ -236,14 +236,14 @@ void		Request::initUri()
 {
 	_uri.createUrl(_headers, _path);
 	_uri.urlParser(_uri.getUrl());
-	// _uri.debug();
+	_uri.debug();
 }
 
 int			Request::parse(const std::string &request)
 {
 	std::string line;
 	std::string tmp;
-	size_t 		i = 0;
+	size_t 		i = request.find_first_of('\n');
 
 	if (!request.size())
 	{
@@ -251,7 +251,6 @@ int			Request::parse(const std::string &request)
 		return (400);
 	}
 	initHeaders();
-	i = request.find_first_of('\n');
 	line = request.substr(0, i);
 	// Store the first line to get the Method, Path and Version
 	_ret = parseFirstLine(line);
