@@ -87,7 +87,7 @@ Response    cgiResponse(Response &response, Request &request, t_configMatch  &co
     cgiConstructor  cgi(request, configMatch);
     std::vector<unsigned char> ret = cgi.execCgi();
     std::string cgiResponse = std::string(ret.begin(), ret.end()); // provisoire
-
+    std::cout << "cgi response = \n" << cgiResponse << "\n";
     /***** TEST *********/
     //    std::string cgiResponse = "Blabla:\r\nContent-type:html\r\nStatus:200ok\r\n\r\nbody is here"; // a remplacer par le retour de Julien
     /*************************/
@@ -134,15 +134,18 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     File        path(configMatch.path);
 
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "GET"))
-        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED); // method not allowed
-    // std::cout << "File path" << configMatch.path << "\n";
+        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED);
+
     if (path.isRegularFile())
     {
         std::cout << "File -> ok regular file\n";
         Mime    extension(getExtension(configMatch.path));
-
+        
         response.setStatus(OK);
-        response.setContent(path.getFileContent(), extension.getMime());
+        if (getExtension(configMatch.path) == "php") // display content file if no cgi
+            response.setContent(path.getFileContent(), "text/plain");
+        else
+            response.setContent(path.getFileContent(), extension.getMime());
         return response;
     }
     else if (path.isDirectory() && configMatch.location.getAutoindex())
@@ -291,11 +294,8 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     response.setStatus(CREATED);
 
     // we indicate the url of the resource we created thanks to "location" header
-    // response.setHeader("Location", request.getPath()); // need to send the full uri : http://127.0.0.1:8080/file.ext
-    std::string fullUri = "http://" + configMatch.server.getIp() + ":" + myItoa(configMatch.server.getPort()) + request.getPath();
-    // std::cout << "[postMethodResponse] fullUri = " << fullUri << "\n";
-    response.setHeader("Location", fullUri); // PROVISOIRE EN ATTENDANT DE L'AVOIR VIA LA REQUETE
-    
+    // std::cout << "[postMethodResponse] fullUri = " <<  request.getUri().getUrl() << "\n";
+    response.setHeader("Location", request.getUri().getUrl()); // need to send the full uri : http://127.0.0.1:8080/file.php   
     response.setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, pathToUpload)), "text/html");
    
     return response;
@@ -304,7 +304,7 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
 Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
 {
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "DELETE"))
-        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED); // method not allowed
+        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED);
     
     File    fileToDelete(configMatch.path);
 
@@ -316,8 +316,7 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
             response.setContent(html::buildPage("Method DELETE ok : file successfully deleted"), "text/html");
             return response;
         }
-        else
-            return errorResponse(response, configMatch, NO_CONTENT);
+        return errorResponse(response, configMatch, NO_CONTENT);
     }
     else
         return errorResponse(response, configMatch, NO_CONTENT);
@@ -363,7 +362,7 @@ Response    constructResponse(Request &request, std::string serverName)
     configMatch.location = configMatch.server.findLocation(request.getPath());
     configMatch.location.getRoot().empty() ? configMatch.root = configMatch.server.getRoot() : configMatch.root = configMatch.location.getRoot();
     configMatch.location.getIndex().empty() ? configMatch.index = configMatch.server.getIndex() : configMatch.index = configMatch.location.getIndex();
-    configMatch.path = getServerPath(request.getPath(), configMatch); // transform the uri request to match in the server
+    configMatch.path = getServerPath(request.getUri().getPath(), configMatch); // transform the uri request to match in the server
 
     return dispatchingResponse(response, request, configMatch);
 }
