@@ -69,6 +69,7 @@ std::vector<unsigned char>		cgiConstructor::execCgi()
 	FILE	*fdFile[2]; // Temporary Files used to store cgi response
 	long	fd[2];
 
+	// Saving current Fds
 	tmpFd[WRITE] = dup(STDIN_FILENO);
 	tmpFd[READ] = dup(STDOUT_FILENO);
 
@@ -87,8 +88,7 @@ std::vector<unsigned char>		cgiConstructor::execCgi()
 	if (pid == 0)
 	{
 		// char * const *null = NULL;
-
-		lseek(fd[WRITE], 0, SEEK_SET); // Change the file offset to the beginning of the file
+		lseek(fd[WRITE], 0, SEEK_SET); // Change the file offset to write from the start
 		dup2(fd[WRITE], STDIN_FILENO);
 		dup2(fd[READ], STDOUT_FILENO);
 		if ((execve(_cgiPath.c_str(), _argArray, _envArray)) == -1)
@@ -109,19 +109,20 @@ std::vector<unsigned char>		cgiConstructor::execCgi()
 
 void						cgiConstructor::parse(long fd[2])
 {
-	char	buffer[1024];
+	char	buffer[1024] = {0};
 	int		ret = 1;
-
+	
 	waitpid(-1, NULL, 0);
+	lseek(fd[READ], 0, SEEK_SET); // Change the file offset to read from the start
 	while (ret)
 	{
 		memset(buffer, 0, 1024);
 		ret = read(fd[READ], buffer, 1023);
 		_tmp += buffer;
 	}
-
-	for (size_t i = 0; _tmp.size(); i++)
+	for (size_t i = 0; i < _tmp.size(); i++)
 		_newBody.push_back((unsigned char)_tmp[i]);
+	std::cout << "newbody = " << _tmp << std::endl;
 }
 
 /*
