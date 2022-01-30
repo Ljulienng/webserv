@@ -5,20 +5,24 @@
 */
 void	cgiConstructor::initHeaders(Request &request,  t_configMatch &configMatch)
 {
+	std::string newPath = "./www" + request.getPath();
 	if (request.getHeader("auth-scheme") != "")
 		_env["AUTH_TYPE"] = request.getHeader("Authorization");
 	_env["CONTENT_LENGTH"] = request.getHeader("Content-Length");
 	_env["CONTENT_TYPE"] = request.getHeader("Content-Type");
 	_env["GATEWAY_INFERFACE"] = "CGI/1.1";
-	_env["PATH_INFO"] = request.getPath();
-	_env["PATH_TRANSLATED"] = request.getPath();;
+	_env["PATH_INFO"] = newPath;
+	_env["PATH_TRANSLATED"] = newPath;
+	// _env["PATH_INFO"] = "./test/form_post.php";
+	// _env["PATH_TRANSLATED"] = "./test/form_post.php";
 	_env["QUERY_STRING"] = request.getUri().getQuery();
 	_env["REMOTE_ADDR"] = request.getUri().getPort();
 	_env["REMOTE_HOST"] = request.getHeader("Hostname");
 	_env["REMOTE_IDENT"] = request.getHeader("Authorization");
 	_env["REMOTE_USER"] = request.getHeader("Authorization");
 	_env["REQUEST_METHOD"] = request.getMethod();
-	_env["SCRIPT_NAME"] = request.getPath();
+	_env["SCRIPT_NAME"] = newPath;
+	// _env["SCRIPT_NAME"] = "./test/form_post.php";
 	_env["SERVER_NAME"] = request.getHeader("Hostname");
 	_env["SERVER_PORT"] = request.getUri().getPort();
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -26,19 +30,19 @@ void	cgiConstructor::initHeaders(Request &request,  t_configMatch &configMatch)
 	_env["REDIRECT_STATUS"] = "200";
 
 	_cgiPath = configMatch.server.getCgi().second;
-	std::cout << _cgiPath << std::endl;
 	_body = request.getBody();
+	// std::cout << newPath << std::endl;
 	/*
 	* Store the argument variables in an array for excve usage
 	*/
 
-	_argArray = new char *[2];
+	_argArray = new char *[3];
 
-	// _argArray[0] = new char[_cgiPath.size() + 1];
-	// strcpy(_argArray[0], _cgiPath.c_str());
-	_argArray[0] = new char[request.getPath().size() + 1];
-	strcpy(_argArray[0], request.getPath().c_str());
-	_argArray[1] = NULL;
+	_argArray[0] = new char[_cgiPath.size() + 1];
+	strcpy(_argArray[0], _cgiPath.c_str());
+	_argArray[1] = new char[newPath.size() + 1];
+	strcpy(_argArray[1], newPath.c_str());
+	_argArray[2] = NULL;
 
 	/*
 	* Store the environnement variables in an array for excve usage
@@ -56,10 +60,10 @@ void	cgiConstructor::initHeaders(Request &request,  t_configMatch &configMatch)
 		i++;
 	}
 	_envArray[i] = NULL;
-	for (i = 0; _argArray[i]; i++)
-			std::cout << _argArray[i] << std::endl;
-	for (i = 0; _envArray[i]; i++)
-			std::cout << _envArray[i] << std::endl;
+	// for (i = 0; _argArray[i]; i++)
+	// 		std::cout << _argArray[i] << std::endl;
+	// for (i = 0; _envArray[i]; i++)
+	// 		std::cout << _envArray[i] << std::endl;
 }
 
 std::vector<unsigned char>		cgiConstructor::execCgi()
@@ -69,6 +73,7 @@ std::vector<unsigned char>		cgiConstructor::execCgi()
 	FILE	*fdFile[2]; // Temporary Files used to store cgi response
 	long	fd[2];
 
+	// Saving current Fds
 	tmpFd[WRITE] = dup(STDIN_FILENO);
 	tmpFd[READ] = dup(STDOUT_FILENO);
 
@@ -87,8 +92,7 @@ std::vector<unsigned char>		cgiConstructor::execCgi()
 	if (pid == 0)
 	{
 		// char * const *null = NULL;
-
-		lseek(fd[WRITE], 0, SEEK_SET); // Change the file offset to the beginning of the file
+		lseek(fd[WRITE], 0, SEEK_SET); // Change the file offset to write from the start
 		dup2(fd[WRITE], STDIN_FILENO);
 		dup2(fd[READ], STDOUT_FILENO);
 		if ((execve(_cgiPath.c_str(), _argArray, _envArray)) == -1)
@@ -109,18 +113,18 @@ std::vector<unsigned char>		cgiConstructor::execCgi()
 
 void						cgiConstructor::parse(long fd[2])
 {
-	char	buffer[1024];
+	char	buffer[1024] = {0};
 	int		ret = 1;
-
+	
 	waitpid(-1, NULL, 0);
+	lseek(fd[READ], 0, SEEK_SET); // Change the file offset to read from the start
 	while (ret)
 	{
 		memset(buffer, 0, 1024);
 		ret = read(fd[READ], buffer, 1023);
 		_tmp += buffer;
 	}
-
-	for (size_t i = 0; _tmp.size(); i++)
+	for (size_t i = 0; i < _tmp.size(); i++)
 		_newBody.push_back((unsigned char)_tmp[i]);
 }
 
