@@ -83,23 +83,22 @@ Response    cgiResponse(Response &response, Request &request, t_configMatch  &co
 {
     std::cout << "Execute CGI\n";
 
-    // 4)
+    // 1)2)3)
     cgiConstructor  cgi(request, configMatch);
     std::vector<unsigned char> ret = cgi.execCgi();
-    std::string cgiResponse = std::string(ret.begin(), ret.end()); // provisoire
-    std::cout << "cgi response = \n" << cgiResponse << "\n";
-    /***** TEST *********/
-    //    std::string cgiResponse = "Blabla:\r\nContent-type:html\r\nStatus:200ok\r\n\r\nbody is here"; // a remplacer par le retour de Julien
-    /*************************/
+    std::string cgiResponse = std::string(ret.begin(), ret.end());
+    // std::cout << "cgi response = \n" << cgiResponse << "\n";
+
+    // 4)
     size_t i = 0;
     
     while (cgiResponse.find("\r\n", i) != std::string::npos)
     {
         if (cgiResponse.find("Content-type:", i) == i)
-                response.setHeader("Content-type", cgiResponse.substr(i + 13, cgiResponse.find("\r\n", i) - i - 13));
+                response.setHeader("Content-Type", cgiResponse.substr(i + 14, cgiResponse.find("\r\n", i) - i - 14));
         if (cgiResponse.find("Status:", i) == i)
         {
-            int code = strtol(cgiResponse.substr(i + 7, 3).c_str(), NULL, 10);
+            int code = strtol(cgiResponse.substr(i + 8, 3).c_str(), NULL, 10);
             code == 0 ? response.setStatus(OK) : response.setStatus(code);
         }
         i += cgiResponse.find("\r\n", i) - i + 2;
@@ -114,7 +113,7 @@ Response    cgiResponse(Response &response, Request &request, t_configMatch  &co
     // 5)
     if (response.getHttpStatus().getCode() >= 400)
         return errorResponse(response, configMatch, response.getHttpStatus().getCode());
-    response.setContent(body, response.getHeader("Content-type"));
+    response.setContent(body, response.getHeader("Content-Type"));
 
     return response;
 }
@@ -265,7 +264,7 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
     }
 
     response.setStatus(CREATED);
-	response.setContent(html::buildPage("File upload"), "text/html");
+	response.setContent(html::buildPage("File upload in : " + configMatch.root + configMatch.server.getUploadPath()), "text/html");
 
     return response;
 }
@@ -294,7 +293,6 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     response.setStatus(CREATED);
 
     // we indicate the url of the resource we created thanks to "location" header
-    // std::cout << "[postMethodResponse] fullUri = " <<  request.getUri().getUrl() << "\n";
     response.setHeader("Location", request.getUri().getUrl()); // need to send the full uri : http://127.0.0.1:8080/file.php   
     response.setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, pathToUpload)), "text/html");
    
@@ -313,7 +311,7 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
        if (remove(configMatch.path.c_str()) == 0)
         {
             response.setStatus(OK);
-            response.setContent(html::buildPage("Method DELETE ok : file successfully deleted"), "text/html");
+            response.setContent(html::buildPage("File " + configMatch.path + " successfully deleted from server"), "text/html");
             return response;
         }
         return errorResponse(response, configMatch, NO_CONTENT);

@@ -13,7 +13,7 @@ std::vector<unsigned char>     buildPage(std::string message)
         "   </head>\n"
         "   <body>\n"
         "       <p>\n"
-        "           Error : " + message + "\n"
+        "           " + message + "\n"
         "       </p>\n"
         "   </body>\n"
         "</html>\n";
