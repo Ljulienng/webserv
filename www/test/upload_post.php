@@ -1,44 +1,23 @@
 <?php 
     https://www.w3schools.com/php/php_file_upload.asp
-    $target_dir = "uploads";
-    $target_file = $target_dir . "/" . basename($_FILES["fileToUpload"]["name"]);
+    chdir("..");
+    $target_dir = getcwd() . "/uploads";
+    $target_file = $target_dir . "/" . basename($_FILES["file"]["name"]);
     $uploadOk = 1;
-    $imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
-
-    // Check if the image file is an actual image or a fake image
-    if (isset($POST["submit"]))
-    {
-        $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
-        if ($check != false)
-        {
-            echo "File is an image - " . $check["mime"] . ".";
-            $uploadOk = 1;
-        }
-        else
-        {
-            echo "File is not an image";
-            $uploadOk = 0;
-        }
-    }
-
-    // Check if file already exists
-    if (file_exists($target_file))
-    {
-        echo "Sorry, file already exists.";
-        $uploadOk = 0;
-    }
+    $fileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
+    // echo "Target file - " . $target_file . "<br>";  
 
     // Check file size
-    if ($_FILES["fileToUpload"]["size"] > 500000)
+    if ($_FILES["file"]["size"] > 500000)
     {
-        echo "Sorry, your file is too large.";
+        echo "Sorry, your file is too large.<br>";
         $uploadOk = 0;
     }
 
     // Allow certain file formats
-    if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif" )
+    if($fileType != "txt" && $fileType != "cpp" && $fileType != "hpp")
     {
-      echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.\n";
+      echo "Sorry, only .txt .cpp and .hpp files are allowed.<br>";
       $uploadOk = 0;
     }
 
@@ -47,11 +26,12 @@
     {
         echo "Sorry, your file was not uploaded.";
     // if everything is ok, try to upload file
-    } else
+    } 
+    else
     {
-        if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file))
+        if (move_uploaded_file($_FILES["file"]["tmp_name"], $target_file))
         {
-            echo "The file ". htmlspecialchars( basename( $_FILES["fileToUpload"]["name"])). " has been uploaded.";
+            echo "The file \" ". htmlspecialchars( basename( $_FILES["file"]["name"])). " \" has been uploaded in \" $target_dir \"";
         } 
         else
         {
