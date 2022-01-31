@@ -1,24 +1,34 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="utf-8" />
         <style>
-            body {background-color:#abc1c9;}
-            h2 {font-family:Arial, Helvetica, sans-serif;}
-            #indexlist {font-size:small; font-style:italic; margin-left: 5%;}
-            a {color:black; text-decoration: none;}
-            a:hover {color:rgb(20, 60, 20); text-decoration: underline;}
+            body
+            {
+                background-color:#abc1c9;
+                padding: 3%;
+            }
+            h1 
+            {
+                font-family:Arial, Helvetica, sans-serif;
+                font-size: 30px;
+            }
+            
+            .mylinks li { margin: 10px 15px; list-style-type:"-    "; }
+            .mylinks li:hover { text-decoration: underline; list-style-type:"> "}
+            .mylinks a { color:black; text-decoration: none;}
+            .mylinks a:hover { color:rgb(20, 60, 20); }
         </style>
         <title>Index</title>
     </head>
 
     <body>
         <h1> WEBSERV INDEX</h1><br>
-        <div id="indexlist">
-            <a href="/uploads/">> Uploads directory</a><br>
-            <a href="/test/">> Test directory</a><br>
-            <a href="test/post.html">> Test : post method</a><br>
-        </div>
+        <ul class="mylinks">
+            <li><a href="/uploads/">Uploads directory</a></li>
+            <li><a href="/test/">Test directory</a></li>
+            <li><a href="test/get.html">Send a form [get method]</a></li>
+            <li><a href="test/post.html">Send a form or upload a file [post method]</a></li>
+        </ul>
         
     </body>
 </html>
