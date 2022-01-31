@@ -236,7 +236,7 @@ void		Request::initUri()
 {
 	_uri.createUrl(_headers, _path);
 	_uri.urlParser(_uri.getUrl());
-	_uri.debug();
+	// _uri.debug();
 }
 
 int			Request::parse(const std::string &request)

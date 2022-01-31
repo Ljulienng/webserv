@@ -5,7 +5,7 @@
 */
 void	cgiConstructor::initHeaders(Request &request,  t_configMatch &configMatch)
 {
-	std::string newPath = "./www" + request.getPath();
+	std::string newPath = configMatch.root + request.getUri().getPath();
 	if (request.getHeader("auth-scheme") != "")
 		_env["AUTH_TYPE"] = request.getHeader("Authorization");
 	_env["CONTENT_LENGTH"] = request.getHeader("Content-Length");

@@ -5,6 +5,6 @@
     }
     else
     {
-        echo 'Je crois que vous avez oublié de me laisser un message !';
+        echo 'Je crois que vous avez oublié de nous laisser un message !';
     }
 ?>
