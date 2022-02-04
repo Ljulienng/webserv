@@ -20,7 +20,6 @@ class ClientSocket : public Socket
         virtual ~ClientSocket();		
         ClientSocket    &operator=(const ClientSocket &src);
         
-        int             verifBuffer();
         void            addRequest();
         void            addResponse(Response response);
         // SETTERS

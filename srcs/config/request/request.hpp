@@ -39,7 +39,7 @@ public:
 	void			parsebody(const std::string &request);
 	void			initUri();
 	int 			parse(const std::string &request);
-
+	int				verifBuffer(const std::string &buffer);
 	/* GETTERS */
 
 	// const std::string	&getRawRequest();

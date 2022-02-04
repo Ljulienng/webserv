@@ -131,19 +131,10 @@ void		Hub::_receiveRequest(size_t index)
 
 	bytes = recv(_fds[index].fd, &buffer[0], MAX_BUF_LEN, 0);
 	if (bytes < 0)
-		throw std::string("Error: can't receive client request");
+		_closeConnection(clientIndex, CLIENTERROR); // disconnect the client
 	else if (bytes > 0)
 	{
 		clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
-		// while (bytes == MAX_BUF_LEN)
-		// {
-		// 	buffer.clear();
-		// 	bytes = recv(_fds[index].fd, &buffer[0], MAX_BUF_LEN, 0);
-		// 	if (bytes < 0)
-		// 		throw std::string("Error: can't receive client request");
-		// 	else
-		// 		clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
-		// }
 		// clients[clientIndex].addRequest(); // move here not to create the request if bytes = 0
 		if (bytes < MAX_BUF_LEN)
 		{
@@ -151,7 +142,7 @@ void		Hub::_receiveRequest(size_t index)
 			log::logEvent("Received a new request", clients[clientIndex].getFd());
 		}
 	}
-	else //bytes = 0;
+	else //bytes == 0;
 			_closeConnection(clientIndex, CLIENT); // disconnect the client
 }
 
@@ -253,9 +244,17 @@ void		Hub::_closeConnection(size_t index, int type)
 		for (size_t i = index; i < _nfds; i++)
 			_fds[i] = _fds[i + 1];
 	}
-	else 
+	else if (type == CLIENT)
 	{
 		log::logEvent("Connection closed [client]", clients[index].getFd());
+		close(clients[index].getFd());
+		clients.erase(clients.begin() + index);
+		for (size_t i = index + servers.size(); i < _nfds; i++)
+			_fds[i] = _fds[i + 1];	
+	}
+	else
+	{
+		log::logEvent("Read error, connection closed [client]", clients[index].getFd());
 		close(clients[index].getFd());
 		clients.erase(clients.begin() + index);
 		for (size_t i = index + servers.size(); i < _nfds; i++)

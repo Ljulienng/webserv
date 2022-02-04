@@ -8,6 +8,8 @@
 
 #define SERVER 0
 #define CLIENT 1
+#define CLIENTERROR 2
+
 extern bool    g_run;
 
 /*
@@ -19,9 +21,9 @@ class Hub
     private :
 
 		struct pollfd		_fds[MAX_CONNECTIONS];
-		size_t				_nfds;
 
 		void				_startSockets();
+		size_t				_nfds;
 		void				_acceptIncomingConnections(size_t index);
 		void				_receiveRequest(size_t index);
 		void				_prepareResponse(size_t index);
