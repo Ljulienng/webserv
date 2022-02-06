@@ -16,12 +16,6 @@ void						capitalizeString(std::string &str)
 	size_t i = 0;
 
 	str[i] = toupper(str[i]);
-	// while (i != std::string::npos)
-	// {
-	// 	for (; str[i] != '-' ; i++);
-	// 	str[i] = toupper(str[i]);
-	// 	i++;
-	// }
 }
 
 std::string					&removeChar(std::string &str, char c)
