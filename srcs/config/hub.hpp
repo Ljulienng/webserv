@@ -5,53 +5,55 @@
 #include "configuration.hpp"
 #include "responseConstructor.hpp"
 #include "log.hpp"
+#include "configMatch.hpp"
+#include "cgiSocketFromCgi.hpp"
+#include "cgiSocketToCgi.hpp"
+#include "cgiExecutor.hpp"
 
-#define SERVER 0
-#define CLIENT 1
-#define CLIENTERROR 2
+extern bool    g_run; 
 
-extern bool    g_run;
+class CgiSocket;
+class ClientSocket;
+class ListeningSocket;
+class Server;
 
 /*
 ** general class to handle the program
 */
-
 class Hub
 {
     private :
 
 		struct pollfd		_fds[MAX_CONNECTIONS];
-
-		void				_startSockets();
 		size_t				_nfds;
-		void				_acceptIncomingConnections(size_t index);
-		void				_receiveRequest(size_t index);
-		void				_prepareResponse(size_t index);
-		void 				_sendResponse(size_t index);
-		void				_closeConnection(size_t index, int type);
-		void				_closeAllConnections();
-		bool				_isReadytoRead(size_t i);
-		bool				_isError(size_t i);
-		bool				_isReadyToWrite(size_t i);
+		
+		std::vector<ClientSocket*>			_clientSockets;
+		std::vector<ListeningSocket*>		_listenSockets;
+		std::vector<CgiSocketFromCgi*>		_cgiSocketsFromCgi;
+		std::vector<CgiSocketToCgi*>		_cgiSocketsToCgi;
+		std::vector<Socket*> 				_arr;		
 
+		void				_addListeningSocket(Server &server);
+		void				_addClientSocket(int acceptRet, Socket* socket);
+		void				_storeFdToPoll();
+		void				_acceptIncomingConnections(size_t i);
+		void				_receiveRequest(size_t i);
+		void				_prepareResponse(size_t i);
+		void				_prepareCgiResponse(size_t i);
+		void 				_sendResponse(size_t i);
+		void				_closeConnection(size_t i, int type);
+		void				_closeAllConnections();
+		
 		Hub();
 
     public :
 	
 		Hub(std::string configFile);
-		Hub(const Hub &src);
 		~Hub();		
-		Hub &operator=(const Hub &src);
 
 		void	start();
 		void	process();
-
-		// SETTERS
-		void		setNfds(int nfds);
-
-		// GETTERS
-		struct pollfd 		*getFds();
-		size_t				getNfds();
+		
 };
 
 #endif

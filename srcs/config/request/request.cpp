@@ -333,7 +333,6 @@ Uri									&Request::getUri()
 int									Request::getRet()
 { return (_ret); }
 
-
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
 // Request::Request() :

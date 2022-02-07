@@ -1,6 +1,5 @@
 #include "clientSocket.hpp"
 
-
 /**/
 
 void            ClientSocket::addRequest()
@@ -8,7 +7,7 @@ void            ClientSocket::addRequest()
 	Request newRequest(_buffer);
 	
 	if (newRequest.getRet() == 200)
-		_requests.push(newRequest);
+		_requests.push_back(newRequest);
 	else
 		std::cerr << "Incorrect Request, error: " << newRequest.getRet() << std::endl;
 	// else
@@ -21,7 +20,7 @@ void            ClientSocket::addRequest()
 
 void		ClientSocket::addResponse(Response response)
 {
-	_responses.push(response);
+	_responses.push_back(response);
 }
 
 /* SETTERS */ 
@@ -35,7 +34,7 @@ void            ClientSocket::setBuffer(std::string buffer)
     _buffer = buffer;
 }
 
-void			ClientSocket::setRequests(std::queue<Request> requests)
+void			ClientSocket::setRequests(std::list<Request> requests)
 {
 	_requests = requests;
 }
@@ -52,10 +51,10 @@ unsigned short		&ClientSocket::getPort()
 std::string  		&ClientSocket::getBuffer()
 { return _buffer; }
 
-std::queue<Request>	&ClientSocket::getRequests()
+std::list<Request>	&ClientSocket::getRequests()
 { return _requests; }
 
-std::queue<Response>    &ClientSocket::getResponses()
+std::list<Response>    &ClientSocket::getResponses()
 { return		_responses; }
 
 std::string			&ClientSocket::getServerName()
@@ -70,8 +69,9 @@ ClientSocket::ClientSocket() :
 			_responses(),
 			_serverName()
 			// to be completed if new attributes
-{}
-
+{
+	_type = client;
+}
 
 ClientSocket::ClientSocket(const ClientSocket &src) : Socket()
 {

@@ -4,6 +4,9 @@
 #include "webserv.hpp"
 #include "request.hpp"
 #include "responseConstructor.hpp"
+#include "configMatch.hpp"
+
+typedef struct s_configMatch t_configMatch;
 
 class cgiConstructor
 {
@@ -24,6 +27,10 @@ class cgiConstructor
 
 		void								initHeaders(Request &request, t_configMatch &configMatch);
 		std::vector<unsigned char>			execCgi();
+		std::vector<unsigned char>			myexecCgi();
+		void								loloexecCgi();
+
+
 		~cgiConstructor();
 		void								parse(long fd[2]);
 		void								clean(long tmpFd[2], FILE *fdFile[2], long fd[2]);

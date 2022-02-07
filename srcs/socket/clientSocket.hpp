@@ -7,11 +7,11 @@
 
 class ClientSocket : public Socket
 {
-    private :
+    protected :
         unsigned short          _port;
         std::string             _buffer;
-        std::queue<Request>     _requests;
-        std::queue<Response>    _responses;
+        std::list<Request>     _requests;
+        std::list<Response>    _responses;
         std::string             _serverName;
 
     public :
@@ -19,23 +19,22 @@ class ClientSocket : public Socket
         ClientSocket(const ClientSocket &src);
         virtual ~ClientSocket();		
         ClientSocket    &operator=(const ClientSocket &src);
-        
+
         void            addRequest();
         void            addResponse(Response response);
         // SETTERS
 
         void                    setPort(unsigned short port);
         void                    setBuffer(std::string buffer);
-        void                    setRequests(std::queue<Request> requests);
+        void                    setRequests(std::list<Request> requests);
         void                    setServerName(std::string serverName);
 
         // GETTERS
         unsigned short          &getPort();
         std::string             &getBuffer();
-        std::queue<Request>	    &getRequests();
-        std::queue<Response>    &getResponses();
+        std::list<Request>	    &getRequests();
+        std::list<Response>     &getResponses();
         std::string             &getServerName();
-
 };
 
 #endif

@@ -1,82 +1,123 @@
 #include "hub.hpp"
 
+/*
+** parse configuration file
+** start socket for each server of the configuration file
+*/
 void	Hub::start()
 {
 	Configuration::getInstance().parse();
-	_startSockets();
+	
+	std::vector<Server> &servers = Configuration::getInstance().getServers();
+	for (size_t i = 0; i < servers.size(); i++)
+		_addListeningSocket(servers[i]);
 }
 
-/*
-** start socket for each server of the configuration file
-*/
-void		Hub::_startSockets()
+void	Hub::_addListeningSocket(Server &server)
 {
-	std::vector<Server> &servers = Configuration::getInstance().getServers();
+	ListeningSocket* newListenSocket = new ListeningSocket(server.getName());
+	struct pollfd newPollFd;
 
-	for (size_t i = 0; i < servers.size(); i++)
+	newPollFd.fd = socket(AF_INET, SOCK_STREAM, 0);;
+	newPollFd.events = POLLIN;
+	newListenSocket->setPollFd(newPollFd);
+	newListenSocket->start(server.getIp(), server.getPort());
+	_listenSockets.push_back(newListenSocket);
+}
+
+void	Hub::_addClientSocket(int acceptRet, Socket* listenSocket)
+{
+	ClientSocket* newClientSocket = new ClientSocket();
+	struct pollfd newPollFd;
+	newClientSocket->setServerName(listenSocket->getServerName());
+	newClientSocket->setFd(acceptRet);
+	newClientSocket->setPort(listenSocket->getAddr().sin_port);
+	newPollFd.fd = acceptRet;
+	newPollFd.events = POLLIN;
+	newClientSocket->setPollFd(newPollFd);
+	_clientSockets.push_back(newClientSocket);
+}
+
+void	Hub::_storeFdToPoll()
+{
+	memset(_fds, 0, sizeof(_fds));
+	_nfds = 0;
+	_arr.clear();
+	for (std::vector<ListeningSocket*>::iterator it = _listenSockets.begin(); it != _listenSockets.end(); it++, _nfds++)
 	{
-		servers[i].start();
-		_fds[_nfds].fd = servers[i].getSocket().getFd();
-		_fds[_nfds].events = POLLIN;
-		_nfds++;
+		_fds[_nfds] = (*it)->getPollFd();
+		_arr.push_back(*it);
+		_arr[_nfds]->_index = _nfds;
+	}
+	for (std::vector<ClientSocket*>::iterator it = _clientSockets.begin(); it != _clientSockets.end(); it++, _nfds++)
+	{
+		_fds[_nfds] = (*it)->getPollFd();
+		_arr.push_back(*it);
+		_arr[_nfds]->_index = _nfds - _listenSockets.size();
+	}
+	for (std::vector<CgiSocketFromCgi*>::iterator it = _cgiSocketsFromCgi.begin(); it != _cgiSocketsFromCgi.end(); it++, _nfds++)
+	{ 
+		_fds[_nfds] = (*it)->getPollFd();
+		_arr.push_back(*it);
+		_arr[_nfds]->_index = _nfds - _listenSockets.size() - _clientSockets.size();
+	}
+	for (std::vector<CgiSocketToCgi*>::iterator it = _cgiSocketsToCgi.begin(); it != _cgiSocketsToCgi.end(); it++, _nfds++)
+	{
+		_fds[_nfds] = (*it)->getPollFd();
+		_arr.push_back(*it);
+		_arr[_nfds]->_index = _nfds - _listenSockets.size() - _clientSockets.size() - _cgiSocketsFromCgi.size();
 	}
 }
 
-bool	Hub::_isReadytoRead(size_t i)
-{ return (_fds[i].revents & POLLIN) == POLLIN; }
-
-bool	Hub::_isError(size_t i)
-{ return (_fds[i].revents & POLLERR) == POLLERR || (_fds[i].revents & POLLHUP) == POLLHUP; }
-
-bool	Hub::_isReadyToWrite(size_t i)
-{ return (_fds[i].revents & POLLOUT) == POLLOUT; }
-
-/*
-** main loop
-*/
 void	Hub::process()
 {
-	int pollRet = pollRet = poll(_fds, _nfds, -1); // call poll and wait an infinite time
-	
+	_storeFdToPoll();
+	// std::cerr << "Before poll() -> nfds = " << _nfds << "  size of _sockArr = " << _arr.size() << "\n";
+	int pollRet = poll(_fds, _nfds, -1); // call poll and wait an infinite time
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
 	{	
 		_closeAllConnections();
 		return ;
 	}
-
-	// one or more fd are readable. Need to determine which ones they are
 	for (size_t i = 0; i < _nfds; i++)
 	{
-		// if value of fd < 0, events is ignored and revents == 0
 		if (_fds[i].revents == 0)
 			continue;
-		// if revent is POLLIN, there is data waiting to be read
-		else if (_isReadytoRead(i))
+		else if ((_fds[i].revents & POLLIN) == POLLIN)
 		{
-			// if the current fd is one of our servers, we connect a new client (listening descriptor is readable)
-			if (i < Configuration::getInstance().getServers().size()) // fd stored after "nb of servers" are clients fd and not servers
+			if (_arr[i]->getType() == Socket::server)
 			{
 				_acceptIncomingConnections(i);
 			}
-			// it's not a listening socket (server), therefore an existing connection must be readable (client)
-			// it's a client so we need to receive the request (recv), parse it and prepare response
-			else
+			else if (_arr[i]->getType() == Socket::client)
 			{
 				_receiveRequest(i);
 				_prepareResponse(i);
 			}
+			else if (_arr[i]->getType() == Socket::cgiFrom)
+			{
+				_cgiSocketsFromCgi[_arr[i]->_index]->readFromCgi();
+				if (_cgiSocketsFromCgi[_arr[i]->_index]->getState() == DONE)
+				{
+					_prepareCgiResponse(_arr[i]->_index);
+					//close both connections at the same time
+					_closeConnection(_arr[i]->_index, Socket::cgiTo); // find a way to match the ToCgi index with the 
+					_closeConnection(_arr[i]->_index, _arr[i]->getType());
+				}
+			}
 		}
-		// disconnect socket
-		else if (_isError(i))
+		else if ((_fds[i].revents & POLLOUT) == POLLOUT)
 		{
-			_closeConnection(i, CLIENT);
+			if (_arr[i]->getType() == Socket::client)
+				_sendResponse(i);
+			else if (_arr[i]->getType() == Socket::cgiTo)
+				_cgiSocketsToCgi[_arr[i]->_index]->writeToCgi();
 		}
-		else if (_isReadyToWrite(i))
-		{
-			_sendResponse(i);
-		}
+		else if ((_fds[i].revents & POLLERR) == POLLERR || (_fds[i].revents & POLLHUP) == POLLHUP)
+			_closeConnection(_arr[i]->_index, _arr[i]->getType());
+
 		else
-		 {
+		{
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
@@ -89,31 +130,22 @@ void	Hub::process()
 **   - create a client
 **   - increment the nb of fds with the return of accept (fd of the new socketClient)
 */
-void		Hub::_acceptIncomingConnections(size_t index)
+void		Hub::_acceptIncomingConnections(size_t i)
 {
-	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
-	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
-
-	while (42)
+	while (1)
 	{
-		if (_nfds == MAX_CONNECTIONS)
-			_closeConnection(0, CLIENT); // disconnect the first client
-		int acceptRet = accept(_fds[index].fd, NULL, NULL);
+		if (_clientSockets.size() == MAX_CONNECTIONS)
+			_closeConnection(0, _arr[i]->getType()); // disconnect the first client
+		int acceptRet = accept(_arr[i]->getPollFd().fd, NULL, NULL);
 
 		if (acceptRet == -1) // no connection is present
 			break ;
 
-		ClientSocket client;
-		client.setServerName(servers[index].getName());
-		client.setFd(acceptRet);
-		client.setPort(servers[index].getPort());
-		clients.push_back(client);
+		_addClientSocket(acceptRet, _arr[i]);
 
 		// add the new incoming connection to the pollfd structure
 		log::logEvent("New incoming connection", acceptRet);
-		_fds[_nfds].fd = acceptRet;
-		_fds[_nfds].events = POLLIN;
-		_nfds++;
+
 		// loop back up and accept another incoming connection
 	}
 }
@@ -121,31 +153,42 @@ void		Hub::_acceptIncomingConnections(size_t index)
 /*
 ** receive and parse the request
 */
-void		Hub::_receiveRequest(size_t index)
+void		Hub::_receiveRequest(size_t i)
 {
-	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
-	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
-	size_t						clientIndex = index - servers.size();
-	int 						bytes = 0;
-	std::vector<char>			buffer(MAX_BUF_LEN);
+	int 				bytes = 0;
+	std::vector<char>	buffer(MAX_BUF_LEN);
+	ClientSocket* 		client = _clientSockets[_arr[i]->_index];
 
-	bytes = recv(_fds[index].fd, &buffer[0], MAX_BUF_LEN, 0);
+	bytes = recv(client->getPollFd().fd, &buffer[0], MAX_BUF_LEN, 0);
 	if (bytes < 0)
-		_closeConnection(clientIndex, CLIENTERROR); // disconnect the client
+	{
+		_closeAllConnections();
+		exit(EXIT_FAILURE);
+	}
 	else if (bytes > 0)
 	{
-		clients[clientIndex].getBuffer().append(buffer.begin(), buffer.end());
-		// clients[clientIndex].addRequest(); // move here not to create the request if bytes = 0
+		// std::cerr << "bytes read = " << bytes << "\n";
+		client->getBuffer().append(buffer.begin(), buffer.end());
 		if (bytes < MAX_BUF_LEN)
 		{
-			clients[clientIndex].addRequest();
-			log::logEvent("Received a new request", clients[clientIndex].getFd());
+			// std::cerr << "buffer = \n" << client->getBuffer() << "\n";
+			client->addRequest();
+			log::logEvent("Received a new request", client->getPollFd().fd);
 		}
 	}
-	else //bytes == 0;
-			_closeConnection(clientIndex, CLIENT); // disconnect the client
+	else //bytes = 0;
+	{
+		std::cerr << "Need to close connection bytes read = 0\n";
+		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
+	}
 }
 
+static bool _needCgi(Request request, t_configMatch configMatch)
+{
+	return (configMatch.server.getCgi().first == ".php"
+			&& request.getPath().find(configMatch.server.getCgi().first) != std::string::npos
+			&& (request.getMethod() == "GET" || request.getMethod() == "POST"));
+}
 /*
 ** prepare response :
 **	- get the requests of the client
@@ -155,30 +198,54 @@ void		Hub::_receiveRequest(size_t index)
 **  - add the response in socketClient
 **  - delete the request
 */
-void		Hub::_prepareResponse(size_t index)
+void		Hub::_prepareResponse(size_t i)
 {
-	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
-	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
-
-	size_t					clientIndex = index - servers.size();
-	std::queue<Request>		&requests = clients[clientIndex].getRequests();
+	ClientSocket* 			client = _clientSockets[_arr[i]->_index];
+	std::list<Request>		&requests = client->getRequests();
 
 	while (requests.empty() == false)
 	{
-		Request 	req = requests.front();
-		// req.debug();
-		
-		Response 	response;
-		response = constructResponse(req, clients[clientIndex].getServerName());
-
-		requests.pop();
-
-		clients[clientIndex].getResponses().push(response);
+		std::list<Request>::iterator it = client->getRequests().begin();
+		for (; it != client->getRequests().end(); it++)
+		{
+			// FIRST : need to check if error handled in request
+			
+			t_configMatch configMatch = getConfigMatch(*it, client->getServerName());
+			
+			if (_needCgi(*it, configMatch))
+			{	// execute cgi and create 2 cgi sockets (in and out)
+				// copie the request to have an empty pool of request and leave the loop
+				// store the client to send request at the end of reading
+				CgiExecutor cgi(*it, client, configMatch);
+				cgi.execCgi();
+				_cgiSocketsFromCgi.push_back(cgi.getCgiSocketFromCgi());
+				_cgiSocketsToCgi.push_back(cgi.getCgiSocketToCgi());
+			}
+			else
+			{
+				Response 	response;
+				response = constructResponse(*it, client->getServerName());
+				client->getResponses().push_back(response);
+			}
+			requests.erase(it++);
+		}
 	}
 
 	// the socket is now ready to write in addition to reading because we have added a response
-	if (clients[clientIndex].getResponses().empty() == false)
-		_fds[index].events = POLLIN | POLLOUT;
+	if (client->getResponses().empty() == false)
+		client->getPollFd().events = POLLIN | POLLOUT;
+}
+
+void		Hub::_prepareCgiResponse(size_t i)
+{
+	Response response;
+	t_configMatch configMatch;
+	
+	configMatch = getConfigMatch(_cgiSocketsFromCgi[i]->getRequest(), _cgiSocketsFromCgi[i]->getClient()->getServerName());
+	response = newCgiResponse(_cgiSocketsFromCgi[i]->getBuffer(), response, configMatch);
+	
+	_cgiSocketsFromCgi[i]->getClient()->getResponses().push_back(response);
+	_cgiSocketsFromCgi[i]->getClient()->getPollFd().events = POLLIN | POLLOUT;
 }
 
 /*
@@ -190,13 +257,11 @@ void		Hub::_prepareResponse(size_t index)
 **  - append each response in a buffer
 **  - write/send in the buffer the response 
 */
-void 		Hub::_sendResponse(size_t index)
+void 		Hub::_sendResponse(size_t i)
 {
-	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
-	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
-	size_t						clientIndex = index - servers.size();
-	std::queue<Response>		&responses = clients[clientIndex].getResponses();
-	std::string					buffer = clients[clientIndex].getBuffer();
+	ClientSocket* 			client = _clientSockets[i - _listenSockets.size()];
+	std::list<Response>		&responses = client->getResponses();
+	std::string				buffer = client->getBuffer();
 
 	// we process the responses one by one and append them to the client buffer
 	// then delete the response until the queue is empty
@@ -209,15 +274,15 @@ void 		Hub::_sendResponse(size_t index)
 
 		std::string		message = response.getMessage(); // put into a string the response
 		buffer.insert(buffer.end(), message.begin(), message.end()); // append it to the client buffer
-		log::logEvent("Response sent", clients[clientIndex].getFd());
-		responses.pop();
+		log::logEvent("Response sent", client->getPollFd().fd);
+		responses.pop_front();
 	}
 
 	if (buffer.empty() == false)
 	{
 		// we can use send() ( without flag parameter, send is equivalent to write() )
 		// so write into the _fds[i].fd the content of buffer
-		int bytes = write(_fds[index].fd, &buffer[0], buffer.size());
+		int bytes = write(client->getPollFd().fd, &buffer[0], buffer.size());
 
 		if (bytes <= 0)
 		{
@@ -225,96 +290,75 @@ void 		Hub::_sendResponse(size_t index)
 			exit(EXIT_FAILURE);
 		}
 		buffer.erase(buffer.begin(), buffer.begin() + bytes); // clear the buffer
-
 	}
-	if (buffer.empty())
-		_fds[index].events = POLLIN; // finished to write so we are now waiting for reading
+
+	if (buffer.empty()) // finished to write so we are now waiting for reading
+		client->getPollFd().events = POLLIN;
 }
 
-void		Hub::_closeConnection(size_t index, int type)
+void		Hub::_closeConnection(size_t i, int type)
 {
-	std::vector<Server> 		&servers = Configuration::getInstance().getServers();
-	std::vector<ClientSocket> 	&clients = Configuration::getInstance().getClients();
-
-	if (type == SERVER)
-	{
-		log::logEvent("Connection closed [server]", servers[index].getSocket().getFd());
-		close(servers[index].getSocket().getFd());
-		servers.erase(servers.begin() + index);
-		for (size_t i = index; i < _nfds; i++)
-			_fds[i] = _fds[i + 1];
-	}
-	else if (type == CLIENT)
-	{
-		log::logEvent("Connection closed [client]", clients[index].getFd());
-		close(clients[index].getFd());
-		clients.erase(clients.begin() + index);
-		for (size_t i = index + servers.size(); i < _nfds; i++)
-			_fds[i] = _fds[i + 1];	
-	}
-	else
-	{
-		log::logEvent("Read error, connection closed [client]", clients[index].getFd());
-		close(clients[index].getFd());
-		clients.erase(clients.begin() + index);
-		for (size_t i = index + servers.size(); i < _nfds; i++)
-			_fds[i] = _fds[i + 1];	
-	}
-	_nfds--;
+		std::cerr << "Connection closed ";
+		if (type == Socket::server)
+		{
+			std::cerr << "[server : fd " << _listenSockets[i]->getPollFd().fd << "] \n";
+			close(_listenSockets[i]->getPollFd().fd);
+			_listenSockets.erase(_listenSockets.begin() + i);
+		}
+		else if (type == Socket::client)
+		{
+			std::cerr << "[client : fd " << _clientSockets[i]->getPollFd().fd << "] \n";
+			close(_clientSockets[i]->getPollFd().fd);
+			_clientSockets.erase(_clientSockets.begin() + i);
+		}
+		else if (type == Socket::cgiFrom)
+		{
+			std::cerr << "[cgi From : fd " << _cgiSocketsFromCgi[i]->getPollFd().fd << "] \n";
+			close(_cgiSocketsFromCgi[i]->getPollFd().fd);
+			_cgiSocketsFromCgi[i]->getPollFd().fd = 0;
+			_cgiSocketsFromCgi.erase(_cgiSocketsFromCgi.begin() + i);
+		}
+		else if (type == Socket::cgiTo)
+		{
+			std::cerr << "[cgi To : fd " << _cgiSocketsToCgi[i]->getPollFd().fd << "] \n";
+			close(_cgiSocketsToCgi[i]->getPollFd().fd);
+			_cgiSocketsToCgi[i]->getPollFd().fd = 0;
+			_cgiSocketsToCgi.erase(_cgiSocketsToCgi.begin() + i);
+		}
+		
+		// need to clean the indexing that changed after the deletion
+		_storeFdToPoll();
 }
 
 void		Hub::_closeAllConnections()
 {	
-	size_t 		nbOfServers = Configuration::getInstance().getServers().size();
-	size_t 		nbOfClients = Configuration::getInstance().getClients().size();
-
+	size_t 		nbOfSockets = 	_listenSockets.size() +
+								_clientSockets.size() +
+								_cgiSocketsFromCgi.size() +
+								_cgiSocketsToCgi.size();
+	
 	// condition to be sure we don't try to close the connection
 	// when there has been a problem (fail to bind for exemple)
-	if (_nfds == nbOfServers + nbOfClients)
-	{
-		for (size_t index = 0; index < nbOfServers; index++)
-			_closeConnection(0, SERVER);
-		for (size_t index = 0; index < nbOfClients; index++)
-			_closeConnection(0, CLIENT);
-	}
+	if (_nfds == nbOfSockets)
+		for (size_t index = 0; index < nbOfSockets; index++)
+			_closeConnection(0, _arr[0]->getType());
 }
-
-/* SETTERS */
-void		Hub::setNfds(int nfds)
-{ _nfds = nfds; }
-
-struct pollfd *		Hub::getFds()
-{ return _fds; }
-
-size_t		Hub::getNfds()
-{ return _nfds; }
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-Hub::Hub() {}
-
-Hub::Hub(std::string configFile) : _nfds() 
+Hub::Hub(std::string configFile) : 
+		_nfds(),
+		_clientSockets(),
+		_listenSockets(),
+		_cgiSocketsFromCgi(),
+		_cgiSocketsToCgi(),
+		_arr()
 {
 	Configuration::getInstance().parseConfigPath(configFile);
 	memset(_fds, 0, sizeof(_fds));
 }
 
-Hub::Hub(const Hub &src)
-{
-	*this = src;
-}
-
 Hub::~Hub()
 {
 	_closeAllConnections();
-}
-
-Hub &Hub::operator=(const Hub &src)
-{
-	if (&src != this)
-	{
-		_nfds = src._nfds;
-		// to be completed if new attributes
-	}
-	return (*this);
 }

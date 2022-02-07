@@ -7,10 +7,9 @@
 #include "html.hpp"
 #include "str.hpp"
 #include "log.hpp"
+#include "server.hpp"
 
 class Configuration;
-class Server;
-class Location;
 
 class Response
 {
@@ -42,7 +41,5 @@ class Response
         std::vector<unsigned char>          &getContent();
         std::string                         &getMessage();
 };
-
-#include "configuration.hpp"
 
 #endif

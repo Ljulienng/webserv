@@ -1,25 +1,5 @@
 #include "responseConstructor.hpp"
 
-std::string     getServerPath(std::string uri, t_configMatch &configMatch)
-{
-    std::string path;
-
-    // if uri is file ->
-    //          - if exist : display content
-    //          - else : 404 error
-    // if uri is folder ->
-    //          - if doesn't exist : 404 error
-    //          - else :
-    //                    - autoindex on : display list of file
-    //                    - autoindex off : 
-    //                                      - if default file : display
-    //                                      - else : 404 error
-
-    path = configMatch.root + uri;
-
-    return path;
-}
-
 bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodRequired)
 {
     for (size_t i = 0; i < methods.size(); i++)
@@ -72,30 +52,17 @@ Response    indexResponse(Response &response,std::string path, std::string index
     return response;
 }
 
-/*
-** 1) set env variables [Julien]
-** 2) execute cgi [Julien]
-** 3) get cgi response in stdin and put it in a vector<unsigned char> [Julien]
-** 4) parse the cgi response [Elie]
-** 5) build the server response [Elie]
-*/
-Response    cgiResponse(Response &response, Request &request, t_configMatch  &configMatch)
+
+Response    newCgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch)
 {
-    std::cout << "Execute CGI\n";
-
-    // 1)2)3)
-    cgiConstructor  cgi(request, configMatch);
-    std::vector<unsigned char> ret = cgi.execCgi();
-    std::string cgiResponse = std::string(ret.begin(), ret.end());
-    // std::cout << "cgi response = \n" << cgiResponse << "\n";
-
-    // 4)
-    size_t i = 0;
+    size_t i = 0; 
     
     while (cgiResponse.find("\r\n", i) != std::string::npos)
     {
         if (cgiResponse.find("Content-type:", i) == i)
-                response.setHeader("Content-Type", cgiResponse.substr(i + 14, cgiResponse.find("\r\n", i) - i - 14));
+        {
+            response.setHeader("Content-Type", cgiResponse.substr(i + 14, cgiResponse.find("\r\n", i) - i - 14));
+        }
         if (cgiResponse.find("Status:", i) == i)
         {
             int code = strtol(cgiResponse.substr(i + 8, 3).c_str(), NULL, 10);
@@ -108,11 +75,11 @@ Response    cgiResponse(Response &response, Request &request, t_configMatch  &co
             break ;
         }
     }
-    std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
-
-    // 5)
+    
     if (response.getHttpStatus().getCode() >= 400)
         return errorResponse(response, configMatch, response.getHttpStatus().getCode());
+    
+    std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
     response.setContent(body, response.getHeader("Content-Type"));
 
     return response;
@@ -120,7 +87,6 @@ Response    cgiResponse(Response &response, Request &request, t_configMatch  &co
 
 Response    redirectionResponse(Response &response, std::pair<int, std::string> redirection)
 {
-    // std::cout << "Redirection " << redirection.first << " -> " << redirection.second << "\n";
     response.setStatus(redirection.first);
     response.setHeader("Location", redirection.second);
     response.setContent(html::buildRedirectionPage(redirection), "text/html");
@@ -137,7 +103,7 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
 
     if (path.isRegularFile())
     {
-        std::cout << "File -> ok regular file\n";
+        std::cerr << "File -> ok regular file\n";
         Mime    extension(getExtension(configMatch.path));
         
         response.setStatus(OK);
@@ -149,17 +115,17 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     }
     else if (path.isDirectory() && configMatch.location.getAutoindex())
     {
-        std::cout << "Directory -> autoindex\n";
+        std::cerr << "Directory -> autoindex\n";
         return autoIndexResponse(response, configMatch.path);
     }
     else if (path.isDirectory() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
     {
-        std::cout << "Directory -> index\n";     
+        std::cerr << "Directory -> index\n";     
         return indexResponse(response, configMatch.path, configMatch.index);
     }
     else
     {
-        std::cout << "Error not found\n";
+        std::cerr << "Error not found\n";
         return errorResponse(response, configMatch, NOT_FOUND);
     }
 }
@@ -236,8 +202,6 @@ std::string t_multipart::getFilename() const
 
 Response    multipart(Response &response, Request &request, t_configMatch &configMatch, std::string contentTypeHeader)
 {
-    std::cout << "[multipart]\n";
-
     // check that we have the 2 parts -> "Content-type: multipart/form-data; boundary"
     if (contentTypeHeader.find(";") == std::string::npos)
         return errorResponse(response, configMatch, BAD_REQUEST);
@@ -287,12 +251,12 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     if (request.getHeader("Content-Type").find("multipart/form-data") != std::string::npos)
         return multipart(response, request, configMatch, request.getHeader("Content-Type"));
 
-    // we create the file
+    // create the file
     if (!fileToPost.createFile(pathToUpload, request.getBody()))
         return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
     response.setStatus(CREATED);
 
-    // we indicate the url of the resource we created thanks to "location" header
+    // indicate the url of the resource we created thanks to "location" header
     response.setHeader("Location", request.getUri().getUrl()); // need to send the full uri : http://127.0.0.1:8080/file.php   
     response.setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, pathToUpload)), "text/html");
    
@@ -325,20 +289,18 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
 **      - get
 **      - post
 **      - delete
-**      - cgi
 **      - redirection
 **      - error
 */
-Response    dispatchingResponse(Response &response, Request &request, t_configMatch  &configMatch)
+Response    constructResponse(Request &request, std::string serverName)
 {
-    File        path(configMatch.path);
+    // first need to get the server and location to use for this response (context)
+    t_configMatch   configMatch = getConfigMatch(request, serverName);
+    Response        response;
+    File            path(configMatch.path);
 
     if (path.isDirectory() && configMatch.path[configMatch.path.size() - 1] != '/')
         return redirectionResponse(response, std::pair<int, std::string>(MOVED_PERMANENTLY, request.getPath() + "/"));
-    else if (configMatch.server.getCgi().first == ".php"
-        && request.getPath().find(configMatch.server.getCgi().first) != std::string::npos
-        && (request.getMethod() == "GET" || request.getMethod() == "POST"))
-        return cgiResponse(response, request, configMatch);
     else if (configMatch.location.getRedirection().first > 0 && !configMatch.location.getRedirection().second.empty())
         return redirectionResponse(response, configMatch.location.getRedirection());
     else if (request.getMethod() == "GET")
@@ -348,19 +310,4 @@ Response    dispatchingResponse(Response &response, Request &request, t_configMa
     else if (request.getMethod() == "DELETE")
         return deleteMethodResponse(response, configMatch);
     return errorResponse(response, configMatch, NOT_FOUND);
-}
-
-Response    constructResponse(Request &request, std::string serverName)
-{
-    Response    response;
-
-    // first need to get the server and location to use for this response (context)
-    t_configMatch   configMatch;
-    configMatch.server = Configuration::getInstance().findServer(serverName);
-    configMatch.location = configMatch.server.findLocation(request.getPath());
-    configMatch.location.getRoot().empty() ? configMatch.root = configMatch.server.getRoot() : configMatch.root = configMatch.location.getRoot();
-    configMatch.location.getIndex().empty() ? configMatch.index = configMatch.server.getIndex() : configMatch.index = configMatch.location.getIndex();
-    configMatch.path = getServerPath(request.getUri().getPath(), configMatch); // transform the uri request to match in the server
-
-    return dispatchingResponse(response, request, configMatch);
 }

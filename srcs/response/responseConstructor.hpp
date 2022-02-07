@@ -4,20 +4,9 @@
 #include "webserv.hpp"
 #include "response.hpp"
 #include "request.hpp"
-#include "server.hpp"
-#include "location.hpp"
+#include "configMatch.hpp"
 
 class cgiConstructor;
-
-typedef struct  s_configMatch
-{
-    Server      server;     // which server bloc matches to the request ?
-    Location    location;   // which location bloc matches to the request ?
-    std::string root;       // which root directory to use [server or location] ?
-    std::string index;      // which index to use [server or location] ?
-    std::string path;       // the path to search file in the server
-
-}               t_configMatch;
 
 typedef struct  s_multipart
 {
@@ -27,8 +16,7 @@ typedef struct  s_multipart
     std::string     getFilename() const;
 }               t_multipart;
 
+Response    newCgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch);
 Response    constructResponse(Request &request, std::string serverName);
-
-#include "cgiConstructor.hpp"
 
 #endif

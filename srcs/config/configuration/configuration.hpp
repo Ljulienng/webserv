@@ -6,10 +6,10 @@
 #include "str.hpp"
 #include "file.hpp"
 #include "clientSocket.hpp"
-#include "singleton.hpp"  //test
+#include "listeningSocket.hpp"
+#include "singleton.hpp"
 
 class ClientSocket;
-
 /*
 ** informations from the configuration file : cgi, bodyMaxSize, a list of server(s) ...
 */
@@ -50,9 +50,9 @@ class Configuration : public Singleton<Configuration>
 		void		debug();
 
 		// GETTERS
-		std::map<int, std::string>		&getErrorPages();
-		std::vector<Server>				&getServers();
-		std::vector<ClientSocket>		&getClients();
+		std::map<int, std::string>			&getErrorPages();
+		std::vector<Server>					&getServers();
+		std::vector<ClientSocket>			&getClients();
 };
 
 #endif

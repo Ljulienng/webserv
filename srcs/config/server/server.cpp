@@ -1,51 +1,55 @@
 #include "server.hpp"
 
-// Basic socket initialization following the basic steps
-void 	Server::start()
-{
-	createSocket();
-	setNonBlock();
-	setSocketOptions();
-	_socket.setAddr(AF_INET, _ip.c_str(), _port);
-	bindSocket();
-	listenSocket();
-}
+#include "str.hpp"
+#include "file.hpp"
 
-void	Server::createSocket()
-{
-	_socket.setFd(socket(AF_INET, SOCK_STREAM, 0));
-	if (_socket.getFd() < 0)
-		throw(std::string("Error: Failed to create socket"));
-}
+// // Basic socket initialization following the basic steps
+// void 	Server::start()
+// {
+// 	createSocket();
+// 	setNonBlock();
+// 	setSocketOptions();
+// 	std::cout << "ip = " << _ip << "   port = " << _port << "\n";
+// 	_socket.setAddr(AF_INET, _ip.c_str(), _port);
+// 	bindSocket();
+// 	listenSocket();
+// }
 
-void	Server::setNonBlock()
-{
-	if (fcntl(_socket.getFd(), F_SETFL, O_NONBLOCK) < 0)
-		throw(std::string("Error: Failed to set non blocking connection"));
-}
+// void	Server::createSocket()
+// {
+// 	_socket.setFd(socket(AF_INET, SOCK_STREAM, 0));
+// 	if (_socket.getPollFd().fd < 0)
+// 		throw(std::string("Error: Failed to create socket"));
+// }
 
-/*
-** set that the address is a reusable local address
-** throw if the options can't be set to the socket.
-*/
-void 	Server::setSocketOptions()
-{
-	int option = 1;
-	if (setsockopt(_socket.getFd(), SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) != 0)
-		throw(std::string("Error: to set socket options"));
-}
+// void	Server::setNonBlock()
+// {
+// 	if (fcntl(_socket.getPollFd().fd, F_SETFL, O_NONBLOCK) < 0)
+// 		throw(std::string("Error: Failed to set non blocking connection"));
+// }
 
-void	Server::bindSocket()
-{
-	if (bind(_socket.getFd(), (struct sockaddr *)&_socket.getAddr(), sizeof(_socket.getAddr())) < 0)
-		throw(std::string("Error: Failed to bind"));
-}
+// /*
+// ** set that the address is a reusable local address
+// ** throw if the options can't be set to the socket.
+// */
+// void 	Server::setSocketOptions()
+// {
+// 	int option = 1;
+// 	if (setsockopt(_socket.getPollFd().fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) != 0)
+// 		throw(std::string("Error: to set socket options"));
+// }
 
-void	Server::listenSocket()
-{
-	if (listen(_socket.getFd(), MAX_CONNECTIONS) < 0) // Maximum can be higher, to be tested
-		throw(std::string("Error: Failed to listen on socket"));
-}
+// void	Server::bindSocket()
+// {
+// 	if (bind(_socket.getPollFd().fd, (struct sockaddr *)&_socket.getAddr(), sizeof(_socket.getAddr())) < 0)
+// 		throw(std::string("Error: Failed to bind"));
+// }
+
+// void	Server::listenSocket()
+// {
+// 	if (listen(_socket.getPollFd().fd, MAX_CONNECTIONS) < 0) // Maximum can be higher, to be tested
+// 		throw(std::string("Error: Failed to listen on socket"));
+// }
 
 void	Server::addLocation(Location location)
 {
@@ -249,8 +253,8 @@ size_t		&Server::getMaxBodySize()
 std::string		&Server::getUploadPath()
 { return _uploadPath; }
 
-Socket 		&Server::getSocket()
-{ return _socket; }
+// Socket		&Server::getSocket()
+// { return _socket; }
 
 std::pair<std::string, std::string>		&Server::getCgi()
 { return _cgi; }
@@ -266,7 +270,6 @@ Server::Server() : 	_name(),
 					_maxBodySize(1000000), // default nginx
 					_uploadPath(),
 					_locations(),
-					_socket(),
 					_cgi()
 					// to be completed if new attributes
 {}
@@ -290,7 +293,6 @@ Server &Server::operator=(const Server &src)
 		_maxBodySize = src._maxBodySize;
 		_uploadPath = src._uploadPath;
 		_locations = src._locations;
-		_socket = src._socket;
 		_cgi = src._cgi;
 		// to be completed if new attributes
 	}
@@ -307,7 +309,6 @@ void	Server::debug(size_t index)
 	std::cout << "\t - index = " << _index << "\n";
 	std::cout << "\t - maxBodySize = " << _maxBodySize << "\n";
 	std::cout << "\t - uploadPath = " << _uploadPath << "\n";
-	std::cout << "\t - fd socket = " << _socket.getFd() << "\n";
 	std::cout << "\t - cgi =  1->" << _cgi.first << "  2->" << _cgi.second << "\n";
 
 	std::vector<Location>::iterator itLoc = _locations.begin();

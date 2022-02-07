@@ -260,7 +260,6 @@ std::vector<Server>		&Configuration::getServers()
 std::vector<ClientSocket>	&Configuration::getClients()
 { return _clients; }
 
-
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 Configuration::Configuration() : Singleton(),
 									_configFile(),
@@ -293,7 +292,7 @@ Configuration &Configuration::operator=(const Configuration &src)
 		_configFile = src._configFile;
 		_errorPages = src._errorPages;
 		_servers = src._servers;
-		_clients = src._clients;
+		// _clients = src._clients;
 		// to be completed if new attributes
 	}
 	return (*this);

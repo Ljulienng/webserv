@@ -12,9 +12,8 @@ void     sigintHandler(int sig)
     g_run = false;
 }
 
-int     main(int ac, char **argv, char **env)
+int     main(int ac, char **argv)
 {
-    (void)env; // useful for cgi part
     g_run = true;
 
     signal(SIGINT, sigintHandler);

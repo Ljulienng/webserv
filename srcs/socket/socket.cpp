@@ -1,10 +1,14 @@
 #include "socket.hpp"
 
-
 /* SETTERS */
 void        Socket::setFd(int fd)
 {
-	_fd = fd;
+	_pollFd.fd = fd;
+}
+
+void        Socket::setAddr(sockaddr_in addr)
+{
+	_addr = addr; 
 }
 
 void        Socket::setAddr(int family, const char *ip, unsigned short port)
@@ -14,27 +18,56 @@ void        Socket::setAddr(int family, const char *ip, unsigned short port)
 	_addr.sin_port = htons(port);
 }
 
-/* GETTERS */
-int						&Socket::getFd()
-{
-	return _fd;
+void        Socket::setPollFd(struct pollfd pollFd)
+{ 
+	_pollFd = pollFd;
 }
 
-struct sockaddr_in 		&Socket::getAddr()
+void       Socket::setType(e_type type)
 {
-	return _addr;
+	_type = type;
 }
+
+void        Socket::setServerName(std::string serverName)
+{
+	_serverName = serverName;
+}
+
+/* GETTERS */
+int						&Socket::getFd()
+{ return _fd; }
+
+struct pollfd		    &Socket::getPollFd()
+{ return _pollFd; }
+
+struct sockaddr_in 		&Socket::getAddr()
+{ return _addr; }
+
+std::string 		    &Socket::getServerName()
+{ return _serverName; }
+
+Socket::e_type          &Socket::getType()
+{ return _type; }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 Socket::Socket() :
+			_index(0),
 			_fd(),
-			_addr()
+			_pollFd(),
+			_addr(),
+			_serverName(),
+			_type(none)
 			// to be completed if new attributes
 {}
 
-Socket::Socket(int sockFd, struct sockaddr_in sockaddr) :
+Socket::Socket(int sockFd, struct sockaddr_in sockaddr, e_type type) :	
+			_index(0),
 			_fd(sockFd),
-			_addr(sockaddr)
+			_pollFd(),
+			_addr(sockaddr),
+			_serverName(),
+			_type(type)
+			
 			// to be completed if new attributes
 {}
 

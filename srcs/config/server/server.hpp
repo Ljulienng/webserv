@@ -3,8 +3,6 @@
 
 #include "webserv.hpp"
 #include "location.hpp"
-#include "file.hpp"
-#include "str.hpp"
 #include "socket.hpp"
 
 /*
@@ -22,7 +20,6 @@ class Server
 		size_t								_maxBodySize; 
 		std::string							_uploadPath; // path to upload content with POST
 		std::vector<Location>				_locations;
-		Socket								_socket;
 		std::pair<std::string, std::string>	_cgi;
 		
 		Location		*_findExactLocation(std::string uriRequest);
@@ -36,13 +33,6 @@ class Server
 		Server &operator=(const Server &src);
 
 		void		debug(size_t index);
-		void 		start();
-		void		createSocket();
-		void		closeSocket();
-		void		bindSocket();
-		void		setSocketOptions();
-		void		setNonBlock();
-		void		listenSocket();
 		void		addLocation(Location location);
 		Location	&findLocation(std::string uriRequest);
 
@@ -66,7 +56,6 @@ class Server
 		size_t									&getMaxBodySize();
 		std::string								&getUploadPath();
 		std::vector<Location>					&getLocations();
-		Socket 									&getSocket();
 		std::pair<std::string, std::string>		&getCgi();
 };
 
