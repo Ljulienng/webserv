@@ -1,10 +1,12 @@
 <?php 
-    if (isset($_GET["message"]))
+    if (isset($_GET["msgToJulien"]) && isset($_GET["msgToElie"]))
     {
-        echo 'Merci pour ce message " ' . htmlspecialchars($_GET["message"]) . ' "';
+        echo 'Thank you for these messages : <br><br>';
+        echo 'Message sent to Julien :  " ' . htmlspecialchars($_GET["msgToJulien"]) . ' "<br>';
+        echo 'Message sent to Elie   :  " ' . htmlspecialchars($_GET["msgToElie"]) . ' "<br>';
     }
     else
     {
-        echo 'Je crois que vous avez oublié de nous laisser un message !';
+        echo 'I think you forgot to leave a message !';
     }
 ?>

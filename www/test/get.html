@@ -7,10 +7,27 @@
 
     <body>
         <h1>GET method</h1>
-        <h3>Post a message</h3>
-            <form method="get" action="form_get.php">
-                Message : <input type="text" name="message" autofocus required>
+        <h3>Post messages</h3>
+            <!-- <form method="get" action="form_get.php">
+                Send a message to Julien : <input type="text" name="message" autofocus required>
                 <input type="submit" value="send">
+            </form><br> -->
+
+            <form method="get" action="form_get.php">
+                <div>
+                    <label for="message1"> Send a message to Julien : </label>
+                     <input type="text" name="msgToJulien" value="Hey Julien" autofocus required>
+                </div>
+                <br>
+                <div>
+                    <label for="message1"> And to Elie : </label>
+                    <input type="text" name="msgToElie" value="Yo Elie" autofocus required>
+                </div>
+                <br>
+                <div>
+                    <button>Envoyer les messages</button>
+                </div>
             </form><br>
+
     </body>
 </html>

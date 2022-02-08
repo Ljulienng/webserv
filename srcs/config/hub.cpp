@@ -332,16 +332,8 @@ void		Hub::_closeConnection(size_t i, int type)
 
 void		Hub::_closeAllConnections()
 {	
-	size_t 		nbOfSockets = 	_listenSockets.size() +
-								_clientSockets.size() +
-								_cgiSocketsFromCgi.size() +
-								_cgiSocketsToCgi.size();
-	
-	// condition to be sure we don't try to close the connection
-	// when there has been a problem (fail to bind for exemple)
-	if (_nfds == nbOfSockets)
-		for (size_t index = 0; index < nbOfSockets; index++)
-			_closeConnection(0, _arr[0]->getType());
+	for (size_t index = 0; index < _nfds; index++)
+		_closeConnection(0, _arr[0]->getType());
 }
 
 
