@@ -10,8 +10,8 @@ class ClientSocket : public Socket
     protected :
         unsigned short          _port;
         std::string             _buffer;
-        std::list<Request>     _requests;
-        std::list<Response>    _responses;
+        std::list<Request>      _requests;
+        std::list<Response>     _responses;
         std::string             _serverName;
 
     public :

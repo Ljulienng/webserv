@@ -31,7 +31,7 @@ class CgiExecutor
     
 
     public :
-        CgiExecutor(Request request, ClientSocket* client, t_configMatch &configMatch);
+        CgiExecutor(Request request, ClientSocket* client, t_configMatch& configMatch);
         virtual ~CgiExecutor();	
 
         void    initHeaders();

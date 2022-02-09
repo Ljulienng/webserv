@@ -6,7 +6,7 @@
 #include "response.hpp"
 #include "clientSocket.hpp"
 
-#define CGI_BUF_LEN 100
+#define CGI_BUF_LEN 50
 
 enum state
 {
@@ -20,16 +20,18 @@ class CgiSocketFromCgi : public Socket
 {
     protected :
     
-        int                         _state;
-        std::vector<unsigned char>  _buffer;
-        int                         _reader;
-        std::string                 _bufferHeaders;
-        std::string                 _bufferBody;
-        ClientSocket*               _client;
-        Request                     _request;
-        int                         _fdUseless;
+        int                                 _state;
+        std::vector<unsigned char>          _buffer;
+        int                                 _reader;
+        std::string                         _headerBuffer;
+        std::map<std::string, std::string>  _headers;
+        ClientSocket*                       _client;
+        Request                             _request;
+        int                                 _fdUseless;
+        bool                                _contentLengthPresent;
 
-        void                        _checkHeaders(char c);
+        void            _checkHeaders(char c);
+        int             _constructCgiResponseHeaders(std::string& headerBuf);
 
 
     public :
