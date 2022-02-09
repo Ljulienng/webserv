@@ -73,7 +73,7 @@ void	Hub::process()
 {
 	_storeFdToPoll();
 	// std::cerr << "Before poll() -> nfds = " << _nfds << "  size of _sockArr = " << _arr.size() << "\n";
-	int pollRet = poll(_fds, _nfds, -1); // call poll and wait an infinite time
+	int pollRet = poll(_fds, _nfds, 1000); // call poll and wait an infinite time
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
 	{	
 		_closeAllConnections();
@@ -104,6 +104,15 @@ void	Hub::process()
 				}
 			}
 		}
+		// else if (_arr[i]->getType() == Socket::cgiFrom)
+		// {
+		// 	if (_cgiSocketsFromCgi[_arr[i]->_index]->getTimeout())
+		// 	{
+		// 		_prepareCgiResponse(_arr[i]->_index);
+		// 		_closeConnection(_arr[i]->_index, _arr[i]->getType());		
+		// 		_closeConnection(_arr[i]->_index, Socket::cgiTo);
+		// 	}
+		// }
 		else if ((_fds[i].revents & POLLOUT) == POLLOUT)
 		{
 			if (_arr[i]->getType() == Socket::client)
@@ -235,8 +244,8 @@ void		Hub::_prepareResponse(size_t i)
 
 void		Hub::_prepareCgiResponse(size_t i)
 {
-	Response response;
-	t_configMatch configMatch;
+	Response 		response;
+	t_configMatch 	configMatch;
 	
 	configMatch = getConfigMatch(_cgiSocketsFromCgi[i]->getRequest(), _cgiSocketsFromCgi[i]->getClient()->getServerName());
 	response = cgiResponse(_cgiSocketsFromCgi[i]->getBuffer(), response, configMatch);

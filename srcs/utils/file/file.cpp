@@ -43,6 +43,8 @@ bool 	File::createFile(std::string filename)
 	return true;
 }
 
+
+// A SUPPRIMER NON UTILISE (! write pas dans poll())
 bool	File::createFile(std::string filename, std::string content)
 {
 	int fd;
@@ -101,6 +103,8 @@ std::vector<unsigned char>	&File::getFileContent()
 struct stat		&File::getfileStat()
 { return _fileStat; }
 
+
+// A SUPPRIMER NON UTILISE (! read pas dans poll())
 void	File::readFile()
 {
 	char	buf[BUF_SIZE + 1] = {0};
