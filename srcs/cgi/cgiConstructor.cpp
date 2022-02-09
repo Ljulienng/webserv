@@ -66,48 +66,6 @@ void	cgiConstructor::initHeaders(Request &request,  t_configMatch &configMatch)
 	// 		std::cout << _envArray[i] << std::endl;
 }
 
-std::vector<unsigned char>		cgiConstructor::myexecCgi()
-{
-	// int status = 0;
-	int pipes[2];
-	pipe(pipes);
-	pid_t pid = fork();
-	if (pid == 0)
-	{
-		close(pipes[0]);
-		if (pipes[1] != 1)
-		{
-			dup2(pipes[1], 1);
-			close(pipes[1]);
-		}
-
-		if (pipes[0] != 0)
-		{
-			dup2(pipes[0], 0);
-			close(pipes[0]);
-		}
-		if ((execve(_cgiPath.c_str(), _argArray, _envArray)) == -1)
-			throw (std::string("Can't execute the script")); // Error 500 to assign
-		exit(errno);
-	}
-	else if (pid > 0)
-	{
-		char 	buffer[4096];
-		size_t	bytes;
-		memset(buffer, 0, 4096);
-		while((bytes = read(0, buffer, 4096)) > 0)
-		{	
-			for (size_t i = 0; i < bytes; i++)
-				std::cout << buffer[i];
-				// _newBody.push_back(buffer[i]);
-		}
-	}
-	for (size_t i = 0; _envArray[i]; i++)
-		delete [] _envArray[i];
-	delete [] _envArray;
-
-	return (_newBody);
-}
 
 std::vector<unsigned char>		cgiConstructor::execCgi()
 {

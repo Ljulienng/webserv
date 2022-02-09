@@ -18,7 +18,6 @@ class ListeningSocket : public Socket
         ListeningSocket    &operator=(const ListeningSocket &src);
       
         void 		start(std::string ip, unsigned short port);
-        void		createSocket();
 		void		closeSocket();
 		void		bindSocket();
 		void		setSocketOptions();

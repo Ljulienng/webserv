@@ -10,13 +10,15 @@ class CgiSocketToCgi : public Socket
 {
     protected :
         Request _request;
+        int     _fdUseless;
     
 
     public :
-        CgiSocketToCgi(int fd, Request request);
+        CgiSocketToCgi(int fd[2], Request request);
         virtual ~CgiSocketToCgi();
 
-        void    writeToCgi();
+        void            writeToCgi();
+        int             &getFdUseless();
 };
 
 #endif

@@ -53,7 +53,7 @@ Response    indexResponse(Response &response,std::string path, std::string index
 }
 
 
-Response    newCgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch)
+Response    cgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch)
 {
     size_t i = 0; 
     

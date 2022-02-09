@@ -7,14 +7,18 @@
 
     <body>
         <h1>POST method</h1>
+
         <h3>Post a message</h3>
             <form method="post" action="form_post.php">
-                Message : <input type="text" name="message" autofocus required>
+                Message : 
+                <input type="text" name="message" autofocus required>
                 <input type="submit" value="send">
             </form><br>
+            
         <h3>Upload a file</h3> 
             <form method="post" enctype="multipart/form-data" action="upload_post.php">
-                Select a file [only .txt .cpp and .hpp files] : <input type="file" name="file" id="fileToUpload">
+                Select a file [only .txt .cpp and .hpp files] :
+                <input type="file" name="file" id="fileToUpload">
                 <input type="submit" value="send">
             </form><br>
     </body>

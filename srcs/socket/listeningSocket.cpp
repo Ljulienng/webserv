@@ -2,7 +2,6 @@
 
 void 	ListeningSocket::start(std::string ip, unsigned short port)
 {
-	createSocket();
 	setNonBlock();
 	setSocketOptions();
 	std::cout << "ip = " << ip << "   port = " << port << "\n";
@@ -10,14 +9,6 @@ void 	ListeningSocket::start(std::string ip, unsigned short port)
 	bindSocket();
 	listenSocket();
 	_pollFd.events = POLLIN;
-}
-
-void	ListeningSocket::createSocket()
-{
-	// _pollFd.fd = socket(AF_INET, SOCK_STREAM, 0);
-	// std::cout << "fd = " << _pollFd.fd << "\n";
-	// if (_pollFd.fd < 0)
-	// 	throw(std::string("Error: Failed to create socket"));
 }
 
 void	ListeningSocket::setNonBlock()

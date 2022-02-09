@@ -61,36 +61,48 @@ void	CgiExecutor::initHeaders()
 	// 		std::cerr << _argArray[i] << std::endl;
 }
 
-void		CgiExecutor::execCgi()
+static void		redirOut(int pipe[2])
 {
-	int pipeOut[2];
-	int pipeIn[2];
-	pid_t pid;
+	close(pipe[0]);
+	dup2(pipe[1], STDOUT_FILENO);
+	close(pipe[1]);
+}
+static void		redirIn(int pipe[2])
+{
+	close(pipe[1]);
+	dup2(pipe[0], STDIN_FILENO);
+	close(pipe[0]);
+}
 
+static void		createPipe(int pipeOut[2], int pipeIn[2])
+{
 	pipe(pipeOut);
 	if (pipe(pipeIn) < 0)
 	{
 		close(pipeOut[0]);
 		close(pipeOut[1]);
 	}
+}
+
+void		CgiExecutor::execCgi()
+{
+	int pipeOut[2];
+	int pipeIn[2];
+	pid_t pid;
+
+	createPipe(pipeOut, pipeIn);
 	pid = fork();
 	if (pid < 0)
 	{
 		close(pipeOut[0]);
 		close(pipeOut[1]);
 		close(pipeIn[0]);
-		close(pipeIn[1]); 
+		close(pipeIn[1]);
 	}
 	else if (pid == 0)
 	{
-		close(pipeOut[0]);
-		dup2(pipeOut[1], 1);
-		close(pipeOut[1]);
-
-		close(pipeIn[1]);
-		dup2(pipeIn[0], 0);
-		close(pipeIn[0]);
-
+		redirOut(pipeOut);
+		redirIn(pipeIn);
 		// chdir("/home/user42/Documents/Projects/12-Webserv/ourwebserv_");
 		if ((execve(_cgiPath.c_str(), _argArray, _envArray)) == -1)
 			throw (std::string("Can't execute the script")); // Error 500 to assign
@@ -98,11 +110,12 @@ void		CgiExecutor::execCgi()
 	}
 	else if (pid > 0)
 	{
+		// set non blocking connections
 		fcntl(pipeOut[0], F_SETFL, O_NONBLOCK);
 		_cgiSocketFromCgi = new CgiSocketFromCgi(pipeOut, _client, *_request);
 
 		fcntl(pipeIn[1], F_SETFL, O_NONBLOCK);
-		_cgiSocketToCgi = new CgiSocketToCgi(pipeIn[1], *_request);
+		_cgiSocketToCgi = new CgiSocketToCgi(pipeIn, *_request);
 	}
 }
 

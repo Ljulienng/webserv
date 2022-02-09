@@ -86,9 +86,7 @@ void	Hub::process()
 		else if ((_fds[i].revents & POLLIN) == POLLIN)
 		{
 			if (_arr[i]->getType() == Socket::server)
-			{
 				_acceptIncomingConnections(i);
-			}
 			else if (_arr[i]->getType() == Socket::client)
 			{
 				_receiveRequest(i);
@@ -101,8 +99,8 @@ void	Hub::process()
 				{
 					_prepareCgiResponse(_arr[i]->_index);
 					//close both connections at the same time
-					_closeConnection(_arr[i]->_index, Socket::cgiTo); // find a way to match the ToCgi index with the 
-					_closeConnection(_arr[i]->_index, _arr[i]->getType());
+					_closeConnection(_arr[i]->_index, _arr[i]->getType());		
+					_closeConnection(_arr[i]->_index, Socket::cgiTo);	
 				}
 			}
 		}
@@ -115,7 +113,6 @@ void	Hub::process()
 		}
 		else if ((_fds[i].revents & POLLERR) == POLLERR || (_fds[i].revents & POLLHUP) == POLLHUP)
 			_closeConnection(_arr[i]->_index, _arr[i]->getType());
-
 		else
 		{
 			_closeAllConnections();
@@ -242,7 +239,7 @@ void		Hub::_prepareCgiResponse(size_t i)
 	t_configMatch configMatch;
 	
 	configMatch = getConfigMatch(_cgiSocketsFromCgi[i]->getRequest(), _cgiSocketsFromCgi[i]->getClient()->getServerName());
-	response = newCgiResponse(_cgiSocketsFromCgi[i]->getBuffer(), response, configMatch);
+	response = cgiResponse(_cgiSocketsFromCgi[i]->getBuffer(), response, configMatch);
 	
 	_cgiSocketsFromCgi[i]->getClient()->getResponses().push_back(response);
 	_cgiSocketsFromCgi[i]->getClient()->getPollFd().events = POLLIN | POLLOUT;
@@ -316,6 +313,7 @@ void		Hub::_closeConnection(size_t i, int type)
 			std::cerr << "[cgi From : fd " << _cgiSocketsFromCgi[i]->getPollFd().fd << "] \n";
 			close(_cgiSocketsFromCgi[i]->getPollFd().fd);
 			_cgiSocketsFromCgi[i]->getPollFd().fd = 0;
+			close(_cgiSocketsFromCgi[i]->getFdUseless());
 			_cgiSocketsFromCgi.erase(_cgiSocketsFromCgi.begin() + i);
 		}
 		else if (type == Socket::cgiTo)
@@ -323,9 +321,10 @@ void		Hub::_closeConnection(size_t i, int type)
 			std::cerr << "[cgi To : fd " << _cgiSocketsToCgi[i]->getPollFd().fd << "] \n";
 			close(_cgiSocketsToCgi[i]->getPollFd().fd);
 			_cgiSocketsToCgi[i]->getPollFd().fd = 0;
+			close(_cgiSocketsToCgi[i]->getFdUseless());
 			_cgiSocketsToCgi.erase(_cgiSocketsToCgi.begin() + i);
 		}
-		
+			
 		// need to clean the indexing that changed after the deletion
 		_storeFdToPoll();
 }
