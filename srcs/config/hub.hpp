@@ -37,7 +37,7 @@ class Hub
 		void				_addClientSocket(int acceptRet, Socket* socket);
 		void				_storeFdToPoll();
 		void				_acceptIncomingConnections(size_t i);
-		void				_receiveRequest(size_t i);
+		bool				_receiveRequest(size_t i);
 		void				_prepareResponse(size_t i);
 		void				_prepareCgiResponse(size_t i);
 		void 				_sendResponse(size_t i);

@@ -49,14 +49,12 @@ void	Hub::_storeFdToPoll()
 		_fds[_nfds] = (*it)->getPollFd();
 		_arr.push_back(*it);
 		_arr[_nfds]->_index = _nfds;
-		// std::cerr << "new listen index = " << _nfds << "\n";
 	}
 	for (std::vector<ClientSocket*>::iterator it = _clientSockets.begin(); it != _clientSockets.end(); it++, _nfds++)
 	{
 		_fds[_nfds] = (*it)->getPollFd();
 		_arr.push_back(*it);
 		_arr[_nfds]->_index = _nfds - _listenSockets.size();
-		// std::cerr << "new client index = " << _nfds - _listenSockets.size() << "\n";
 	}
 	for (std::vector<CgiSocketFromCgi*>::iterator it = _cgiSocketsFromCgi.begin(); it != _cgiSocketsFromCgi.end(); it++, _nfds++)
 	{ 
@@ -75,7 +73,7 @@ void	Hub::_storeFdToPoll()
 void	Hub::process()
 {
 	_storeFdToPoll();
-	int pollRet = poll(_fds, _nfds, 1000); // call poll and wait an infinite time
+	int pollRet = poll(_fds, _nfds, 1000); // call poll and wait for an event
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
 	{	
 		_closeAllConnections();
@@ -101,8 +99,8 @@ void	Hub::process()
 				_acceptIncomingConnections(i);
 			else if (_arr[i]->getType() == Socket::client)
 			{
-				_receiveRequest(i);
-				_prepareResponse(i);
+				if (!_receiveRequest(i)) // client not disconnected
+					_prepareResponse(i);
 			}
 			else if (_arr[i]->getType() == Socket::cgiFrom)
 			{
@@ -156,11 +154,12 @@ void		Hub::_acceptIncomingConnections(size_t i)
 /*
 ** receive and parse the request
 */
-void		Hub::_receiveRequest(size_t i)
+bool		Hub::_receiveRequest(size_t i)
 {
 	int 				bytes = 0;
 	std::vector<char>	buffer(MAX_BUF_LEN);
 	ClientSocket* 		client = _clientSockets[_arr[i]->_index];
+	bool				close = false;
 
 	bytes = recv(client->getPollFd().fd, &buffer[0], MAX_BUF_LEN, 0);
 	if (bytes < 0)
@@ -170,20 +169,19 @@ void		Hub::_receiveRequest(size_t i)
 	}
 	else if (bytes > 0)
 	{
-		// std::cerr << "bytes read = " << bytes << "\n";
 		client->getBuffer().append(buffer.begin(), buffer.end());
 		if (bytes < MAX_BUF_LEN)
 		{
-			// std::cerr << "buffer = \n" << client->getBuffer() << "\n";
 			client->addRequest();
 			log::logEvent("Received a new request", client->getPollFd().fd);
 		}
 	}
 	else //bytes = 0;
-	{	std::cerr << "Need to close connection bytes read = 0\n";
-		std::cerr << "type : " << _arr[i]->getType() << "\n";
+	{
 		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
+		close = true;
 	}
+	return close;
 }
 
 static bool _needCgi(Request request, t_configMatch configMatch)
@@ -203,13 +201,9 @@ static bool _needCgi(Request request, t_configMatch configMatch)
 */
 void		Hub::_prepareResponse(size_t i)
 {	
-	// ne pas acceder si on a supprimer le client dans receive Request !
-	std::cerr << "_clientSockets.size() : " << _clientSockets.size() << "\n";
-	std::cerr << "type : " << _arr[i]->getType() << "\n";
 	ClientSocket* 			client = _clientSockets[_arr[i]->_index];
 	std::list<Request>		&requests = client->getRequests();
 
-	std::cerr << "invalid read 1 \n";
 	while (requests.empty() == false)
 	{
 		std::list<Request>::iterator it = client->getRequests().begin();
@@ -220,11 +214,9 @@ void		Hub::_prepareResponse(size_t i)
 			t_configMatch configMatch = getConfigMatch(*it, client->getServerName());
 			
 			if (_needCgi(*it, configMatch))
-			{	// execute cgi and create 2 cgi sockets (in and out)
-				// copie the request to have an empty pool of request and leave the loop
-				// store the client to send request at the end of reading
-				CgiExecutor cgi(*it, client, configMatch);
-				cgi.execCgi();
+			{	
+				CgiExecutor cgi(*it, client, configMatch); // copie the request to have an empty pool of request and leave the loop
+				cgi.execCgi(); // execute cgi and create 2 cgi sockets (in and out)
 				_cgiSocketsFromCgi.push_back(cgi.getCgiSocketFromCgi());
 				_cgiSocketsToCgi.push_back(cgi.getCgiSocketToCgi());
 			}
@@ -237,7 +229,7 @@ void		Hub::_prepareResponse(size_t i)
 			requests.erase(it++);
 		}
 	}
-	std::cerr << "invalid read 2 \n";
+
 	// the socket is now ready to write in addition to reading because we have added a response
 	if (client->getResponses().empty() == false)
 		client->getPollFd().events = POLLIN | POLLOUT;
