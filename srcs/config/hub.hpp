@@ -33,7 +33,7 @@ class Hub
 		std::vector<CgiSocketToCgi*>		_cgiSocketsToCgi;
 		std::vector<Socket*> 				_arr;		
 
-		void				_addListeningSocket(Server &server);
+		void				_addListeningSocket(Server& server);
 		void				_addClientSocket(int acceptRet, Socket* socket);
 		void				_storeFdToPoll();
 		void				_acceptIncomingConnections(size_t i);

@@ -13,10 +13,10 @@ void	Hub::start()
 		_addListeningSocket(servers[i]);
 }
 
-void	Hub::_addListeningSocket(Server &server)
+void	Hub::_addListeningSocket(Server& server)
 {
-	ListeningSocket* newListenSocket = new ListeningSocket(server.getName());
-	struct pollfd newPollFd;
+	ListeningSocket* 	newListenSocket = new ListeningSocket(server.getName());
+	struct pollfd 		newPollFd;
 
 	newPollFd.fd = socket(AF_INET, SOCK_STREAM, 0);;
 	newPollFd.events = POLLIN;
@@ -27,8 +27,9 @@ void	Hub::_addListeningSocket(Server &server)
 
 void	Hub::_addClientSocket(int acceptRet, Socket* listenSocket)
 {
-	ClientSocket* newClientSocket = new ClientSocket();
-	struct pollfd newPollFd;
+	ClientSocket* 	newClientSocket = new ClientSocket();
+	struct pollfd 	newPollFd;
+
 	newClientSocket->setServerName(listenSocket->getServerName());
 	newClientSocket->setFd(acceptRet);
 	newClientSocket->setPort(listenSocket->getAddr().sin_port);
@@ -48,12 +49,14 @@ void	Hub::_storeFdToPoll()
 		_fds[_nfds] = (*it)->getPollFd();
 		_arr.push_back(*it);
 		_arr[_nfds]->_index = _nfds;
+		// std::cerr << "new listen index = " << _nfds << "\n";
 	}
 	for (std::vector<ClientSocket*>::iterator it = _clientSockets.begin(); it != _clientSockets.end(); it++, _nfds++)
 	{
 		_fds[_nfds] = (*it)->getPollFd();
 		_arr.push_back(*it);
 		_arr[_nfds]->_index = _nfds - _listenSockets.size();
+		// std::cerr << "new client index = " << _nfds - _listenSockets.size() << "\n";
 	}
 	for (std::vector<CgiSocketFromCgi*>::iterator it = _cgiSocketsFromCgi.begin(); it != _cgiSocketsFromCgi.end(); it++, _nfds++)
 	{ 
@@ -72,7 +75,6 @@ void	Hub::_storeFdToPoll()
 void	Hub::process()
 {
 	_storeFdToPoll();
-	// std::cerr << "Before poll() -> nfds = " << _nfds << "  size of _sockArr = " << _arr.size() << "\n";
 	int pollRet = poll(_fds, _nfds, 1000); // call poll and wait an infinite time
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
 	{	
@@ -82,6 +84,7 @@ void	Hub::process()
 	static int reventCgiFrom = 0;
 	for (size_t i = 0; i < _nfds; i++)
 	{
+		// only way found to detect end of cgi POLLIN to send response to the client
 		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && reventCgiFrom > 0)
 		{
 			_prepareCgiResponse(_arr[i]->_index);
@@ -103,26 +106,10 @@ void	Hub::process()
 			}
 			else if (_arr[i]->getType() == Socket::cgiFrom)
 			{
-				std::cerr << "reventPollin cgiFrom = " << reventCgiFrom++ << "\n";
+				reventCgiFrom++;
 				_cgiSocketsFromCgi[_arr[i]->_index]->readFromCgi();
-				// if (_cgiSocketsFromCgi[_arr[i]->_index]->getState() == DONE)
-				// {
-				// 	_prepareCgiResponse(_arr[i]->_index);
-				// 	//close both connections at the same time
-				// 	_closeConnection(_arr[i]->_index, _arr[i]->getType());		
-				// 	_closeConnection(_arr[i]->_index, Socket::cgiTo);
-				// }
 			}
 		}
-		// else if (_arr[i]->getType() == Socket::cgiFrom) // si plus POLLIN detecte
-		// {
-		// 	// if (_cgiSocketsFromCgi[_arr[i]->_index]->getTimeout())
-		// 	// {
-		// 		_prepareCgiResponse(_arr[i]->_index);
-		// 		_closeConnection(_arr[i]->_index, _arr[i]->getType());		
-		// 		_closeConnection(_arr[i]->_index, Socket::cgiTo);
-		// 	// }
-		// }
 		else if ((_fds[i].revents & POLLOUT) == POLLOUT)
 		{
 			if (_arr[i]->getType() == Socket::client)
@@ -319,12 +306,14 @@ void		Hub::_closeConnection(size_t i, int type)
 		{
 			std::cerr << "[server : fd " << _listenSockets[i]->getPollFd().fd << "] \n";
 			close(_listenSockets[i]->getPollFd().fd);
+			delete _listenSockets[i];
 			_listenSockets.erase(_listenSockets.begin() + i);
 		}
 		else if (type == Socket::client)
 		{
 			std::cerr << "[client : fd " << _clientSockets[i]->getPollFd().fd << "] \n";
 			close(_clientSockets[i]->getPollFd().fd);
+			delete _clientSockets[i];
 			_clientSockets.erase(_clientSockets.begin() + i);
 		}
 		else if (type == Socket::cgiFrom)
@@ -333,6 +322,7 @@ void		Hub::_closeConnection(size_t i, int type)
 			close(_cgiSocketsFromCgi[i]->getPollFd().fd);
 			_cgiSocketsFromCgi[i]->getPollFd().fd = 0;
 			close(_cgiSocketsFromCgi[i]->getFdUseless());
+			delete _cgiSocketsFromCgi[i];
 			_cgiSocketsFromCgi.erase(_cgiSocketsFromCgi.begin() + i);
 		}
 		else if (type == Socket::cgiTo)
@@ -341,6 +331,7 @@ void		Hub::_closeConnection(size_t i, int type)
 			close(_cgiSocketsToCgi[i]->getPollFd().fd);
 			_cgiSocketsToCgi[i]->getPollFd().fd = 0;
 			close(_cgiSocketsToCgi[i]->getFdUseless());
+			delete _cgiSocketsToCgi[i];
 			_cgiSocketsToCgi.erase(_cgiSocketsToCgi.begin() + i);
 		}
 			
@@ -350,7 +341,8 @@ void		Hub::_closeConnection(size_t i, int type)
 
 void		Hub::_closeAllConnections()
 {	
-	for (size_t index = 0; index < _nfds; index++)
+	size_t tmp = _nfds;
+	for (size_t i = 0; i < tmp; i++)
 		_closeConnection(0, _arr[0]->getType());
 }
 

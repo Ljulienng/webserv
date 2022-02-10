@@ -117,8 +117,22 @@ void		CgiExecutor::execCgi()
 		fcntl(pipeIn[1], F_SETFL, O_NONBLOCK);
 		_cgiSocketToCgi = new CgiSocketToCgi(pipeIn, *_request);
 	}
+	clean();
 }
 
+/*
+*	Closing all file, file descriptor and freeing the allocated array
+*/	
+void		CgiExecutor::clean()
+{
+	for (size_t i = 0; _envArray[i]; i++)
+		delete [] _envArray[i];
+	delete [] _envArray;
+
+	for (size_t i = 0; _argArray[i]; i++)
+		delete [] _argArray[i];
+	delete [] _argArray;
+}
 
 std::string			CgiExecutor::getBody()
 { return std::string(_newBody.begin(), _newBody.end()); }
@@ -141,4 +155,7 @@ CgiExecutor::CgiExecutor(Request request, ClientSocket* client, t_configMatch& c
 	initHeaders();
 }
 
-CgiExecutor::~CgiExecutor() {}
+CgiExecutor::~CgiExecutor()
+{
+	delete _request;
+}

@@ -26,8 +26,6 @@ class CgiExecutor
         CgiSocketFromCgi*                   _cgiSocketFromCgi;
         CgiSocketToCgi*                     _cgiSocketToCgi;
         t_configMatch&                      _configMatch;
-
-        int                                 _fdRead;
     
 
     public :
@@ -36,10 +34,11 @@ class CgiExecutor
 
         void    initHeaders();
         void    execCgi();
+        void	clean();
 
-        std::string		getBody();
-        CgiSocketFromCgi*                   getCgiSocketFromCgi();
-        CgiSocketToCgi*                     getCgiSocketToCgi();
+        std::string		        getBody();
+        CgiSocketFromCgi*       getCgiSocketFromCgi();
+        CgiSocketToCgi*         getCgiSocketToCgi();
 };
 
 #endif
