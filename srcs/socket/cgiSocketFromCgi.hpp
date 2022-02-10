@@ -19,7 +19,6 @@ enum state
 class CgiSocketFromCgi : public Socket
 {
     protected :
-        struct timespec                     _startTime;
         int                                 _state;
         std::vector<unsigned char>          _buffer;
         int                                 _reader;
@@ -28,10 +27,7 @@ class CgiSocketFromCgi : public Socket
         ClientSocket*                       _client;
         Request                             _request;
         int                                 _fdUseless;
-        bool                                _contentLengthPresent;
-
-        void            _checkHeaders(char c);
-        
+      
 
     public :
 
@@ -39,7 +35,6 @@ class CgiSocketFromCgi : public Socket
         virtual ~CgiSocketFromCgi();	
 
         void            readFromCgi();
-        bool            getTimeout();
 
         int             &getState();
         std::string     getBuffer();

@@ -1,28 +1,5 @@
 #include "cgiSocketFromCgi.hpp"
 
-
-// void        CgiSocketFromCgi::_checkHeaders(char c)
-// {
-//     if ((c == '\r') && ((_reader % 2) == 0))
-//         _reader++;
-//     else if ((c == '\n') && ((_reader % 2) == 1))
-//         _reader++;
-//     else
-//         _reader = 0;
-// }
-
-// bool     CgiSocketFromCgi::getTimeout()
-// {
-//     struct timespec now;
-//     double          timeSinceStart = 0;
-    
-//     clock_gettime(CLOCK_MONOTONIC, &now);
-//     timeSinceStart += (now.tv_sec - _startTime.tv_sec) * 1e9;
-//     timeSinceStart += (now.tv_nsec - _startTime.tv_nsec) * 1e-9;
-//     std::cerr << "timeSinceStart = " << timeSinceStart << "\n";
-//     return timeSinceStart > 2;
-// }
-
 /*
 ** read the cgi response and parse et the same time
 ** because the cgi can send in one time or multiple
@@ -74,10 +51,8 @@ CgiSocketFromCgi::CgiSocketFromCgi(int fd[2], ClientSocket* client, Request requ
         _headers(),
         _client(client),
         _request(request),
-        _fdUseless(fd[1]),
-        _contentLengthPresent(false)
+        _fdUseless(fd[1])
 {
-    clock_gettime(CLOCK_MONOTONIC, &_startTime);
     _type = cgiFrom;
     _pollFd.fd = fd[0];
     _pollFd.events = POLLIN;
