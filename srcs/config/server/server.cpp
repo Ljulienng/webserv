@@ -3,54 +3,6 @@
 #include "str.hpp"
 #include "file.hpp"
 
-// // Basic socket initialization following the basic steps
-// void 	Server::start()
-// {
-// 	createSocket();
-// 	setNonBlock();
-// 	setSocketOptions();
-// 	std::cout << "ip = " << _ip << "   port = " << _port << "\n";
-// 	_socket.setAddr(AF_INET, _ip.c_str(), _port);
-// 	bindSocket();
-// 	listenSocket();
-// }
-
-// void	Server::createSocket()
-// {
-// 	_socket.setFd(socket(AF_INET, SOCK_STREAM, 0));
-// 	if (_socket.getPollFd().fd < 0)
-// 		throw(std::string("Error: Failed to create socket"));
-// }
-
-// void	Server::setNonBlock()
-// {
-// 	if (fcntl(_socket.getPollFd().fd, F_SETFL, O_NONBLOCK) < 0)
-// 		throw(std::string("Error: Failed to set non blocking connection"));
-// }
-
-// /*
-// ** set that the address is a reusable local address
-// ** throw if the options can't be set to the socket.
-// */
-// void 	Server::setSocketOptions()
-// {
-// 	int option = 1;
-// 	if (setsockopt(_socket.getPollFd().fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) != 0)
-// 		throw(std::string("Error: to set socket options"));
-// }
-
-// void	Server::bindSocket()
-// {
-// 	if (bind(_socket.getPollFd().fd, (struct sockaddr *)&_socket.getAddr(), sizeof(_socket.getAddr())) < 0)
-// 		throw(std::string("Error: Failed to bind"));
-// }
-
-// void	Server::listenSocket()
-// {
-// 	if (listen(_socket.getPollFd().fd, MAX_CONNECTIONS) < 0) // Maximum can be higher, to be tested
-// 		throw(std::string("Error: Failed to listen on socket"));
-// }
-
 void	Server::addLocation(Location location)
 {
 	_locations.push_back(location);
@@ -224,7 +176,7 @@ void	Server::setCgi(std::string cgi)
 	File cgiExec(_cgi.second);
 	
 	if (!cgiExec.isRegularFile())
-		throw (std::string("Error: cgi executable is not a regular file"));
+		throw (std::string("Error : cgi executable is not a regular file"));
 }
 
 /* GETTERS */

@@ -53,4 +53,10 @@ fclean: clean
 
 re:	fclean all
 
-.PHONY:	all clean fclean re
+docker-build:	all
+				docker build -t webserver -f Dockerfile .
+
+docker-run: 	docker-build
+				docker run --rm -it --network host webserver
+
+.PHONY:	all clean fclean re docker-build docker-run

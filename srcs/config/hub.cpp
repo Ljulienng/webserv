@@ -81,8 +81,8 @@ void	Hub::process()
 		_closeAllConnections();
 		return ;
 	}
-	static int reventCgiFrom = 0;
-	for (size_t i = 0; i < _nfds; i++)
+	static size_t reventCgiFrom = 0;
+	for (size_t i = 0; i < _nfds; i++) 
 	{
 		// only way found to detect end of cgi POLLIN to send response to the client
 		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && reventCgiFrom > 0)
@@ -180,8 +180,8 @@ void		Hub::_receiveRequest(size_t i)
 		}
 	}
 	else //bytes = 0;
-	{
-		std::cerr << "Need to close connection bytes read = 0\n";
+	{	std::cerr << "Need to close connection bytes read = 0\n";
+		std::cerr << "type : " << _arr[i]->getType() << "\n";
 		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
 	}
 }
@@ -202,10 +202,14 @@ static bool _needCgi(Request request, t_configMatch configMatch)
 **  - delete the request
 */
 void		Hub::_prepareResponse(size_t i)
-{
+{	
+	// ne pas acceder si on a supprimer le client dans receive Request !
+	std::cerr << "_clientSockets.size() : " << _clientSockets.size() << "\n";
+	std::cerr << "type : " << _arr[i]->getType() << "\n";
 	ClientSocket* 			client = _clientSockets[_arr[i]->_index];
 	std::list<Request>		&requests = client->getRequests();
 
+	std::cerr << "invalid read 1 \n";
 	while (requests.empty() == false)
 	{
 		std::list<Request>::iterator it = client->getRequests().begin();
@@ -233,7 +237,7 @@ void		Hub::_prepareResponse(size_t i)
 			requests.erase(it++);
 		}
 	}
-
+	std::cerr << "invalid read 2 \n";
 	// the socket is now ready to write in addition to reading because we have added a response
 	if (client->getResponses().empty() == false)
 		client->getPollFd().events = POLLIN | POLLOUT;

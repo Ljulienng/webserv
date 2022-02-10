@@ -8,6 +8,7 @@ void 		Configuration::parseConfigPath(std::string configFile)
 
 	if (_configFile.find(".conf") != _configFile.size() - 5 || _configFile.size() < 6)
 		throw std::string("Error : the configuration file must be a <something.conf> file");
+	
 	if (file.isRegularFile() == false)
 		throw std::string("Error : the configuration file is not a regular file");
 	if (file.canReadFile() == false)
