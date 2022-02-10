@@ -79,9 +79,18 @@ void	Hub::process()
 		_closeAllConnections();
 		return ;
 	}
+	static int reventCgiFrom = 0;
 	for (size_t i = 0; i < _nfds; i++)
 	{
-		if (_fds[i].revents == 0)
+		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && reventCgiFrom > 0)
+		{
+			_prepareCgiResponse(_arr[i]->_index);
+			//close both connections at the same time
+			_closeConnection(_arr[i]->_index, _arr[i]->getType());		
+			_closeConnection(_arr[i]->_index, Socket::cgiTo);
+			reventCgiFrom = 0;
+		}
+		else if (_fds[i].revents == 0)
 			continue;
 		else if ((_fds[i].revents & POLLIN) == POLLIN)
 		{
@@ -94,24 +103,25 @@ void	Hub::process()
 			}
 			else if (_arr[i]->getType() == Socket::cgiFrom)
 			{
+				std::cerr << "reventPollin cgiFrom = " << reventCgiFrom++ << "\n";
 				_cgiSocketsFromCgi[_arr[i]->_index]->readFromCgi();
-				if (_cgiSocketsFromCgi[_arr[i]->_index]->getState() == DONE)
-				{
-					_prepareCgiResponse(_arr[i]->_index);
-					//close both connections at the same time
-					_closeConnection(_arr[i]->_index, _arr[i]->getType());		
-					_closeConnection(_arr[i]->_index, Socket::cgiTo);	
-				}
+				// if (_cgiSocketsFromCgi[_arr[i]->_index]->getState() == DONE)
+				// {
+				// 	_prepareCgiResponse(_arr[i]->_index);
+				// 	//close both connections at the same time
+				// 	_closeConnection(_arr[i]->_index, _arr[i]->getType());		
+				// 	_closeConnection(_arr[i]->_index, Socket::cgiTo);
+				// }
 			}
 		}
-		// else if (_arr[i]->getType() == Socket::cgiFrom)
+		// else if (_arr[i]->getType() == Socket::cgiFrom) // si plus POLLIN detecte
 		// {
-		// 	if (_cgiSocketsFromCgi[_arr[i]->_index]->getTimeout())
-		// 	{
+		// 	// if (_cgiSocketsFromCgi[_arr[i]->_index]->getTimeout())
+		// 	// {
 		// 		_prepareCgiResponse(_arr[i]->_index);
 		// 		_closeConnection(_arr[i]->_index, _arr[i]->getType());		
 		// 		_closeConnection(_arr[i]->_index, Socket::cgiTo);
-		// 	}
+		// 	// }
 		// }
 		else if ((_fds[i].revents & POLLOUT) == POLLOUT)
 		{
