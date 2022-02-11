@@ -103,8 +103,6 @@ std::vector<unsigned char>	&File::getFileContent()
 struct stat		&File::getfileStat()
 { return _fileStat; }
 
-
-// A SUPPRIMER NON UTILISE (! read pas dans poll())
 void	File::readFile()
 {
 	char	buf[BUF_SIZE + 1] = {0};

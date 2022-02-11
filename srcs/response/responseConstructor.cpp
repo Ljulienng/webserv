@@ -153,8 +153,8 @@ Response    cgiResponse(std::string cgiResponse, Response &response, t_configMat
         std::cerr << "redirection\n";
         std::cerr << "status code = " << response.getHttpStatus().getCode() << "\n";
         std::cerr << "Location = " << response.getHeader("Location") << "\n";
-        treatRelativePath(response.getHeader("Location"));
-        return redirectionResponse(response, std::make_pair<int, std::string>(response.getHttpStatus().getCode(), "http://127.0.0.1:8080/wordpress/wp-admin/install.php" /*response.getHeader("Location")*/));
+        // treatRelativePath(response.getHeader("Location"));
+        return redirectionResponse(response, std::make_pair<int, std::string>(response.getHttpStatus().getCode(), /*"http://127.0.0.1:8080/wordpress/wp-admin/install.php"*/ treatRelativePath(response.getHeader("Location"))));
     }
     std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
     response.setContent(body, response.getHeader("Content-Type"));
