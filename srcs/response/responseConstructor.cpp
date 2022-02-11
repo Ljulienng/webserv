@@ -61,6 +61,14 @@ Response    redirectionResponse(Response &response, std::pair<int, std::string> 
     return response;
 }
 
+/*
+** transform http://./wordpress/wp-admin/ in htpp://127.0.0.1:8080/wordpress/wp-admin/
+*/
+std::string     treatRelativePath(std::string path)
+{
+    std::string newPath;
+}
+
 Response    cgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch)
 {
     size_t i = 0; 
