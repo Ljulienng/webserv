@@ -52,6 +52,14 @@ Response    indexResponse(Response &response,std::string path, std::string index
     return response;
 }
 
+Response    redirectionResponse(Response &response, std::pair<int, std::string> redirection)
+{
+    response.setStatus(redirection.first);
+    response.setHeader("Location", redirection.second);
+    response.setContent(html::buildRedirectionPage(redirection), "text/html");
+
+    return response;
+}
 
 Response    cgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch)
 {
@@ -68,6 +76,10 @@ Response    cgiResponse(std::string cgiResponse, Response &response, t_configMat
             int code = strtol(cgiResponse.substr(i + 8, 3).c_str(), NULL, 10);
             code == 0 ? response.setStatus(OK) : response.setStatus(code);
         }
+        if (cgiResponse.find("Location:", i) == i)
+        {
+            response.setHeader("Location", cgiResponse.substr(i + 10, cgiResponse.find("\r\n", i) - i - 10));
+        }
         i += cgiResponse.find("\r\n", i) - i + 2;
         if (cgiResponse.find("\r\n", i) == i)
         {
@@ -75,21 +87,17 @@ Response    cgiResponse(std::string cgiResponse, Response &response, t_configMat
             break ;
         }
     }
-    
+    std::cerr << "status code = " << response.getHttpStatus().getCode() << "\n";
+    std::cerr << "Location = " << response.getHeader("Location") << "\n";
     if (response.getHttpStatus().getCode() >= 400)
         return errorResponse(response, configMatch, response.getHttpStatus().getCode());
-    
+    if (response.getHttpStatus().getCode() >= 300)
+    {
+        std::cerr << "redirection\n";
+        return redirectionResponse(response, std::make_pair<int, std::string>(response.getHttpStatus().getCode(), "http://127.0.0.1:8080/wordpress/wp-admin/install.php" /*response.getHeader("Location")*/));
+    }
     std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
     response.setContent(body, response.getHeader("Content-Type"));
-
-    return response;
-}
-
-Response    redirectionResponse(Response &response, std::pair<int, std::string> redirection)
-{
-    response.setStatus(redirection.first);
-    response.setHeader("Location", redirection.second);
-    response.setContent(html::buildRedirectionPage(redirection), "text/html");
 
     return response;
 }
