@@ -17,6 +17,8 @@ class ClientSocket;
 class ListeningSocket;
 class Server;
 
+#define MAX_CGI_RUNNING 100
+
 /*
 ** general class to handle the program
 */

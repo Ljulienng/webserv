@@ -72,24 +72,24 @@ void	Hub::_storeFdToPoll()
 
 void	Hub::process()
 {
-	_storeFdToPoll();
+	_storeFdToPoll(); 
 	int pollRet = poll(_fds, _nfds, 1000); // call poll and wait for an event
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
 	{	
 		_closeAllConnections();
 		return ;
 	}
-	static size_t reventCgiFrom = 0;
+	static size_t cgiCount[MAX_CGI_RUNNING] = {0};
 	for (size_t i = 0; i < _nfds; i++) 
 	{
 		// only way found to detect end of cgi POLLIN to send response to the client
-		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && reventCgiFrom > 0)
+		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && cgiCount[i] > 0)
 		{
 			_prepareCgiResponse(_arr[i]->_index);
 			//close both connections at the same time
 			_closeConnection(_arr[i]->_index, _arr[i]->getType());		
 			_closeConnection(_arr[i]->_index, Socket::cgiTo);
-			reventCgiFrom = 0;
+			cgiCount[i] = 0;
 		}
 		else if (_fds[i].revents == 0)
 			continue;
@@ -104,7 +104,7 @@ void	Hub::process()
 			}
 			else if (_arr[i]->getType() == Socket::cgiFrom)
 			{
-				reventCgiFrom++;
+				cgiCount[i]++;
 				_cgiSocketsFromCgi[_arr[i]->_index]->readFromCgi();
 			}
 		}
