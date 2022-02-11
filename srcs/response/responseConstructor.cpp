@@ -61,12 +61,62 @@ Response    redirectionResponse(Response &response, std::pair<int, std::string> 
     return response;
 }
 
+void        removeLastBlock(std::string& path)
+{
+    std::string::reverse_iterator rit = path.rbegin();
+    for ( ; rit != path.rend(); rit++)
+    {
+        if (*rit == '/')
+        {
+            if (rit == path.rbegin())
+            {
+                continue ;
+            }
+            else
+            {
+                path.erase(rit.base(), path.end());
+                return;
+            }
+            
+        }
+    }
+    path.clear();
+}
+
 /*
 ** transform http://./wordpress/wp-admin/ in htpp://127.0.0.1:8080/wordpress/wp-admin/
 */
 std::string     treatRelativePath(std::string path)
 {
     std::string newPath;
+    std::string block;
+    
+    std::cerr << "[treatRelativePath] path = " << path << "\n";
+    if (path.substr(0, 7) == "http://")
+        if (path[7] == '.')
+            newPath += "http://127.0.0.1:8080/";
+    for (size_t i = 7; i < path.size(); i++)
+    {
+        block += path[i];
+        if (path[i] == '/' || i == (path.size() - 1))
+        {
+            if (block == "./" || block == ".")
+            {
+                block.clear();
+                continue;
+            }
+            // else if (block == "../" || block == "..")
+            // {   
+            //     removeLastBlock(newPath);
+            // }
+            else 
+                newPath += block;
+            block.clear();
+        }
+        
+    }
+    std::cerr << "[treatRelativePath] newPath = " << newPath << "\n";
+    return newPath;
 }
 
 Response    cgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch)
@@ -95,13 +145,15 @@ Response    cgiResponse(std::string cgiResponse, Response &response, t_configMat
             break ;
         }
     }
-    std::cerr << "status code = " << response.getHttpStatus().getCode() << "\n";
-    std::cerr << "Location = " << response.getHeader("Location") << "\n";
+    
     if (response.getHttpStatus().getCode() >= 400)
         return errorResponse(response, configMatch, response.getHttpStatus().getCode());
     if (response.getHttpStatus().getCode() >= 300)
     {
         std::cerr << "redirection\n";
+        std::cerr << "status code = " << response.getHttpStatus().getCode() << "\n";
+        std::cerr << "Location = " << response.getHeader("Location") << "\n";
+        treatRelativePath(response.getHeader("Location"));
         return redirectionResponse(response, std::make_pair<int, std::string>(response.getHttpStatus().getCode(), "http://127.0.0.1:8080/wordpress/wp-admin/install.php" /*response.getHeader("Location")*/));
     }
     std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
