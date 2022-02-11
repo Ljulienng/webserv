@@ -96,7 +96,7 @@ Response    redirectionResponse(Response &response, std::pair<int, std::string> 
 
 Response    getMethodResponse(Response &response, t_configMatch &configMatch)
 {
-    File        path(configMatch.path);
+    File        path(configMatch.pathTranslated);
 
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "GET"))
         return errorResponse(response, configMatch, METHOD_NOT_ALLOWED);
@@ -104,10 +104,10 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     if (path.isRegularFile())
     {
         std::cerr << "File -> ok regular file\n";
-        Mime    extension(getExtension(configMatch.path));
+        Mime    extension(getExtension(configMatch.pathTranslated));
         
         response.setStatus(OK);
-        if (getExtension(configMatch.path) == "php") // display content file if no cgi
+        if (getExtension(configMatch.pathTranslated) == "php") // display content file if no cgi
             response.setContent(path.getFileContent(), "text/plain");
         else
             response.setContent(path.getFileContent(), extension.getMime());
@@ -116,13 +116,14 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     else if (path.isDirectory() && configMatch.location.getAutoindex())
     {
         std::cerr << "Directory -> autoindex\n";
-        return autoIndexResponse(response, configMatch.path);
+        return autoIndexResponse(response, configMatch.pathTranslated);
     }
-    else if (path.isDirectory() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
-    {
-        std::cerr << "Directory -> index\n";     
-        return indexResponse(response, configMatch.path, configMatch.index);
-    }
+    // normalement traite en amont en recuperant la pathTranslated
+    // else if (path.isDirectory() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
+    // {
+    //     std::cerr << "Directory -> index\n";     
+    //     return indexResponse(response, configMatch.pathTranslated, configMatch.index);
+    // }
     else
     {
         std::cerr << "Error not found\n";
@@ -235,9 +236,9 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
 
 Response    postMethodResponse(Response &response, Request &request, t_configMatch &configMatch)
 {
-    File            fileToPost(configMatch.path);
-    size_t          lastSlash = configMatch.path.find_last_of('/');
-    std::string     filename = std::string(configMatch.path.begin() + lastSlash, configMatch.path.end());
+    File            fileToPost(configMatch.pathTranslated);
+    size_t          lastSlash = configMatch.pathTranslated.find_last_of('/');
+    std::string     filename = std::string(configMatch.pathTranslated.begin() + lastSlash, configMatch.pathTranslated.end());
     std::string     pathToUpload = configMatch.root + configMatch.server.getUploadPath() + filename;
 
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "POST"))
@@ -268,14 +269,14 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "DELETE"))
         return errorResponse(response, configMatch, METHOD_NOT_ALLOWED);
     
-    File    fileToDelete(configMatch.path);
+    File    fileToDelete(configMatch.pathTranslated);
 
     if (fileToDelete.exists())
     {
-       if (remove(configMatch.path.c_str()) == 0)
+       if (remove(configMatch.pathTranslated.c_str()) == 0)
         {
             response.setStatus(OK);
-            response.setContent(html::buildPage("File " + configMatch.path + " successfully deleted from server"), "text/html");
+            response.setContent(html::buildPage("File " + configMatch.pathTranslated + " successfully deleted from server"), "text/html");
             return response;
         }
         return errorResponse(response, configMatch, NO_CONTENT);
@@ -297,9 +298,9 @@ Response    constructResponse(Request &request, std::string serverName)
     // first need to get the server and location to use for this response (context)
     t_configMatch   configMatch = getConfigMatch(request, serverName);
     Response        response;
-    File            path(configMatch.path);
+    File            path(configMatch.pathTranslated);
 
-    if (path.isDirectory() && configMatch.path[configMatch.path.size() - 1] != '/')
+    if (path.isDirectory() && configMatch.pathTranslated[configMatch.pathTranslated.size() - 1] != '/')
         return redirectionResponse(response, std::pair<int, std::string>(MOVED_PERMANENTLY, request.getPath() + "/"));
     else if (configMatch.location.getRedirection().first > 0 && !configMatch.location.getRedirection().second.empty())
         return redirectionResponse(response, configMatch.location.getRedirection());

@@ -136,7 +136,9 @@ void		Hub::_acceptIncomingConnections(size_t i)
 	while (1)
 	{
 		if (_clientSockets.size() == MAX_CONNECTIONS)
-			_closeConnection(0, _arr[i]->getType()); // disconnect the first client
+		{std::cerr << "close connection of : " << _arr[_listenSockets.size()]->getType() << "\n";
+			_closeConnection(0, Socket::client); // disconnect the first client
+		}
 		int acceptRet = accept(_arr[i]->getPollFd().fd, NULL, NULL);
 
 		if (acceptRet == -1) // no connection is present
@@ -172,6 +174,7 @@ bool		Hub::_receiveRequest(size_t i)
 		client->getBuffer().append(buffer.begin(), buffer.end());
 		if (bytes < MAX_BUF_LEN)
 		{
+			// std::cerr << "request : " << client->getBuffer() << "\n";
 			client->addRequest();
 			log::logEvent("Received a new request", client->getPollFd().fd);
 		}
@@ -186,9 +189,23 @@ bool		Hub::_receiveRequest(size_t i)
 
 static bool _needCgi(Request request, t_configMatch configMatch)
 {
-	return (configMatch.server.getCgi().first == ".php"
-			&& request.getPath().find(configMatch.server.getCgi().first) != std::string::npos
-			&& (request.getMethod() == "GET" || request.getMethod() == "POST"));
+	File        path(configMatch.pathTranslated);
+
+	// GET/POST  +   cgi  +  file.php   
+	if (configMatch.server.getCgi().first == ".php"
+			// && request.getPath().find(configMatch.server.getCgi().first) != std::string::npos
+			&& configMatch.pathTranslated.find(configMatch.server.getCgi().first) != std::string::npos
+			&& (request.getMethod() == "GET" || request.getMethod() == "POST"))
+		return true;
+	// GET  +  directory   +   index not empty   +   index = file.php  + index in directory
+	// else if (configMatch.server.getCgi().first == ".php"
+	// 		&& request.getMethod() == "GET"
+	// 		&& path.isDirectory()
+	// 		&& configMatch.index.empty() == false
+	// 		&& path.fileIsInDirectory(configMatch.index))
+	// 	if (configMatch.index.find(configMatch.server.getCgi().first) != std::string::npos)
+	// 		return true;
+	return false;
 }
 /*
 ** prepare response :
@@ -223,6 +240,7 @@ void		Hub::_prepareResponse(size_t i)
 			else
 			{
 				Response 	response;
+				// std::cerr << "request uri : " << (it)->getUri().getPath() << "\n";
 				response = constructResponse(*it, client->getServerName());
 				client->getResponses().push_back(response);
 			}

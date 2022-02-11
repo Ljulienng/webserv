@@ -6,7 +6,7 @@
 #include "response.hpp"
 #include "clientSocket.hpp"
 
-#define CGI_BUF_LEN 50
+#define CGI_BUF_LEN 256
 
 enum state
 {

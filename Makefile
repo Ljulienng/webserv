@@ -51,12 +51,10 @@ fclean: clean
 	@$(RM) -f $(NAME)
 	@echo "Removed\t\t$(NAME)"
 
-re:	fclean all
+re:	fclean all		
 
-docker-build:	all
-				docker build -t webserver -f Dockerfile .
+docker: 	all
+			docker build -t webserver -f Dockerfile .
+			docker run --rm -it -p 8080:8080 webserver bash
 
-docker-run: 	docker-build
-				docker run --rm -it --network host webserver
-
-.PHONY:	all clean fclean re docker-build docker-run
+.PHONY:	all clean fclean re docker

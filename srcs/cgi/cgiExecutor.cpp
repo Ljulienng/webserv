@@ -11,7 +11,7 @@ void	CgiExecutor::initHeaders()
 	_env["PATH_INFO"] = newPath;
 	_env["PATH_TRANSLATED"] = newPath;
 	// _env["PATH_INFO"] = "./test/form_post.php";
-	// _env["PATH_TRANSLATED"] = "./test/form_post.php";
+	_env["PATH_TRANSLATED"] = _configMatch.pathTranslated; // add to match changes of root in location block for example
 	_env["QUERY_STRING"] = _request->getUri().getQuery();
 	_env["REMOTE_ADDR"] = _request->getUri().getPort();
 	_env["REMOTE_HOST"] = _request->getHeader("Hostname");

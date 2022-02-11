@@ -13,14 +13,14 @@
 
 typedef struct  s_configMatch
 {
-    Server      server;     // which server bloc matches to the request ?
-    Location    location;   // which location bloc matches to the request ?
-    std::string root;       // which root directory to use [server or location] ?
-    std::string index;      // which index to use [server or location] ?
-    std::string path;       // the path to search file in the server
+    Server      server;             // which server bloc matches to the request ?
+    Location    location;           // which location bloc matches to the request ?
+    std::string root;               // which root directory to use [server or location] ?
+    std::string index;              // which index to use [server or location] ?
+    std::string pathTranslated;     // path to search file/dir in the server
 }               t_configMatch;
 
-std::string     getServerPath(std::string uri, t_configMatch &configMatch);
+std::string     getPathTranslated(std::string uri, t_configMatch &configMatch);
 t_configMatch	getConfigMatch(Request &request, std::string serverName);
 
 #endif

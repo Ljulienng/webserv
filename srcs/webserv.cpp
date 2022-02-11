@@ -28,7 +28,7 @@ int     main(int ac, char **argv)
         }
         catch(std::string error)
         {
-			std::cerr << RED << error << std::endl;
+			std::cerr << RED << error << RESET << std::endl;
         }
     }
     else
