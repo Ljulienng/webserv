@@ -67,7 +67,7 @@ std::list<std::string>		File::buildFilesList()
 			files.push_back(diread->d_name);
 	closedir(dir);
 
-	files.sort(cmp_by_filename);
+	// files.sort(cmp_by_filename);
 	return files;
 }
 
@@ -175,5 +175,5 @@ std::string     getExtension(std::string filename)
     return (filename.substr(index, std::string::npos));
 }
 
-bool			cmp_by_filename(const std::string &a, const std::string &b)
-{ return (a < b); }
+// bool			cmp_by_filename(const std::string &a, const std::string &b)
+// { return (a < b); }
