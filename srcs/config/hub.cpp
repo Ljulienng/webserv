@@ -139,6 +139,8 @@ void		Hub::_receiveRequest(size_t index)
 		if (bytes < MAX_BUF_LEN)
 		{
 			clients[clientIndex].addRequest();
+			if (clients[clientIndex].getRequests().back().getBody().size() > servers[index - servers.size()].getMaxBodySize())
+				clients[clientIndex].getRequests().back().getHttpStatus().setStatus(413);
 			log::logEvent("Received a new request", clients[clientIndex].getFd());
 		}
 	}
