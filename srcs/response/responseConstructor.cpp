@@ -187,11 +187,11 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
         return autoIndexResponse(response, configMatch.pathTranslated);
     }
     // normalement traite en amont en recuperant la pathTranslated
-    // else if (path.isDirectory() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
-    // {
-    //     std::cerr << "Directory -> index\n";     
-    //     return indexResponse(response, configMatch.pathTranslated, configMatch.index);
-    // }
+    else if (path.isDirectory() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
+    {
+        std::cerr << "Directory -> index\n";     
+        return indexResponse(response, configMatch.pathTranslated, configMatch.index);
+    }
     else
     {
         std::cerr << "Error not found\n";
@@ -290,7 +290,7 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
 	while (it != parts.end())
     {
         std::string filename = it->getFilename();
-        if (filename.empty())
+        if (filename.empty()) 
             return errorResponse(response, configMatch, BAD_REQUEST);
         appendToFile(configMatch.root + configMatch.server.getUploadPath() + "/" + filename, reinterpret_cast<char*>(it->content), it->length);
         ++it;

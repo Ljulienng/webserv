@@ -22,7 +22,7 @@ std::string     getPathTranslated(std::string uri, t_configMatch &configMatch)
         path.insert(0, configMatch.root);
     }
     
-    // add index file if we have one and if no autoindex directive
+    // add index file if we have one and if no autoindex directive 
     if (configMatch.location.getAutoindex() == false && configMatch.location.getIndex().empty() == false)
         path.insert(path.size(), configMatch.location.getIndex());
 

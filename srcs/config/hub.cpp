@@ -171,7 +171,7 @@ bool		Hub::_receiveRequest(size_t i)
 	{
 		client->getBuffer().append(buffer.begin(), buffer.end());
 		if (bytes < MAX_BUF_LEN)
-		{
+		{	//std::cerr << "request :\n" << client->getBuffer() << "\n";
 			client->addRequest();
 			log::logEvent("Received a new request", client->getPollFd().fd);
 		}
