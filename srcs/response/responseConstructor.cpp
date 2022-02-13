@@ -186,12 +186,12 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
         std::cerr << "Directory -> autoindex\n";
         return autoIndexResponse(response, configMatch.pathTranslated);
     }
-    // normalement traite en amont en recuperant la pathTranslated
-    else if (path.isDirectory() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
-    {
-        std::cerr << "Directory -> index\n";     
-        return indexResponse(response, configMatch.pathTranslated, configMatch.index);
-    }
+    // a traiter en amont en recuperant la pathTranslated car cgi a executer si .php
+    // else if (path.isDirectory() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
+    // {
+    //     std::cerr << "Directory -> index\n";     
+    //     return indexResponse(response, configMatch.pathTranslated, configMatch.index);
+    // }
     else
     {
         std::cerr << "Error not found\n";

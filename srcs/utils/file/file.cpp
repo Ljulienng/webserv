@@ -105,25 +105,35 @@ struct stat		&File::getfileStat()
 
 void	File::readFile()
 {
-	char	buf[BUF_SIZE + 1] = {0};
-	int 	fd;
-	size_t	i;
-	size_t	ret;
+	// char	buf[BUF_SIZE + 1] = {0};
+	// int 	fd;
+	// size_t	i;
+	// size_t	ret;
 	
-	fd = open(_filePath.c_str(), O_RDONLY);
-	if (fd < 0)
-		return ;
-	while ((ret = read(fd, buf, BUF_SIZE)) > 0)
+	// fd = open(_filePath.c_str(), O_RDONLY);
+	// if (fd < 0)
+	// 	return ;
+	// while ((ret = read(fd, buf, BUF_SIZE)) > 0)
+	// {
+	// 	for (size_t j = 0; j < ret; ++j)
+	// 		_fileContent.push_back(buf[j]);
+	// 	i = 0;
+	// 	while (i < BUF_SIZE)
+	// 		buf[i++] = 0;
+	// }
+	// if (ret < 0)
+	// 	return ;
+	// close(fd);
+
+	std::ifstream 	file;
+	file.open(_filePath.c_str(), std::ios::binary);
+	if (file.is_open())
 	{
-		for (size_t j = 0; j < ret; ++j)
-			_fileContent.push_back(buf[j]);
-		i = 0;
-		while (i < BUF_SIZE)
-			buf[i++] = 0;
+		while (file.good())
+			_fileContent.push_back(file.get());
+		_fileContent.pop_back(); // erase only the last char (don't ask why ...)
+		file.close();
 	}
-	if (ret < 0)
-		return ;
-	close(fd);
 }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
