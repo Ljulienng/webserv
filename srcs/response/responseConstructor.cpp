@@ -303,7 +303,7 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
 }
 
 Response    postMethodResponse(Response &response, Request &request, t_configMatch &configMatch)
-{
+{ 
     File            fileToPost(configMatch.pathTranslated);
     size_t          lastSlash = configMatch.pathTranslated.find_last_of('/');
     std::string     filename = std::string(configMatch.pathTranslated.begin() + lastSlash, configMatch.pathTranslated.end());
@@ -362,7 +362,7 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
 **      - error
 */
 Response    constructResponse(Request &request, std::string serverName)
-{
+{  std::cerr << "method = " << request.getMethod() << "\n";
     // first need to get the server and location to use for this response (context)
     t_configMatch   configMatch = getConfigMatch(request, serverName);
     Response        response;
