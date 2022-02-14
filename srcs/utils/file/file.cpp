@@ -103,7 +103,7 @@ std::vector<unsigned char>	&File::getFileContent()
 struct stat		&File::getfileStat()
 { return _fileStat; }
 
-void	File::readFile()
+void	File::openFile()
 {
 	// char	buf[BUF_SIZE + 1] = {0};
 	// int 	fd;
@@ -148,7 +148,7 @@ File::File(std::string filePath) :
 	_fileStat()
 {	
 	if (isRegularFile())
-		readFile();
+		openFile();
 }
 
 File::File(const File &src)
@@ -172,10 +172,20 @@ File &File::operator=(const File &src)
 /* NON MEMBERS*/
 void 	appendToFile(const std::string &path, const char *content, size_t n)
 {
+	// std::ofstream file;
+	// file.open(path.c_str(), std::ofstream::binary);
+	// file.write(content, n);
+	// file.close();
+
+	(void)n;
+	std::string toAppend(content, 0, n);
 	std::ofstream file;
 	file.open(path.c_str(), std::ofstream::binary);
-	file.write(content, n);
-	file.close();
+	if (file.is_open())
+	{
+		file << toAppend;
+		file.close();
+	}
 }
 
 std::string     getExtension(std::string filename)

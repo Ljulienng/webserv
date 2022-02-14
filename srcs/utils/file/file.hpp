@@ -30,7 +30,7 @@ class File
 		bool						createFile(std::string filename, std::string content);
 		std::list<std::string>		buildFilesList();
 		std::string					findContentType(std::string extension);
-		void						readFile();
+		void						openFile();
 		bool						fileIsInDirectory(std::string filename);
 
 		// GETTERS

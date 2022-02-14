@@ -6,15 +6,7 @@ void            ClientSocket::addRequest()
 {
 	Request newRequest(_buffer);
 	
-	if (newRequest.getRet() == 200)
-		_requests.push_back(newRequest);
-	else
-		std::cerr << "Incorrect Request, error: " << newRequest.getRet() << std::endl;
-	// else
-	// {
-	// 	std::cerr << "buffer = \n" << _buffer;
-	// 	std::cerr << "Incorrect Request: " << newRequest.getRet() << std::endl;
-	// }
+	_requests.push_back(newRequest); 
 	_buffer.clear();
 }
 
