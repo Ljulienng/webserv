@@ -42,9 +42,11 @@ RUN sed -i 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/7.2/cgi/php.ini
 WORKDIR /etc/siege
 RUN sed -i "s/gmethod = HEAD/gmethod = GET/" siegerc && \
 	sed -i "s/limit = 255/limit = 100/" siegerc && \
-	sed -i "s/connection = close/connection = keep-alive/" siegerc
-# RUN cp /etc/siege/siegerc /root/.siege/siege.conf
+	sed -i "s/connection = close/connection = keep-alive/" siegerc && \
+	sed -i "s/concurrent = 25/concurrent = 50/" siegerc
 WORKDIR /
+RUN mv /etc/siege /root/.siege
+RUN mv /root/.siege/siegerc /root/.siege/siege.conf
 
 RUN	apt-get update && apt-get install -y nginx php-fpm php-json php-mbstring php-mysqli php-phar curl
 
