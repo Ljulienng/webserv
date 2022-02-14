@@ -2,6 +2,7 @@
 # define REQUEST_HPP
 
 #include "webserv.hpp"
+#include "httpStatus.hpp"
 #include "uri.hpp"
 #include "str.hpp"
 
@@ -18,6 +19,7 @@ private:
 	std::map<std::string, std::string>			_headers;
 	std::vector<std::pair<std::string, float> >	_acceptedLang; 
 	std::string									_body;
+	HttpStatus                        			_httpStatus;
 	int											_ret;
 
 public: 
@@ -51,6 +53,7 @@ public:
 	std::string                         getHeader(std::string key);
 	std::string							&getBody();
 	Uri									&getUri();
+	HttpStatus							&getHttpStatus();
 	int									getRet();
 
 	/* DEBUG */

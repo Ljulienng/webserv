@@ -249,7 +249,6 @@ int			Request::parse(const std::string &request)
 		std::cerr << "Request is empty" << std::endl;
 		return (400);
 	}
-	// std::cout << request << std::endl;
 	initHeaders();
 	line = request.substr(0, i);
 	// Store the first line to get the Method, Path and Version
@@ -266,6 +265,7 @@ int			Request::parse(const std::string &request)
 		parseChunkedBody(tmp);
 	else
 		parsebody(tmp);
+	_httpStatus.setStatus(_ret);
 	// debug();
 	return (_ret);
 }
@@ -330,6 +330,9 @@ std::string							&Request::getBody()
 Uri									&Request::getUri()
 { return (_uri); }
 
+HttpStatus							&Request::getHttpStatus()
+{ return (_httpStatus); }
+
 int									Request::getRet()
 { return (_ret); }
 
@@ -359,7 +362,7 @@ Request::Request(const std::string &request) :
 }
 
 Request::Request(const Request &obj) :
-	_method(obj._method), _path(obj._path), _uri(obj._uri) , _version(obj._version), _headers(obj._headers), _body(obj._body), _ret(obj._ret)
+	_method(obj._method), _path(obj._path), _uri(obj._uri) , _version(obj._version), _headers(obj._headers), _body(obj._body), _httpStatus(obj._httpStatus), _ret(obj._ret)
 {}
 
 Request::~Request()
@@ -374,6 +377,7 @@ Request			&Request::operator=(const Request &obj)
 	_headers = obj._headers;
 	_acceptedLang = obj._acceptedLang;
 	_body = obj._body;
+	_httpStatus = obj._httpStatus;
 	_ret = obj._ret;
 	return (*this);
 }

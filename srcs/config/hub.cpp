@@ -151,6 +151,16 @@ void		Hub::_acceptIncomingConnections(size_t i)
 	}
 }
 
+size_t	indexServer(ClientSocket client)
+{
+	size_t i = 0;
+	std::vector<Server> servers = Configuration::getInstance().getServers();
+	for ( ; i < servers.size(); i++)
+		if (servers[i].getName() == client.getServerName())
+			return i;
+	return i;
+}
+
 /*
 ** receive and parse the request
 */
@@ -159,6 +169,7 @@ bool		Hub::_receiveRequest(size_t i)
 	int 				bytes = 0;
 	std::vector<char>	buffer(MAX_BUF_LEN);
 	ClientSocket* 		client = _clientSockets[_arr[i]->_index];
+	std::vector<Server> servers = Configuration::getInstance().getServers();
 	bool				close = false;
 
 	bytes = recv(client->getPollFd().fd, &buffer[0], MAX_BUF_LEN, 0);
@@ -171,9 +182,11 @@ bool		Hub::_receiveRequest(size_t i)
 	{
 		client->getBuffer().append(buffer.begin(), buffer.end());
 		if (bytes < MAX_BUF_LEN)
-		{	//std::cerr << "request :\n" << client->getBuffer() << "\n";
-			client->addRequest();
-			log::logEvent("Received a new request", client->getPollFd().fd);
+		{
+			client.addRequest();
+			if (client.getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
+				client.getRequests().back().getHttpStatus().setStatus(413);
+			log::logEvent("Received a new request", clients[clientIndex].getFd());
 		}
 	}
 	else //bytes = 0;
