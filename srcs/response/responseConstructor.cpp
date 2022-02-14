@@ -362,7 +362,7 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
 **      - error
 */
 Response    constructResponse(Request &request, std::string serverName)
-{  std::cerr << "method = " << request.getMethod() << "\n";
+{
     // first need to get the server and location to use for this response (context)
     t_configMatch   configMatch = getConfigMatch(request, serverName);
     Response        response;

@@ -46,6 +46,6 @@ t_configMatch	getConfigMatch(Request &request, std::string serverName)
     configMatch.location.getRoot().empty() ? configMatch.root = configMatch.server.getRoot() : configMatch.root = configMatch.location.getRoot();
     configMatch.location.getIndex().empty() ? configMatch.index = configMatch.server.getIndex() : configMatch.index = configMatch.location.getIndex();
     configMatch.pathTranslated = getPathTranslated(request.getUri().getPath(), configMatch); // transform the uri request to match file in the server
-    std::cerr << "configmatch.pathTranslated = " << configMatch.pathTranslated << "\n";
+    // std::cerr << "configmatch.pathTranslated = " << configMatch.pathTranslated << "\n";
     return configMatch;
 }
