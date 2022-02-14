@@ -141,3 +141,9 @@ HttpStatus &HttpStatus::operator=(const HttpStatus &src)
 	}
 	return (*this);
 }
+
+/* NON MEMBER */
+bool 	isErrorStatus(int status)
+{
+	return status >= 400;
+}

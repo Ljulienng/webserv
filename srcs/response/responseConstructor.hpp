@@ -16,6 +16,7 @@ typedef struct  s_multipart
     std::string     getFilename() const;
 }               t_multipart;
 
+Response    errorResponse(Response &response, t_configMatch  &configMatch, int status);
 Response    cgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch);
 Response    constructResponse(Request &request, std::string serverName);
 

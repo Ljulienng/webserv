@@ -115,5 +115,6 @@ enum Status
 	NETWORK_AUTHENTICATION_REQUIRED         = 511
 };
 
+bool 	isErrorStatus(int status);
 
 #endif

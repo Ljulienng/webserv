@@ -151,7 +151,7 @@ void		Hub::_acceptIncomingConnections(size_t i)
 	}
 }
 
-size_t	indexServer(ClientSocket client)
+static size_t	indexServer(ClientSocket client)
 {
 	size_t i = 0;
 	std::vector<Server> servers = Configuration::getInstance().getServers();
@@ -227,11 +227,15 @@ void		Hub::_prepareResponse(size_t i)
 		std::list<Request>::iterator it = client->getRequests().begin();
 		for (; it != client->getRequests().end(); it++)
 		{
-			// FIRST : need to check if error handled in request
+			t_configMatch 	configMatch = getConfigMatch(*it, client->getServerName());
+			Response 		response;
 			
-			t_configMatch configMatch = getConfigMatch(*it, client->getServerName());
-			
-			if (_needCgi(*it, configMatch))
+			if (isErrorStatus(it->getHttpStatus().getCode()))
+			{
+				response = errorResponse(response, configMatch, it->getHttpStatus().getCode());
+				client->getResponses().push_back(response);
+			}
+			else if (_needCgi(*it, configMatch))
 			{	
 				CgiExecutor cgi(*it, client, configMatch); // copie the request to have an empty pool of request and leave the loop
 				cgi.execCgi(); // execute cgi and create 2 cgi sockets (in and out)
@@ -240,8 +244,6 @@ void		Hub::_prepareResponse(size_t i)
 			}
 			else
 			{
-				Response 	response;
-				// std::cerr << "request uri : " << (it)->getUri().getPath() << "\n";
 				response = constructResponse(*it, client->getServerName());
 				client->getResponses().push_back(response);
 			}
