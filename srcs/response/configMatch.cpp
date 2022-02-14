@@ -6,7 +6,7 @@
 std::string     getPathTranslated(std::string uri, t_configMatch &configMatch)
 {
     std::string path = uri;
-   
+
     // change root if the request match a location block with a root directive
     if (configMatch.location.getPath() == uri && configMatch.location.getRoot().empty() == false)
     {

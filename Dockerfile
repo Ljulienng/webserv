@@ -43,6 +43,7 @@ WORKDIR /etc/siege
 RUN sed -i "s/gmethod = HEAD/gmethod = GET/" siegerc && \
 	sed -i "s/limit = 255/limit = 100/" siegerc && \
 	sed -i "s/connection = close/connection = keep-alive/" siegerc
+# RUN cp /etc/siege/siegerc /root/.siege/siege.conf
 WORKDIR /
 
 RUN	apt-get update && apt-get install -y nginx php-fpm php-json php-mbstring php-mysqli php-phar curl

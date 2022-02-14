@@ -91,7 +91,6 @@ std::string     treatRelativePath(std::string path)
     std::string newPath;
     std::string block;
     
-    std::cerr << "[treatRelativePath] path = " << path << "\n";
     if (path.substr(0, 7) == "http://")
         if (path[7] == '.')
             newPath += "http://127.0.0.1:8080/";
@@ -115,7 +114,6 @@ std::string     treatRelativePath(std::string path)
         }
         
     }
-    std::cerr << "[treatRelativePath] newPath = " << newPath << "\n";
     return newPath;
 }
 
@@ -150,11 +148,10 @@ Response    cgiResponse(std::string cgiResponse, Response &response, t_configMat
         return errorResponse(response, configMatch, response.getHttpStatus().getCode());
     if (response.getHttpStatus().getCode() >= 300)
     {
-        std::cerr << "redirection\n";
-        std::cerr << "status code = " << response.getHttpStatus().getCode() << "\n";
-        std::cerr << "Location = " << response.getHeader("Location") << "\n";
-        // treatRelativePath(response.getHeader("Location"));
-        return redirectionResponse(response, std::make_pair<int, std::string>(response.getHttpStatus().getCode(), /*"http://127.0.0.1:8080/wordpress/wp-admin/install.php"*/ treatRelativePath(response.getHeader("Location"))));
+        // std::cerr << "redirection\n";
+        // std::cerr << "status code = " << response.getHttpStatus().getCode() << "\n";
+        // std::cerr << "Location = " << response.getHeader("Location") << "\n";
+        return redirectionResponse(response, std::make_pair<int, std::string>(response.getHttpStatus().getCode(), treatRelativePath(response.getHeader("Location"))));
     }
     std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
     response.setContent(body, response.getHeader("Content-Type"));
@@ -171,7 +168,7 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
 
     if (path.isRegularFile())
     {
-        std::cerr << "File -> ok regular file\n";
+        // std::cerr << "File -> ok regular file\n";
         Mime    extension(getExtension(configMatch.pathTranslated));
         
         response.setStatus(OK);
@@ -183,7 +180,7 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     }
     else if (path.isDirectory() && configMatch.location.getAutoindex())
     {
-        std::cerr << "Directory -> autoindex\n";
+        // std::cerr << "Directory -> autoindex\n";
         return autoIndexResponse(response, configMatch.pathTranslated);
     }
     // a traiter en amont en recuperant la pathTranslated car cgi a executer si .php
@@ -194,7 +191,7 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     // }
     else
     {
-        std::cerr << "Error not found\n";
+        // std::cerr << "Error not found\n";
         return errorResponse(response, configMatch, NOT_FOUND);
     }
 }

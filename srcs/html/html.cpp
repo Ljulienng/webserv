@@ -23,7 +23,7 @@ std::vector<unsigned char>     buildPage(std::string message)
 
 std::vector<unsigned char>     buildAutoIndexPage(std::string path)
 {
-    File                                dir(path);
+    File                                dir(path); 
     std::list<std::string>              files = dir.buildFilesList();
     std::list<std::string>::iterator    it = files.begin();
     std::string                         autoIndexPage;

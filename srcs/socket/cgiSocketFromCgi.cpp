@@ -13,15 +13,15 @@ void    CgiSocketFromCgi::readFromCgi()
     _state = IN_PROGRESS;
     
     bytes = read(_pollFd.fd, &buf[0], CGI_BUF_LEN);
-    std::cerr << "Return of the cgi : bytes to read : " << bytes << "\n";
+    // std::cerr << "Return of the cgi : bytes to read : " << bytes << "\n";
     if (bytes > 0)
     {
         for (size_t i = 0; i < bytes; i++)
         {
             _buffer.push_back(buf[i]);
-            std::cerr << buf[i];
+            // std::cerr << buf[i];
         }
-        std::cerr << "\n";
+        // std::cerr << "\n";
     }
 }
 
