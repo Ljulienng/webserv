@@ -305,7 +305,7 @@ void 		Hub::_sendResponse(size_t i)
 		int bytes = write(client->getPollFd().fd, &buffer[0], buffer.size());
 
 		if (bytes <= 0)
-		{
+		{	std::cerr << "CTRL-C3\n";
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}

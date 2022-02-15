@@ -278,7 +278,6 @@ int				Request::verifBuffer(const std::string &buffer)
 	{
 		if (buffer.find("Transfer-Encoding: chunked") != std::string::npos)
 		{
-			std::cout << "3st\n";
 			size_t i = buffer.find("0\r\n\r\n");
 			if (i != std::string::npos && i == buffer.size() - 5)
 				return (0);
@@ -286,7 +285,7 @@ int				Request::verifBuffer(const std::string &buffer)
 				return (1);
 		}
 		else
-			return (0);		
+			return (0);
 	}
 	else
 	{
