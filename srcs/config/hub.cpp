@@ -146,8 +146,6 @@ void		Hub::_acceptIncomingConnections(size_t i)
 
 		// add the new incoming connection to the pollfd structure
 		log::logEvent("New incoming connection", acceptRet);
-
-		// loop back up and accept another incoming connection
 	}
 }
 
@@ -237,10 +235,10 @@ void		Hub::_prepareResponse(size_t i)
 			}
 			else if (_needCgi(*it, configMatch))
 			{	
-				CgiExecutor cgi(*it, client, configMatch); // copie the request to have an empty pool of request and leave the loop
+				CgiExecutor cgi(*it, client, configMatch); // copy the request to have an empty pool of request and leave the loop
 				cgi.execCgi(); // execute cgi and create 2 cgi sockets (in and out)
 				_cgiSocketsFromCgi.push_back(cgi.getCgiSocketFromCgi());
-				_cgiSocketsToCgi.push_back(cgi.getCgiSocketToCgi());
+				_cgiSocketsToCgi.push_back(cgi.getCgiSocketToCgi()); 
 			}
 			else
 			{
@@ -279,33 +277,34 @@ void		Hub::_prepareCgiResponse(size_t i)
 */
 void 		Hub::_sendResponse(size_t i)
 {
-	ClientSocket* 			client = _clientSockets[i - _listenSockets.size()];
+	ClientSocket* 			client = _clientSockets[_arr[i]->_index];
 	std::list<Response>		&responses = client->getResponses();
 	std::string				buffer = client->getBuffer();
 
 	// we process the responses one by one and append them to the client buffer
-	// then delete the response until the queue is empty
 	while (responses.empty() == false)
 	{
 		Response response = responses.front(); // process in FIFO order, we process the oldest element first
 
-		// then have to check header and status of the request
-		// ...
+		if (response.getHeader("Connection") == "close")
+		{
+			_closeConnection(_arr[i]->_index, _arr[i]->getType());
+			return ;
+		}
 
-		std::string		message = response.getMessage(); // put into a string the response
-		buffer.insert(buffer.end(), message.begin(), message.end()); // append it to the client buffer
+		std::string		message = response.getMessage();
+		buffer.insert(buffer.end(), message.begin(), message.end());
 		log::logEvent("Response sent", client->getPollFd().fd);
 		responses.pop_front();
 	}
 
 	if (buffer.empty() == false)
-	{
-		// we can use send() ( without flag parameter, send is equivalent to write() )
+	{	// we can use send() ( without flag parameter, send is equivalent to write() )
 		// so write into the _fds[i].fd the content of buffer
 		int bytes = write(client->getPollFd().fd, &buffer[0], buffer.size());
 
 		if (bytes <= 0)
-		{	std::cerr << "CTRL-C3\n";
+		{
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}

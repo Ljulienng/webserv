@@ -93,7 +93,7 @@ std::string     treatRelativePath(std::string path)
 Response    cgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch)
 {
     size_t i = 0; 
-    
+
     while (cgiResponse.find("\r\n", i) != std::string::npos)
     {
         if (cgiResponse.find("Content-type:", i) == i)
@@ -121,7 +121,6 @@ Response    cgiResponse(std::string cgiResponse, Response &response, t_configMat
         return errorResponse(response, configMatch, response.getHttpStatus().getCode());
     if (response.getHttpStatus().getCode() >= 300)
     {
-        // std::cerr << "redirection\n";
         // std::cerr << "status code = " << response.getHttpStatus().getCode() << "\n";
         // std::cerr << "Location = " << response.getHeader("Location") << "\n";
         return redirectionResponse(response, std::make_pair<int, std::string>(response.getHttpStatus().getCode(), treatRelativePath(response.getHeader("Location"))));
@@ -227,7 +226,6 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
 */
 Response    constructResponse(Request &request, std::string serverName)
 {
-    // first need to get the server and location to use for this response (context)
     t_configMatch   configMatch = getConfigMatch(request, serverName);
     Response        response;
     File            path(configMatch.pathTranslated);
