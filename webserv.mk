@@ -7,6 +7,7 @@ SRC_FILES	= 	webserv.cpp					\
 				uri.cpp						\
 				html.cpp					\
 				configMatch.cpp				\
+				multipart.cpp				\
 				response.cpp				\
 				responseConstructor.cpp		\
 				cgiSocketFromCgi.cpp		\
@@ -19,7 +20,6 @@ SRC_FILES	= 	webserv.cpp					\
 				log.cpp						\
 				mime.cpp					\
 				str.cpp						\
-				cgiConstructor.cpp			\
 				cgiExecutor.cpp
 
 INC_FILES	= 	srcs/webserv.hpp									\
@@ -31,6 +31,7 @@ INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/config/request/uri.hpp							\
 				srcs/html/html.hpp									\
 				srcs/response/configMatch.hpp						\
+				srcs/response/multipart.hpp							\
 				srcs/response/response.hpp							\
 				srcs/response/responseConstructor.hpp				\
 				srcs/socket/cgiSocketFromCgi.hpp					\
@@ -44,5 +45,4 @@ INC_FILES	= 	srcs/webserv.hpp									\
 				srcs/utils/mime/mime.hpp							\
 				srcs/utils/singleton/singleton.hpp					\
 				srcs/utils/str/str.hpp								\
-				srcs/cgi/cgiConstructor.hpp							\
 				srcs/cgi/cgiExecutor.hpp

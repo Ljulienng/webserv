@@ -22,7 +22,7 @@ void	CgiExecutor::initHeaders()
 	_env["QUERY_STRING"] = _request->getUri().getQuery();
 	_env["REDIRECT_STATUS"] = "200";
 	_env["REFERER"] = _request->getHeader("Referer");
-	_env["REMOTE_ADDR"] = "172.17.0.1";//_request->getUri().getHost();
+	_env["REMOTE_ADDR"] = _request->getUri().getHost();
 	_env["REMOTE_HOST"] = _request->getHeader("Hostname");
 	_env["REMOTE_PORT"] = _request->getUri().getPort();
 	_env["REMOTE_IDENT"] = _request->getHeader("Authorization");
@@ -32,7 +32,7 @@ void	CgiExecutor::initHeaders()
 	_env["SCRIPT_FILENAME"] = /*"/app/wordpress/index.php"; */_env.find("PATH_TRANSLATED")->second; // ajout doit etre = PATH_INFO
 	// _env["SCRIPT_NAME"] = newPath; // version JU initiale
 	_env["SCRIPT_NAME"] = _request->getUri().getPath();
-	_env["SERVER_NAME"] = _client->getServerName(); // _request->getHeader("Hostname");
+	_env["SERVER_NAME"] = _client->getServerName();
 	_env["SERVER_PORT"] = _request->getUri().getPort();
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_env["SERVER_SOFTWARE"] = "Webserver/1.0";

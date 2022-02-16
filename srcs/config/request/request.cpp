@@ -290,11 +290,14 @@ int				Request::verifBuffer(const std::string &buffer)
 	else
 	{
 		size_t contentLength = atoi(buffer.substr(buffer.find("Content-Length: ") + 16, 10).c_str());
-		size_t i = 0;
+		// size_t i = 0;
 		std::string	body = buffer.substr(buffer.find("\r\n\r\n") + 4, std::string::npos);
-
-		for (i = 0; body.c_str()[i]; i++);
-		if (contentLength > i)
+		//std::cerr << buffer.size() << "\n";
+		//std::cerr << body.size() << "\n";
+		size_t j;
+		for (j = body.size() - 1; !body.c_str()[j]; j--)(void)j;// std::cerr << "size = " << j << "\n"; 
+		/* for (i = 0; body.c_str()[i]; i++);*/
+		if (contentLength > j + 1 /*i*/)
 			return (1);
 		return (0);
 	}
@@ -352,10 +355,13 @@ int									Request::getRet()
 */
 
 Request::Request(const std::string &request) :
-	_method(""), _path(""), _version(""), _headers(), _body(""), _ret(200)
+	_method(""), _path(""), _version(""), _headers(), _body(""), _httpStatus(200), _ret(200)
 {
 	if (verifBuffer(request))
+	{
 		_ret = 400;
+		_httpStatus.setStatus(400);
+	}
 	if (_ret == 200)
 		parse(request);
 }

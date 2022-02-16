@@ -173,20 +173,20 @@ File &File::operator=(const File &src)
 /* NON MEMBERS*/
 void 	appendToFile(const std::string &path, const char *content, size_t n)
 {
-	// std::ofstream file;
-	// file.open(path.c_str(), std::ofstream::binary);
-	// file.write(content, n);
-	// file.close();
-
-	(void)n;
-	std::string toAppend(content, 0, n);
 	std::ofstream file;
 	file.open(path.c_str(), std::ofstream::binary);
-	if (file.is_open())
-	{
-		file << toAppend;
-		file.close();
-	}
+	file.write(content, n);
+	file.close();
+
+	// (void)n;
+	// std::string toAppend(content, 0, n);
+	// std::ofstream file;
+	// file.open(path.c_str(), std::ofstream::binary);
+	// if (file.is_open())
+	// {
+	// 	file << toAppend;
+	// 	file.close();
+	// }
 }
 
 std::string     getExtension(std::string filename)

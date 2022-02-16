@@ -5,16 +5,7 @@
 #include "response.hpp"
 #include "request.hpp"
 #include "configMatch.hpp"
-
-class cgiConstructor;
-
-typedef struct  s_multipart
-{
-    std::map<std::string, std::string>  headers;
-    unsigned char                       *content;
-    size_t                              length;
-    std::string     getFilename() const;
-}               t_multipart;
+#include "multipart.hpp"
 
 Response    errorResponse(Response &response, t_configMatch  &configMatch, int status);
 Response    cgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch);
