@@ -40,7 +40,7 @@ void	Hub::_addClientSocket(int acceptRet, Socket* listenSocket)
 }
 
 void	Hub::_storeFdToPoll()
-{
+{	std::cerr << "storefdtopoll 0\n";
 	memset(_fds, 0, sizeof(_fds));
 	_nfds = 0;
 	_arr.clear();
@@ -68,34 +68,27 @@ void	Hub::_storeFdToPoll()
 		_arr.push_back(*it);
 		_arr[_nfds]->_index = _nfds - _listenSockets.size() - _clientSockets.size() - _cgiSocketsFromCgi.size();
 	}
-	for (std::vector<struct pollfd*>::iterator it = g_fileArr.begin(); it != g_fileArr.end(); it++, _nfds++)
+	for (std::vector<ClientSocket*>::iterator it = _clientSockets.begin(); it != _clientSockets.end(); it++)
 	{
-		_fds[_nfds] = *(*it);
+		for (std::list<Response*>::iterator itR = (*it)->getResponses().begin(); itR != (*it)->getResponses().end(); itR++)
+		{
+			if ((*itR)->getStateFile() != NONE)
+			{
+				_fds[_nfds] = (*itR)->getPollFdFile();
+				(*itR)->setIndexFile(_nfds);
+				_nfds++;
+			}
+		}
 	}
-	// for (std::vector<ClientSocket*>::iterator it = _clientSockets.begin(); it != _clientSockets.end(); it++)
-	// {
-	// 	for (std::list<Response*>::iterator itR = (*it)->getResponses().begin(); itR != (*it)->getResponses().end(); itR++)
-	// 	{
-	// 		if ((*itR)->getStateFile() != NONE)
-	// 		{
-	// 			_fds[_nfds] = (*itR)->getPollFdFile();
-	// 			_nfds++;
-	// 		}
-	// 	}
-	// }
+	std::cerr << "storefdtopoll 1\n";
 }
 
 void	Hub::process()
 {
 	_storeFdToPoll(); 
-	int pollRet = poll(_fds, _nfds, 1000); // call poll and wait for an event
-	// size_t i = 0;
-	// for (std::vector<struct pollfd*>::iterator it = g_fileArr.begin(); it != g_fileArr.end(); it++, _nfds++)
-	// {
-	// 	if (_fds[i].fd == (*it)->fd)
-	// 		*(*it) = _fds[i];
-	// 	i++;
-	// }
+	std::cerr << "nfds = " << _nfds << "\n";
+	std::cerr << "g_fileArray size = " << g_fileArr.size() << "\n";
+	int pollRet = poll(_fds, _nfds, -1); // call poll and wait for an event
 
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
 	{	
@@ -105,7 +98,8 @@ void	Hub::process()
 	}
 	static size_t cgiCount[MAX_CGI_RUNNING] = {0};
 	for (size_t i = 0; i < _nfds - g_fileArr.size(); i++) 
-	{
+	{	std::cerr << "i = " << i << " compare to = " << _nfds - g_fileArr.size()<< "\n";
+		std::cerr << "g_fileArray size = " << g_fileArr.size() << "\n";
 		// only way found to detect end of cgi POLLIN to send response to the client
 		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && cgiCount[i] > 0)
 		{
@@ -307,49 +301,72 @@ void		Hub::_prepareCgiResponse(size_t i)
 void 		Hub::_sendResponse(size_t i)
 {
 	ClientSocket* 			client = _clientSockets[_arr[i]->_index];
-	std::list<Response*>	responses = client->getResponses();
+	std::list<Response*>	&responses = client->getResponses();
 	std::string				buffer = client->getBuffer();
+	std::cerr << "nb responses = " << responses.size() << "\n";
 
 	// we process the responses one by one and append them to the client buffer
-	while (responses.empty() == false)
-	{
-		Response* response = responses.front(); // process in FIFO order, we process the oldest element first
-		
-		std::cerr << "need to detect response with file to read\n";
-		std::cerr << "nfds = " << _nfds << "\n";
-		std::cerr << "pollin = " << POLLIN << "   revent response fd = " << response->getPollFdFile().fd << "  " << response->getPollFdFile().events << "  " << response->getPollFdFile().revents << "\n"; 
-		std::cerr << "pollin = " << POLLIN << "   revent response fd = " << _fds[3].fd << "  " << _fds[3].events << "  " << _fds[3].revents << "\n"; 
-		if (response->getPollFdFile().revents & POLLIN)
-			std::cerr << "data to read\n";
-
-		if (response->getHeader("Connection") == "close")
+	// while (responses.empty() == false)
+	for (std::list<Response*>::iterator it = responses.begin(); it != responses.end(); it++)
+	{	
+		if ((*it)->getHeader("Connection") == "close")
 		{
 			_closeConnection(_arr[i]->_index, _arr[i]->getType());
 			return ;
 		}
-
-		std::string		message = response->getMessage();
-		buffer.insert(buffer.end(), message.begin(), message.end());
-		log::logEvent("Response sent", client->getPollFd().fd);
-		responses.pop_front();
+		// std::cerr << "pollin = " << POLLIN << "   revent response fd = " << (*it)->getPollFdFile().fd << "  " << (*it)->getPollFdFile().events << "  " << (*it)->getPollFdFile().revents << "\n"; 
+		// std::cerr << "pollin = " << POLLIN << "   revent response fd = " << _fds[(*it)->getIndexFile()].fd << "  " << _fds[(*it)->getIndexFile()].events << "  " << _fds[(*it)->getIndexFile()].revents << "\n"; 
+		if ((*it)->getIndexFile() == -1)
+		{
+			std::cerr << "not a file\n";
+			std::string		message = (*it)->getMessage();
+			buffer.insert(buffer.end(), message.begin(), message.end());
+			responses.erase(it++);
+		}
+		else if (_fds[(*it)->getIndexFile()].revents & POLLIN)
+		{
+			std::cerr << "data to read in a file\n";
+			char bufFile[2048];
+			size_t bytes = read(_fds[(*it)->getIndexFile()].fd, bufFile, 2048);
+			if (bytes > 0)
+				for (size_t i = 0; i < bytes; i++)
+					(*it)->addToContent(bufFile[i]);
+			else
+			{	std::cerr << "bytes = 0 -> end to read\n";
+				(*it)->endToRead();
+				_nfds--;
+				std::string		message = (*it)->getMessage();
+				buffer.insert(buffer.end(), message.begin(), message.end());
+				responses.erase(it++);
+			}
+		}
+		else
+		{	std::cerr << "revents != pollin -> end to read\n";
+			std::cerr << "index = " << (*it)->getIndexFile() << "\n";
+			(*it)->endToRead();
+			_nfds--;
+			std::string		message = (*it)->getMessage();
+			buffer.insert(buffer.end(), message.begin(), message.end());
+			responses.erase(it++);
+		}
 	}
 
-	if (buffer.empty() == false)
+	std::cerr << "nb responses = " << responses.size() << "  buffer size = " << buffer.size() << "\n";
+	// if (buffer.empty() == false)
+	if (responses.empty() && !buffer.empty())
 	{	// we can use send() ( without flag parameter, send is equivalent to write() )
 		// so write into the _fds[i].fd the content of buffer
 		int bytes = write(client->getPollFd().fd, &buffer[0], buffer.size());
-
+		log::logEvent("Response sent", client->getPollFd().fd);
 		if (bytes <= 0)
 		{
-			std::cerr << "close connection 3\n";
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
 		buffer.erase(buffer.begin(), buffer.begin() + bytes); // clear the buffer
+		if (buffer.empty()) // finished to write so we are now waiting for reading
+			client->getPollFd().events = POLLIN;
 	}
-
-	if (buffer.empty()) // finished to write so we are now waiting for reading
-		client->getPollFd().events = POLLIN;
 }
 
 void		Hub::_closeConnection(size_t i, int type)

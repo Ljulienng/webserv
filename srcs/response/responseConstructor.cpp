@@ -147,7 +147,7 @@ Response*    getMethodResponse(Response *response, t_configMatch &configMatch)
         // need to set the new file to read it
         response->setPollFdFileToRead(path.getFilePath().c_str());
         response->addFile();
-
+        response->setContentType(extension.getMime());
         /* version qui marche mais sans repasser par poll()
         if (getExtension(configMatch.pathTranslated) == "php") // display content file if no cgi
             response.setContent(path.getFileContent(), "text/plain");
@@ -158,6 +158,7 @@ Response*    getMethodResponse(Response *response, t_configMatch &configMatch)
     }
     else if (path.isDirectory() && configMatch.location.getAutoindex())
     {
+        std::cerr << "directory\n";
         return autoIndexResponse(response, configMatch.pathTranslated);
     }
     // a traiter en amont en recuperant la pathTranslated car cgi a executer si .php

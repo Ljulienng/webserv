@@ -35,6 +35,17 @@ void    Response::setContent(std::vector<unsigned char> content, std::string con
     setHeader("Content-Length", myItoa(content.size()));
 }
 
+void    Response::setContentType(std::string contentType)
+{
+    setHeader("Content-Type", contentType);
+}
+
+void    Response::setContentLength()
+{
+    setHeader("Content-Length", myItoa(_content.size()));
+}
+
+
 void    Response::setStatus(int status)
 {
     _httpStatus.setStatus(status);
@@ -71,9 +82,27 @@ std::string     &Response::getMessage()
 
 /****** test *************/
 
+void    Response::addToContent(char c)
+{
+    _content.push_back(c);
+}
+
 void 	Response::addFile()
 {
     g_fileArr.push_back(&_pollFdFile);
+}
+
+void 	Response::deleteFile()
+{
+    std::vector<struct pollfd *>::iterator it = g_fileArr.begin();
+    while (*it != &_pollFdFile)
+        it++;
+    g_fileArr.erase(it);
+}
+
+void    Response::setIndexFile(int indexFile)
+{
+    _indexFile = indexFile;
 }
 
 void        Response::setPollFd(struct pollfd newPollFd)
@@ -81,11 +110,22 @@ void        Response::setPollFd(struct pollfd newPollFd)
     _pollFdFile = newPollFd;
 }
 
+void                Response::endToRead()
+{
+    close(_pollFdFile.fd);
+    _pollFdFile.fd = 0;
+    _pollFdFile.events = 0;
+    _indexFile = -1;
+    _stateFile = NONE;
+    deleteFile();
+    setContentLength();
+}
+
 void        Response::setPollFdFileToRead(const char *file)
 {
     _pollFdFile.fd = open(file, O_RDONLY);
     _pollFdFile.events = POLLIN;
-    setStateFile(DATATOREAD);
+    _stateFile = DATATOREAD;
 }
 
 void        Response::setStateFile(int state)
@@ -96,6 +136,10 @@ struct pollfd       Response::getPollFdFile()
 
 int   &Response::getStateFile()
 { return _stateFile; }
+
+int  Response::getIndexFile()
+{ return _indexFile; }
+
 /****************************/
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
@@ -106,7 +150,8 @@ Response::Response() :
         _content(),
         _message(),
         _pollFdFile(),
-        _stateFile(NONE)
+        _stateFile(NONE),
+        _indexFile(-1)
 {
     setHeader("Server", "Webserv_42");
     setHeader("Date", log::getTimestamp());

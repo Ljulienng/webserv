@@ -33,6 +33,7 @@ class Response
         // manage files to read file (get) or append to file (post)
         struct pollfd                       _pollFdFile;
         int                                 _stateFile;
+        int                                 _indexFile;
         /********************/
 
         void        _updateMessage();
@@ -46,6 +47,9 @@ class Response
         // SETTERS
         void                                setHeader(std::string key, std::string value);
         void                                setContent(std::vector<unsigned char> content, std::string contentType);
+        void                                setContentType(std::string contentType);
+        void                                setContentLength();
+        
         void                                setStatus(int status);
         
         // GETTERS
@@ -58,12 +62,17 @@ class Response
 
 
         /******* test ********/
+        void                addToContent(char c);
         void 	            addFile();
+        void 	            deleteFile();
+        void                setIndexFile(int indexFile); // index pour retrouver le file dans _fds[]
         void                setPollFd(struct pollfd newPollFd);
+        void                endToRead();
         void                setPollFdFileToRead(const char *file);
         void                setStateFile(int state);
         struct pollfd       getPollFdFile();
         int                 &getStateFile();
+        int                 getIndexFile();
         /********************/
 
 };
