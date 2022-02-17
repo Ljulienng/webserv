@@ -163,6 +163,7 @@ CgiExecutor::CgiExecutor(Request request, ClientSocket* client, t_configMatch& c
 			// to be completed if new attributes
 {
 	initHeaders();
+	execCgi();
 }
 
 CgiExecutor::~CgiExecutor()

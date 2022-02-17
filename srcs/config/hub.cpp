@@ -226,23 +226,25 @@ void		Hub::_prepareResponse(size_t i)
 		for (; it != client->getRequests().end(); it++)
 		{
 			t_configMatch 	configMatch = getConfigMatch(*it, client->getServerName());
-			Response 		response;
+			Response* 		response = new Response();
 			
 			if (isErrorStatus(it->getHttpStatus().getCode()))
 			{
-				response = errorResponse(response, configMatch, it->getHttpStatus().getCode());
+				errorResponse(response, configMatch, it->getHttpStatus().getCode());
 				client->getResponses().push_back(response);
 			}
 			else if (_needCgi(*it, configMatch))
-			{	
+			{	// execute cgi and create 2 cgi sockets (in and out)
 				CgiExecutor cgi(*it, client, configMatch); // copy the request to have an empty pool of request and leave the loop
-				cgi.execCgi(); // execute cgi and create 2 cgi sockets (in and out)
 				_cgiSocketsFromCgi.push_back(cgi.getCgiSocketFromCgi());
 				_cgiSocketsToCgi.push_back(cgi.getCgiSocketToCgi()); 
 			}
 			else
 			{
-				response = constructResponse(*it, client->getServerName());
+				constructResponse(response, *it, configMatch);
+				std::cerr << "fd = " << response->getPollFdFile().fd << "\n";
+				std::cerr << "state = "  << response->getStateFile() << "\n";
+				std::cerr << "status = "  << response->getHttpStatus().getCode() << "\n";
 				client->getResponses().push_back(response);
 			}
 			requests.erase(it++);
@@ -256,11 +258,11 @@ void		Hub::_prepareResponse(size_t i)
 
 void		Hub::_prepareCgiResponse(size_t i)
 {
-	Response 		response;
+	Response*	response = new Response();
 	t_configMatch 	configMatch;
 	
 	configMatch = getConfigMatch(_cgiSocketsFromCgi[i]->getRequest(), _cgiSocketsFromCgi[i]->getClient()->getServerName());
-	response = cgiResponse(_cgiSocketsFromCgi[i]->getBuffer(), response, configMatch);
+	cgiResponse(response, _cgiSocketsFromCgi[i]->getBuffer(), configMatch);
 	
 	_cgiSocketsFromCgi[i]->getClient()->getResponses().push_back(response);
 	_cgiSocketsFromCgi[i]->getClient()->getPollFd().events = POLLIN | POLLOUT;
@@ -278,21 +280,21 @@ void		Hub::_prepareCgiResponse(size_t i)
 void 		Hub::_sendResponse(size_t i)
 {
 	ClientSocket* 			client = _clientSockets[_arr[i]->_index];
-	std::list<Response>		&responses = client->getResponses();
+	std::list<Response*>	responses = client->getResponses();
 	std::string				buffer = client->getBuffer();
 
 	// we process the responses one by one and append them to the client buffer
 	while (responses.empty() == false)
 	{
-		Response response = responses.front(); // process in FIFO order, we process the oldest element first
+		Response* response = responses.front(); // process in FIFO order, we process the oldest element first
 
-		if (response.getHeader("Connection") == "close")
+		if (response->getHeader("Connection") == "close")
 		{
 			_closeConnection(_arr[i]->_index, _arr[i]->getType());
 			return ;
 		}
 
-		std::string		message = response.getMessage();
+		std::string		message = response->getMessage();
 		buffer.insert(buffer.end(), message.begin(), message.end());
 		log::logEvent("Response sent", client->getPollFd().fd);
 		responses.pop_front();

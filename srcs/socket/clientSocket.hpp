@@ -11,7 +11,7 @@ class ClientSocket : public Socket
         unsigned short          _port;
         std::string             _buffer;
         std::list<Request>      _requests;
-        std::list<Response>     _responses;
+        std::list<Response*>    _responses;
         std::string             _serverName;
 
     public :
@@ -21,7 +21,7 @@ class ClientSocket : public Socket
         ClientSocket    &operator=(const ClientSocket &src);
 
         void            addRequest();
-        void            addResponse(Response response);
+        void            addResponse(Response* response);
         // SETTERS
 
         void                    setPort(unsigned short port);
@@ -33,7 +33,7 @@ class ClientSocket : public Socket
         unsigned short          &getPort();
         std::string             &getBuffer();
         std::list<Request>	    &getRequests();
-        std::list<Response>     &getResponses();
+        std::list<Response*>    &getResponses();
         std::string             &getServerName();
 };
 

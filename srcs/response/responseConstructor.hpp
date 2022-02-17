@@ -7,8 +7,8 @@
 #include "configMatch.hpp"
 #include "multipart.hpp"
 
-Response    errorResponse(Response &response, t_configMatch  &configMatch, int status);
-Response    cgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch);
-Response    constructResponse(Request &request, std::string serverName);
+Response*       errorResponse(Response* response, t_configMatch  &configMatch, int status);
+Response*       cgiResponse(Response* response, std::string cgiResponse, t_configMatch  &configMatch);
+Response*       constructResponse(Response* response, Request &request, t_configMatch configMatch);
 
 #endif

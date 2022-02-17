@@ -1,5 +1,7 @@
 #include "responseConstructor.hpp"
 
+std::vector<struct pollfd>	g_fileArr;
+
 bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodRequired)
 {
     for (size_t i = 0; i < methods.size(); i++)
@@ -8,55 +10,55 @@ bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodReq
     return false;
 }
 
-Response    errorResponse(Response &response, t_configMatch  &configMatch, int status)
+Response*    errorResponse(Response* response, t_configMatch  &configMatch, int status)
 {
     std::map<int, std::string>::iterator  errorPage = Configuration::getInstance().getErrorPages().find(status);
     
-    response.setStatus(status);
+    response->setStatus(status);
     if (errorPage != Configuration::getInstance().getErrorPages().end()
         && !errorPage->second.empty())
     {
         File    errorPath(configMatch.root + errorPage->second);
         if (errorPath.isRegularFile())
         {
-            response.setContent(errorPath.getFileContent(), "text/html");
+            response->setContent(errorPath.getFileContent(), "text/html");
             return response;
         }
     }
 
     std::vector<unsigned char> defaultErrorPage = html::buildErrorHtmlPage(myItoa(status));
-    response.setContent(defaultErrorPage, "text/html");
+    response->setContent(defaultErrorPage, "text/html");
 
     return response;
 }
 
-Response    autoIndexResponse(Response &response, std::string path)
+Response*    autoIndexResponse(Response* response, std::string path)
 {
     std::vector<unsigned char> autoIndexPage;
 
-    response.setStatus(OK);
+    response->setStatus(OK);
     autoIndexPage = html::buildAutoIndexPage(path);
-    response.setContent(autoIndexPage, "text/html");
+    response->setContent(autoIndexPage, "text/html");
     
     return response;
 }
 
-Response    indexResponse(Response &response,std::string path, std::string index)
+Response*    indexResponse(Response* response,std::string path, std::string index)
 {
     File indexFile(path + index);
     Mime indexExtension(getExtension(index));
 
-    response.setStatus(OK);
-    response.setContent(indexFile.getFileContent(), indexExtension.getMime());
+    response->setStatus(OK);
+    response->setContent(indexFile.getFileContent(), indexExtension.getMime());
     
     return response;
 }
 
-Response    redirectionResponse(Response &response, std::pair<int, std::string> redirection)
+Response*    redirectionResponse(Response* response, std::pair<int, std::string> redirection)
 {
-    response.setStatus(redirection.first);
-    response.setHeader("Location", redirection.second);
-    response.setContent(html::buildRedirectionPage(redirection), "text/html");
+    response->setStatus(redirection.first);
+    response->setHeader("Location", redirection.second);
+    response->setContent(html::buildRedirectionPage(redirection), "text/html");
 
     return response;
 }
@@ -90,7 +92,7 @@ std::string     treatRelativePath(std::string path)
     return newPath;
 }
 
-Response    cgiResponse(std::string cgiResponse, Response &response, t_configMatch  &configMatch)
+Response*    cgiResponse(Response* response, std::string cgiResponse, t_configMatch  &configMatch)
 {
     size_t i = 0; 
 
@@ -98,16 +100,16 @@ Response    cgiResponse(std::string cgiResponse, Response &response, t_configMat
     {
         if (cgiResponse.find("Content-type:", i) == i)
         {
-            response.setHeader("Content-Type", cgiResponse.substr(i + 14, cgiResponse.find("\r\n", i) - i - 14));
+            response->setHeader("Content-Type", cgiResponse.substr(i + 14, cgiResponse.find("\r\n", i) - i - 14));
         }
         if (cgiResponse.find("Status:", i) == i)
         {
             int code = strtol(cgiResponse.substr(i + 8, 3).c_str(), NULL, 10);
-            code == 0 ? response.setStatus(OK) : response.setStatus(code);
+            code == 0 ? response->setStatus(OK) : response->setStatus(code);
         }
         if (cgiResponse.find("Location:", i) == i)
         {
-            response.setHeader("Location", cgiResponse.substr(i + 10, cgiResponse.find("\r\n", i) - i - 10));
+            response->setHeader("Location", cgiResponse.substr(i + 10, cgiResponse.find("\r\n", i) - i - 10));
         }
         i += cgiResponse.find("\r\n", i) - i + 2;
         if (cgiResponse.find("\r\n", i) == i)
@@ -117,21 +119,21 @@ Response    cgiResponse(std::string cgiResponse, Response &response, t_configMat
         }
     }
     
-    if (response.getHttpStatus().getCode() >= 400)
-        return errorResponse(response, configMatch, response.getHttpStatus().getCode());
-    if (response.getHttpStatus().getCode() >= 300)
+    if (response->getHttpStatus().getCode() >= 400)
+        return errorResponse(response, configMatch, response->getHttpStatus().getCode());
+    if (response->getHttpStatus().getCode() >= 300)
     {
         // std::cerr << "status code = " << response.getHttpStatus().getCode() << "\n";
         // std::cerr << "Location = " << response.getHeader("Location") << "\n";
-        return redirectionResponse(response, std::make_pair<int, std::string>(response.getHttpStatus().getCode(), treatRelativePath(response.getHeader("Location"))));
+        return redirectionResponse(response, std::make_pair<int, std::string>(response->getHttpStatus().getCode(), treatRelativePath(response->getHeader("Location"))));
     }
     std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
-    response.setContent(body, response.getHeader("Content-Type"));
+    response->setContent(body, response->getHeader("Content-Type"));
 
     return response;
 }
 
-Response    getMethodResponse(Response &response, t_configMatch &configMatch)
+Response*    getMethodResponse(Response *response, t_configMatch &configMatch)
 {
     File        path(configMatch.pathTranslated);
 
@@ -142,11 +144,18 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     {
         Mime    extension(getExtension(configMatch.pathTranslated));
         
-        response.setStatus(OK);
+        response->setStatus(OK);
+        
+        // need to set the new file to read it
+        response->setPollFdFileToRead(path.getFilePath().c_str());
+        g_fileArr.push_back(response->getPollFdFile());
+
+        /* version qui marche mais sans repasser par poll()
         if (getExtension(configMatch.pathTranslated) == "php") // display content file if no cgi
             response.setContent(path.getFileContent(), "text/plain");
         else
             response.setContent(path.getFileContent(), extension.getMime());
+        */
         return response;
     }
     else if (path.isDirectory() && configMatch.location.getAutoindex())
@@ -165,7 +174,7 @@ Response    getMethodResponse(Response &response, t_configMatch &configMatch)
     }
 }
 
-Response    postMethodResponse(Response &response, Request &request, t_configMatch &configMatch)
+Response*    postMethodResponse(Response* response, Request &request, t_configMatch &configMatch)
 { 
     File            fileToPost(configMatch.pathTranslated);
     size_t          lastSlash = configMatch.pathTranslated.find_last_of('/');
@@ -186,16 +195,16 @@ Response    postMethodResponse(Response &response, Request &request, t_configMat
     // create the file
     if (!fileToPost.createFile(pathToUpload, request.getBody()))
         return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
-    response.setStatus(CREATED);
+    response->setStatus(CREATED);
 
     // indicate the url of the resource we created thanks to "location" header
-    response.setHeader("Location", request.getUri().getUrl()); // need to send the full uri : http://127.0.0.1:8080/file.php   
-    response.setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, pathToUpload)), "text/html");
+    response->setHeader("Location", request.getUri().getUrl()); // need to send the full uri : http://127.0.0.1:8080/file.php   
+    response->setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, pathToUpload)), "text/html");
    
     return response;
 }
 
-Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
+Response*    deleteMethodResponse(Response* response, t_configMatch &configMatch)
 {
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "DELETE"))
         return errorResponse(response, configMatch, METHOD_NOT_ALLOWED);
@@ -206,8 +215,8 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
     {
        if (remove(configMatch.pathTranslated.c_str()) == 0)
         {
-            response.setStatus(OK);
-            response.setContent(html::buildPage("File " + configMatch.pathTranslated + " successfully deleted from server"), "text/html");
+            response->setStatus(OK);
+            response->setContent(html::buildPage("File " + configMatch.pathTranslated + " successfully deleted from server"), "text/html");
             return response;
         }
         return errorResponse(response, configMatch, NO_CONTENT);
@@ -224,11 +233,9 @@ Response    deleteMethodResponse(Response &response, t_configMatch &configMatch)
 **      - redirection
 **      - error
 */
-Response    constructResponse(Request &request, std::string serverName)
+Response*    constructResponse(Response* response, Request &request, t_configMatch configMatch)
 {
-    t_configMatch   configMatch = getConfigMatch(request, serverName);
-    Response        response;
-    File            path(configMatch.pathTranslated);
+    File    path(configMatch.pathTranslated);
 
     if (path.isDirectory() && configMatch.pathTranslated[configMatch.pathTranslated.size() - 1] != '/')
         return redirectionResponse(response, std::pair<int, std::string>(MOVED_PERMANENTLY, request.getPath() + "/"));

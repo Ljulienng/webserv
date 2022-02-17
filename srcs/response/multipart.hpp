@@ -15,6 +15,6 @@ typedef struct  s_multipart
     std::string                         getFilename() const;
 }               t_multipart;
 
-Response    multipart(Response &response, Request &request, t_configMatch &configMatch, std::string contentTypeHeader);
+Response*    multipart(Response* response, Request &request, t_configMatch &configMatch, std::string contentTypeHeader);
 
 #endif

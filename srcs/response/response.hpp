@@ -11,6 +11,15 @@
 
 class Configuration;
 
+/******* test ********/
+enum fileState
+{
+    NONE,
+    DATATOREAD,
+    ENDTOREAD
+};
+/********************/
+
 class Response
 {
     private :
@@ -19,6 +28,12 @@ class Response
         HttpStatus                          _httpStatus;
         std::vector<unsigned char>          _content;
         std::string                         _message; // the formatted message to insert to the buffer
+
+        /******* test ********/
+        // manage files to read file (get) or append to file (post)
+        struct pollfd                       _pollFdFile;
+        int                                 _stateFile;
+        /********************/
 
         void        _updateMessage();
 
@@ -40,6 +55,16 @@ class Response
         HttpStatus                          &getHttpStatus();
         std::vector<unsigned char>          &getContent();
         std::string                         &getMessage();
+
+
+        /******* test ********/
+        void                setPollFd(struct pollfd newPollFd);
+        void                setPollFdFileToRead(const char *file);
+        void                setStateFile(int state);
+        struct pollfd       getPollFdFile();
+        int                 &getStateFile();
+        /********************/
+
 };
 
 #endif

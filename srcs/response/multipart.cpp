@@ -70,7 +70,7 @@ std::string t_multipart::getFilename() const
     return std::string(contentDisp->second.begin() + start, contentDisp->second.begin() + i);
 }
 
-Response    multipart(Response &response, Request &request, t_configMatch &configMatch, std::string contentTypeHeader)
+Response*    multipart(Response* response, Request &request, t_configMatch &configMatch, std::string contentTypeHeader)
 {
     // check that we have the 2 parts -> "Content-type: multipart/form-data; boundary"
     if (contentTypeHeader.find(";") == std::string::npos)
@@ -97,8 +97,8 @@ Response    multipart(Response &response, Request &request, t_configMatch &confi
         ++it;
     }
 
-    response.setStatus(CREATED);
-	response.setContent(html::buildPage("File upload in : " + configMatch.root + configMatch.server.getUploadPath()), "text/html");
+    response->setStatus(CREATED);
+	response->setContent(html::buildPage("File upload in : " + configMatch.root + configMatch.server.getUploadPath()), "text/html");
 
     return response;
 }

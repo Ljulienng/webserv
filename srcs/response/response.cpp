@@ -67,6 +67,28 @@ std::string     &Response::getMessage()
     return  _message;
 }
 
+/****** test *************/
+void        Response::setPollFd(struct pollfd newPollFd)
+{
+    _pollFdFile = newPollFd;
+}
+
+void        Response::setPollFdFileToRead(const char *file)
+{
+    _pollFdFile.fd = open(file, O_RDONLY);
+    _pollFdFile.events = POLLIN;
+    setStateFile(DATATOREAD);
+}
+
+void        Response::setStateFile(int state)
+{ _stateFile = state; }
+
+struct pollfd       Response::getPollFdFile()
+{ return _pollFdFile; }
+
+int   &Response::getStateFile()
+{ return _stateFile; }
+/****************************/
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 Response::Response() : 
@@ -74,7 +96,9 @@ Response::Response() :
         _httpVersion("HTTP/1.1"),
         _httpStatus(),
         _content(),
-        _message()
+        _message(),
+        _pollFdFile(),
+        _stateFile(NONE)
 {
     setHeader("Server", "Webserv_42");
     setHeader("Date", log::getTimestamp());

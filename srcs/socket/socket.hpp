@@ -19,7 +19,6 @@ class Socket
         };
 
     protected :
-        int             _fd;
         struct pollfd   _pollFd;
         sockaddr_in     _addr;
         std::string     _serverName;
@@ -29,7 +28,7 @@ class Socket
 
     public :
 		
-        Socket(int fd, struct sockaddr_in addr, e_type type);
+        // Socket(int fd, struct sockaddr_in addr, e_type type);
 		Socket(const Socket &src);
 		virtual ~Socket();		
 		Socket &operator=(const Socket &src);
