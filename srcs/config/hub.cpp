@@ -295,7 +295,7 @@ void 		Hub::_sendResponse(size_t i)
 	ClientSocket* 			client = _clientSockets[_arr[i]->_index];
 	std::list<Response*>	&responses = client->getResponses();
 	std::string				buffer = client->getBuffer();
-	bool					endOfResponse = false, endOfReadFile = false;
+	bool					endOfResponse = false, endToReadFile = false, endToWriteFile = false;
 	
 	// we process the responses one by one and append them to the client buffer
 	for (std::list<Response*>::iterator it = responses.begin(); it != responses.end(); it++)
@@ -310,22 +310,28 @@ void 		Hub::_sendResponse(size_t i)
 		{	//std::cerr << "not a file\n";
 			endOfResponse = true;
 		}
-		else if (_fds[(*it)->getIndexFile()].revents & POLLIN)
+		else if (_fds[(*it)->getIndexFile()].revents & POLLIN) // getRequest
 		{	
 			// std::cerr << "data to read in a file\n";
-			(*it)->readFile(&endOfResponse, &endOfReadFile);
-			
+			(*it)->readFile(&endOfResponse, &endToReadFile);	
+		}
+		else if (_fds[(*it)->getIndexFile()].revents & POLLOUT) // postRequest
+		{
+			std::cerr << "data to write in a file\n";
+			(*it)->writeFile(&endOfResponse, &endToWriteFile);
 		}
 		else
 		{	//std::cerr << "revents != pollin -> end to read\n";
 			endOfResponse = true;
-			endOfReadFile = true;
+			endToReadFile = true;
 		}
 		
 		if (endOfResponse)
 		{
-			if (endOfReadFile)
+			if (endToReadFile)
 				(*it)->endToRead();
+			// else if (endToWriteFile)
+			// 	(*it)->endToWrite();
 			_nfds--;
 			std::string	message = (*it)->getMessage();
 			buffer.insert(buffer.end(), message.begin(), message.end());

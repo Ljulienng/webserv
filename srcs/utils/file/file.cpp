@@ -43,8 +43,7 @@ bool 	File::createFile(std::string filename)
 	return true;
 }
 
-
-// A SUPPRIMER NON UTILISE (! write pas dans poll())
+// (! write pas dans poll())
 bool	File::createFile(std::string filename, std::string content)
 {
 	int fd;

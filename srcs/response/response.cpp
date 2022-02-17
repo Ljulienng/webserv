@@ -82,7 +82,7 @@ std::string     &Response::getMessage()
 
 /****** test *************/
 
-void    Response::readFile(bool *endOfResponse, bool *endOfReadFile)
+void    Response::readFile(bool *endOfResponse, bool *endToReadFile)
 {
     char bufFile[MAX_BUF_LEN];
     size_t bytes = read(_pollFdFile.fd, bufFile, MAX_BUF_LEN);
@@ -92,9 +92,15 @@ void    Response::readFile(bool *endOfResponse, bool *endOfReadFile)
     else
     {
         *endOfResponse = true;
-        *endOfReadFile = true;
+        *endToReadFile = true;
     }
-    
+}
+
+void    Response::writeFile(bool *endOfResponse, bool *endToWriteFile)
+{
+    write(_pollFdFile.fd, _bodyRequestToPost.c_str(), _bodyRequestToPost.size());
+    *endOfResponse = true;
+    *endToWriteFile = true;
 }
 
 void 	Response::addFile()
@@ -115,6 +121,11 @@ void    Response::setIndexFile(int indexFile)
     _indexFile = indexFile;
 }
 
+void    Response::setBodyRequestToPost(std::string bodyRequest)
+{
+    _bodyRequestToPost = bodyRequest;
+}
+
 void                Response::endToRead()
 {
     close(_pollFdFile.fd);
@@ -126,11 +137,18 @@ void                Response::endToRead()
     setContentLength();
 }
 
-void        Response::setPollFdFileToRead(const char *file)
+void    Response::setPollFdFileToRead(const char *file)
 {
     _pollFdFile.fd = open(file, O_RDONLY);
     _pollFdFile.events = POLLIN;
     _stateFile = DATATOREAD;
+}
+
+void    Response::setPollFdFileToWrite(const char *file)
+{
+    _pollFdFile.fd = open(file, O_CREAT | O_TRUNC | O_RDWR, 0666); // doute sur des flags
+    _pollFdFile.events = POLLOUT;
+    _stateFile = DATATOWRITE;
 }
 
 struct pollfd       Response::getPollFdFile()
@@ -153,7 +171,8 @@ Response::Response() :
         _message(),
         _pollFdFile(),
         _stateFile(NONE),
-        _indexFile(-1)
+        _indexFile(-1),
+        _bodyRequestToPost()
 {
     setHeader("Server", "Webserv_42");
     setHeader("Date", log::getTimestamp());

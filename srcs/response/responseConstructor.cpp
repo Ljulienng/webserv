@@ -41,16 +41,17 @@ Response*    autoIndexResponse(Response* response, std::string path)
     return response;
 }
 
-Response*    indexResponse(Response* response,std::string path, std::string index)
-{
-    File indexFile(path + index);
-    Mime indexExtension(getExtension(index));
+// plus besoin : on l'a dans la path_translated donc on passe dans une getResponse
+// Response*    indexResponse(Response* response,std::string path, std::string index)
+// {
+//     File indexFile(path + index);
+//     Mime indexExtension(getExtension(index));
 
-    response->setStatus(OK);
-    response->setContent(indexFile.getFileContent(), indexExtension.getMime());
+//     response->setStatus(OK);
+//     response->setContent(indexFile.getFileContent(), indexExtension.getMime());
     
-    return response;
-}
+//     return response;
+// }
 
 Response*    redirectionResponse(Response* response, std::pair<int, std::string> redirection)
 {

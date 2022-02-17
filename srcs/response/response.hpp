@@ -16,7 +16,7 @@ enum fileState
 {
     NONE,
     DATATOREAD,
-    ENDTOREAD
+    DATATOWRITE
 };
 /********************/
 
@@ -34,6 +34,7 @@ class Response
         struct pollfd                       _pollFdFile;
         int                                 _stateFile;
         int                                 _indexFile;
+        std::string                         _bodyRequestToPost; // post : stocke au depart puis on la copie dans le fichier cree apres etre passe dans poll
         /********************/
 
         void        _updateMessage();
@@ -62,12 +63,15 @@ class Response
 
 
         /******* test ********/
-        void                readFile(bool *endOfResponse, bool *endOfReadFile);
+        void                readFile(bool *endOfResponse, bool *endToReadFile);
+        void                writeFile(bool *endOfResponse, bool *endToWriteFile);
         void 	            addFile();
         void 	            deleteFile();
         void                setIndexFile(int indexFile); // index pour retrouver le file dans _fds[]
+        void                setBodyRequestToPost(std::string bodyRequest);
         void                endToRead();
         void                setPollFdFileToRead(const char *file);
+        void                setPollFdFileToWrite(const char *file);
         struct pollfd       getPollFdFile();
         int                 getStateFile();
         int                 getIndexFile();
