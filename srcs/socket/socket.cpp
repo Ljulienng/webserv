@@ -35,7 +35,7 @@ void        Socket::setServerName(std::string serverName)
 
 /* GETTERS */
 int						&Socket::getFd()
-{ return _fd; }
+{ return _pollFd.fd; }
 
 struct pollfd		    &Socket::getPollFd()
 { return _pollFd; }

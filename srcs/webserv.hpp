@@ -25,6 +25,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include <poll.h>
 
 // C functions

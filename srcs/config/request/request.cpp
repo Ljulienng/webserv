@@ -214,11 +214,9 @@ void		Request::parseChunkedBody(const std::string &request)
 	{
 		i = chunks.find("\r\n", i) + 2;
 		_body.append(chunks.substr(i, chunkSize));
-		std::cout << "i = " << i << "\n_body = " << _body <<  std::endl;
 		i += chunkSize + 2;
 		chunkSize = strtol(chunks.substr(i, chunks.find("\r\n", i) + 2).c_str(), NULL, 16);
 	}
-	std::cout << "body = " << _body << std::endl;
 }
 
 void		Request::parsebody(const std::string &request)
@@ -265,7 +263,6 @@ int			Request::parse(const std::string &request)
 		parseChunkedBody(tmp);
 	else
 		parsebody(tmp);
-	_httpStatus.setStatus(_ret);
 	// debug();
 	return (_ret);
 }
@@ -274,11 +271,11 @@ int				Request::verifBuffer(const std::string &buffer)
 {
 	if (buffer.find("\r\n\r\n") == std::string::npos)
 		return (1);
+	// std::cout	<< "size = " << buffer.size() << std::endl;
 	if (buffer.find("Content-Length: ") == std::string::npos)
 	{
 		if (buffer.find("Transfer-Encoding: chunked") != std::string::npos)
 		{
-			std::cout << "3st\n";
 			size_t i = buffer.find("0\r\n\r\n");
 			if (i != std::string::npos && i == buffer.size() - 5)
 				return (0);
@@ -289,16 +286,17 @@ int				Request::verifBuffer(const std::string &buffer)
 			return (0);		
 	}
 	else
-	{
-		size_t contentLength = atoi(buffer.substr(buffer.find("Content-Length: ") + 16, 10).c_str());
-		size_t i = 0;
-		std::string	body = buffer.substr(buffer.find("\r\n\r\n") + 4, std::string::npos);
-
-		for (i = 0; body.c_str()[i]; i++);
-		if (contentLength > i)
-			return (1);
 		return (0);
-	}
+	// {
+	// 	size_t contentLength = atoi(buffer.substr(buffer.find("Content-Length: ") + 16, 10).c_str());
+	// 	size_t i = 0;
+	// 	std::string	body = buffer.substr(buffer.find("\r\n\r\n") + 4, std::string::npos);
+
+	// 	for (i = 0; body.c_str()[i]; i++);
+	// 	if (contentLength > i)
+	// 		return (1);
+	// 	return (0);
+	// }
 }
 
 
@@ -359,6 +357,7 @@ Request::Request(const std::string &request) :
 		_ret = 400;
 	if (_ret == 200)
 		parse(request);
+	_httpStatus.setStatus(_ret);
 }
 
 Request::Request(const Request &obj) :
