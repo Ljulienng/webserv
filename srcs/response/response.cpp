@@ -1,5 +1,7 @@
 #include "response.hpp"
 
+std::vector<struct pollfd*>	g_fileArr;
+
 void    Response::_updateMessage()
 {
     // append version
@@ -68,6 +70,12 @@ std::string     &Response::getMessage()
 }
 
 /****** test *************/
+
+void 	Response::addFile()
+{
+    g_fileArr.push_back(&_pollFdFile);
+}
+
 void        Response::setPollFd(struct pollfd newPollFd)
 {
     _pollFdFile = newPollFd;

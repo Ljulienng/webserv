@@ -1,7 +1,5 @@
 #include "responseConstructor.hpp"
 
-std::vector<struct pollfd>	g_fileArr;
-
 bool    isAcceptedMethod(std::vector<std::string> methods, std::string methodRequired)
 {
     for (size_t i = 0; i < methods.size(); i++)
@@ -148,7 +146,7 @@ Response*    getMethodResponse(Response *response, t_configMatch &configMatch)
         
         // need to set the new file to read it
         response->setPollFdFileToRead(path.getFilePath().c_str());
-        g_fileArr.push_back(response->getPollFdFile());
+        response->addFile();
 
         /* version qui marche mais sans repasser par poll()
         if (getExtension(configMatch.pathTranslated) == "php") // display content file if no cgi

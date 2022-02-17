@@ -68,19 +68,43 @@ void	Hub::_storeFdToPoll()
 		_arr.push_back(*it);
 		_arr[_nfds]->_index = _nfds - _listenSockets.size() - _clientSockets.size() - _cgiSocketsFromCgi.size();
 	}
+	for (std::vector<struct pollfd*>::iterator it = g_fileArr.begin(); it != g_fileArr.end(); it++, _nfds++)
+	{
+		_fds[_nfds] = *(*it);
+	}
+	// for (std::vector<ClientSocket*>::iterator it = _clientSockets.begin(); it != _clientSockets.end(); it++)
+	// {
+	// 	for (std::list<Response*>::iterator itR = (*it)->getResponses().begin(); itR != (*it)->getResponses().end(); itR++)
+	// 	{
+	// 		if ((*itR)->getStateFile() != NONE)
+	// 		{
+	// 			_fds[_nfds] = (*itR)->getPollFdFile();
+	// 			_nfds++;
+	// 		}
+	// 	}
+	// }
 }
 
 void	Hub::process()
 {
 	_storeFdToPoll(); 
 	int pollRet = poll(_fds, _nfds, 1000); // call poll and wait for an event
+	// size_t i = 0;
+	// for (std::vector<struct pollfd*>::iterator it = g_fileArr.begin(); it != g_fileArr.end(); it++, _nfds++)
+	// {
+	// 	if (_fds[i].fd == (*it)->fd)
+	// 		*(*it) = _fds[i];
+	// 	i++;
+	// }
+
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
 	{	
+		std::cerr << "close connection 0\n";
 		_closeAllConnections();
 		return ;
 	}
 	static size_t cgiCount[MAX_CGI_RUNNING] = {0};
-	for (size_t i = 0; i < _nfds; i++) 
+	for (size_t i = 0; i < _nfds - g_fileArr.size(); i++) 
 	{
 		// only way found to detect end of cgi POLLIN to send response to the client
 		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && cgiCount[i] > 0)
@@ -119,6 +143,7 @@ void	Hub::process()
 			_closeConnection(_arr[i]->_index, _arr[i]->getType());
 		else
 		{
+			std::cerr << "close connection 1\n";
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
@@ -173,6 +198,7 @@ bool		Hub::_receiveRequest(size_t i)
 	bytes = recv(client->getPollFd().fd, &buffer[0], MAX_BUF_LEN, 0);
 	if (bytes < 0)
 	{
+		std::cerr << "close connection 2\n";
 		_closeAllConnections();
 		exit(EXIT_FAILURE);
 	}
@@ -206,6 +232,8 @@ static bool _needCgi(Request request, t_configMatch configMatch)
 		return true;
 	return false;
 }
+
+
 /*
 ** prepare response :
 **	- get the requests of the client
@@ -244,7 +272,6 @@ void		Hub::_prepareResponse(size_t i)
 				constructResponse(response, *it, configMatch);
 				std::cerr << "fd = " << response->getPollFdFile().fd << "\n";
 				std::cerr << "state = "  << response->getStateFile() << "\n";
-				std::cerr << "status = "  << response->getHttpStatus().getCode() << "\n";
 				client->getResponses().push_back(response);
 			}
 			requests.erase(it++);
@@ -287,6 +314,13 @@ void 		Hub::_sendResponse(size_t i)
 	while (responses.empty() == false)
 	{
 		Response* response = responses.front(); // process in FIFO order, we process the oldest element first
+		
+		std::cerr << "need to detect response with file to read\n";
+		std::cerr << "nfds = " << _nfds << "\n";
+		std::cerr << "pollin = " << POLLIN << "   revent response fd = " << response->getPollFdFile().fd << "  " << response->getPollFdFile().events << "  " << response->getPollFdFile().revents << "\n"; 
+		std::cerr << "pollin = " << POLLIN << "   revent response fd = " << _fds[3].fd << "  " << _fds[3].events << "  " << _fds[3].revents << "\n"; 
+		if (response->getPollFdFile().revents & POLLIN)
+			std::cerr << "data to read\n";
 
 		if (response->getHeader("Connection") == "close")
 		{
@@ -307,6 +341,7 @@ void 		Hub::_sendResponse(size_t i)
 
 		if (bytes <= 0)
 		{
+			std::cerr << "close connection 3\n";
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
@@ -359,7 +394,7 @@ void		Hub::_closeConnection(size_t i, int type)
 
 void		Hub::_closeAllConnections()
 {	
-	size_t tmp = _nfds;
+	size_t tmp = _nfds - g_fileArr.size();
 	for (size_t i = 0; i < tmp; i++)
 		_closeConnection(0, _arr[0]->getType());
 }

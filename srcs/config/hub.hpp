@@ -11,7 +11,7 @@
 #include "cgiExecutor.hpp"
 
 extern bool    	g_run;
-extern std::vector<struct pollfd>	g_fileArr;
+extern std::vector<struct pollfd*>	g_fileArr;
 
 class CgiSocket;
 class ClientSocket;

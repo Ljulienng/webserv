@@ -58,6 +58,7 @@ class Response
 
 
         /******* test ********/
+        void 	            addFile();
         void                setPollFd(struct pollfd newPollFd);
         void                setPollFdFileToRead(const char *file);
         void                setStateFile(int state);
