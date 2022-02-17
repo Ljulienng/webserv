@@ -82,9 +82,19 @@ std::string     &Response::getMessage()
 
 /****** test *************/
 
-void    Response::addToContent(char c)
+void    Response::readFile(bool *endOfResponse, bool *endOfReadFile)
 {
-    _content.push_back(c);
+    char bufFile[MAX_BUF_LEN];
+    size_t bytes = read(_pollFdFile.fd, bufFile, MAX_BUF_LEN);
+    if (bytes > 0)
+        for (size_t i = 0; i < bytes; i++)
+            _content.push_back(bufFile[i]);
+    else
+    {
+        *endOfResponse = true;
+        *endOfReadFile = true;
+    }
+    
 }
 
 void 	Response::addFile()
@@ -105,11 +115,6 @@ void    Response::setIndexFile(int indexFile)
     _indexFile = indexFile;
 }
 
-void        Response::setPollFd(struct pollfd newPollFd)
-{
-    _pollFdFile = newPollFd;
-}
-
 void                Response::endToRead()
 {
     close(_pollFdFile.fd);
@@ -128,13 +133,10 @@ void        Response::setPollFdFileToRead(const char *file)
     _stateFile = DATATOREAD;
 }
 
-void        Response::setStateFile(int state)
-{ _stateFile = state; }
-
 struct pollfd       Response::getPollFdFile()
 { return _pollFdFile; }
 
-int   &Response::getStateFile()
+int   Response::getStateFile()
 { return _stateFile; }
 
 int  Response::getIndexFile()

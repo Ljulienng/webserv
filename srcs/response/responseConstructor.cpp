@@ -144,11 +144,12 @@ Response*    getMethodResponse(Response *response, t_configMatch &configMatch)
         
         response->setStatus(OK);
         
-        // need to set the new file to read it
+        // new version : just create file before to pass in poll() to read the fd 
         response->setPollFdFileToRead(path.getFilePath().c_str());
         response->addFile();
         response->setContentType(extension.getMime());
-        /* version qui marche mais sans repasser par poll()
+        
+        /* ancienne version qui marche mais sans repasser par poll()
         if (getExtension(configMatch.pathTranslated) == "php") // display content file if no cgi
             response.setContent(path.getFileContent(), "text/plain");
         else

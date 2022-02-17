@@ -40,7 +40,7 @@ void	Hub::_addClientSocket(int acceptRet, Socket* listenSocket)
 }
 
 void	Hub::_storeFdToPoll()
-{	std::cerr << "storefdtopoll 0\n";
+{
 	memset(_fds, 0, sizeof(_fds));
 	_nfds = 0;
 	_arr.clear();
@@ -80,26 +80,21 @@ void	Hub::_storeFdToPoll()
 			}
 		}
 	}
-	std::cerr << "storefdtopoll 1\n";
 }
 
 void	Hub::process()
 {
 	_storeFdToPoll(); 
-	std::cerr << "nfds = " << _nfds << "\n";
-	std::cerr << "g_fileArray size = " << g_fileArr.size() << "\n";
 	int pollRet = poll(_fds, _nfds, -1); // call poll and wait for an event
 
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
 	{	
-		std::cerr << "close connection 0\n";
 		_closeAllConnections();
 		return ;
 	}
 	static size_t cgiCount[MAX_CGI_RUNNING] = {0};
 	for (size_t i = 0; i < _nfds - g_fileArr.size(); i++) 
-	{	std::cerr << "i = " << i << " compare to = " << _nfds - g_fileArr.size()<< "\n";
-		std::cerr << "g_fileArray size = " << g_fileArr.size() << "\n";
+	{
 		// only way found to detect end of cgi POLLIN to send response to the client
 		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && cgiCount[i] > 0)
 		{
@@ -137,7 +132,6 @@ void	Hub::process()
 			_closeConnection(_arr[i]->_index, _arr[i]->getType());
 		else
 		{
-			std::cerr << "close connection 1\n";
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
@@ -192,7 +186,6 @@ bool		Hub::_receiveRequest(size_t i)
 	bytes = recv(client->getPollFd().fd, &buffer[0], MAX_BUF_LEN, 0);
 	if (bytes < 0)
 	{
-		std::cerr << "close connection 2\n";
 		_closeAllConnections();
 		exit(EXIT_FAILURE);
 	}
@@ -264,8 +257,7 @@ void		Hub::_prepareResponse(size_t i)
 			else
 			{
 				constructResponse(response, *it, configMatch);
-				std::cerr << "fd = " << response->getPollFdFile().fd << "\n";
-				std::cerr << "state = "  << response->getStateFile() << "\n";
+				// std::cerr << "fd = " << response->getPollFdFile().fd << "\n";
 				client->getResponses().push_back(response);
 			}
 			requests.erase(it++);
@@ -303,56 +295,47 @@ void 		Hub::_sendResponse(size_t i)
 	ClientSocket* 			client = _clientSockets[_arr[i]->_index];
 	std::list<Response*>	&responses = client->getResponses();
 	std::string				buffer = client->getBuffer();
-	std::cerr << "nb responses = " << responses.size() << "\n";
-
+	bool					endOfResponse = false, endOfReadFile = false;
+	
 	// we process the responses one by one and append them to the client buffer
-	// while (responses.empty() == false)
 	for (std::list<Response*>::iterator it = responses.begin(); it != responses.end(); it++)
-	{	
+	{
 		if ((*it)->getHeader("Connection") == "close")
 		{
 			_closeConnection(_arr[i]->_index, _arr[i]->getType());
 			return ;
 		}
-		// std::cerr << "pollin = " << POLLIN << "   revent response fd = " << (*it)->getPollFdFile().fd << "  " << (*it)->getPollFdFile().events << "  " << (*it)->getPollFdFile().revents << "\n"; 
 		// std::cerr << "pollin = " << POLLIN << "   revent response fd = " << _fds[(*it)->getIndexFile()].fd << "  " << _fds[(*it)->getIndexFile()].events << "  " << _fds[(*it)->getIndexFile()].revents << "\n"; 
 		if ((*it)->getIndexFile() == -1)
-		{
-			std::cerr << "not a file\n";
-			std::string		message = (*it)->getMessage();
-			buffer.insert(buffer.end(), message.begin(), message.end());
-			responses.erase(it++);
+		{	//std::cerr << "not a file\n";
+			endOfResponse = true;
 		}
 		else if (_fds[(*it)->getIndexFile()].revents & POLLIN)
-		{
-			std::cerr << "data to read in a file\n";
-			char bufFile[2048];
-			size_t bytes = read(_fds[(*it)->getIndexFile()].fd, bufFile, 2048);
-			if (bytes > 0)
-				for (size_t i = 0; i < bytes; i++)
-					(*it)->addToContent(bufFile[i]);
-			else
-			{	std::cerr << "bytes = 0 -> end to read\n";
-				(*it)->endToRead();
-				_nfds--;
-				std::string		message = (*it)->getMessage();
-				buffer.insert(buffer.end(), message.begin(), message.end());
-				responses.erase(it++);
-			}
+		{	
+			// std::cerr << "data to read in a file\n";
+			(*it)->readFile(&endOfResponse, &endOfReadFile);
+			
 		}
 		else
-		{	std::cerr << "revents != pollin -> end to read\n";
-			std::cerr << "index = " << (*it)->getIndexFile() << "\n";
-			(*it)->endToRead();
+		{	//std::cerr << "revents != pollin -> end to read\n";
+			endOfResponse = true;
+			endOfReadFile = true;
+		}
+		
+		if (endOfResponse)
+		{
+			if (endOfReadFile)
+				(*it)->endToRead();
 			_nfds--;
-			std::string		message = (*it)->getMessage();
+			std::string	message = (*it)->getMessage();
 			buffer.insert(buffer.end(), message.begin(), message.end());
+			delete (*it);
 			responses.erase(it++);
 		}
+		
 	}
-
-	std::cerr << "nb responses = " << responses.size() << "  buffer size = " << buffer.size() << "\n";
-	// if (buffer.empty() == false)
+	
+	// std::cerr << "nb responses = " << responses.size() << "  buffer size = " << buffer.size() << "\n";
 	if (responses.empty() && !buffer.empty())
 	{	// we can use send() ( without flag parameter, send is equivalent to write() )
 		// so write into the _fds[i].fd the content of buffer

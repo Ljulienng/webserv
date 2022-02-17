@@ -62,16 +62,14 @@ class Response
 
 
         /******* test ********/
-        void                addToContent(char c);
+        void                readFile(bool *endOfResponse, bool *endOfReadFile);
         void 	            addFile();
         void 	            deleteFile();
         void                setIndexFile(int indexFile); // index pour retrouver le file dans _fds[]
-        void                setPollFd(struct pollfd newPollFd);
         void                endToRead();
         void                setPollFdFileToRead(const char *file);
-        void                setStateFile(int state);
         struct pollfd       getPollFdFile();
-        int                 &getStateFile();
+        int                 getStateFile();
         int                 getIndexFile();
         /********************/
 

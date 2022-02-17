@@ -70,7 +70,8 @@ ClientSocket::ClientSocket(const ClientSocket &src) : Socket()
 	*this = src;
 }
 
-ClientSocket::~ClientSocket() {}
+ClientSocket::~ClientSocket()
+{}
 
 ClientSocket &ClientSocket::operator=(const ClientSocket &src)
 {
