@@ -177,6 +177,7 @@ void 	appendToFile(const std::string &path, const char *content, size_t n)
 	file.write(content, n);
 	file.close();
 
+	//V2
 	// (void)n;
 	// std::string toAppend(content, 0, n);
 	// std::ofstream file;
@@ -186,6 +187,16 @@ void 	appendToFile(const std::string &path, const char *content, size_t n)
 	// 	file << toAppend;
 	// 	file.close();
 	// }
+}
+
+void 	appendToFileBis(const std::string &path, const char *content, size_t n)
+{
+	FILE * pfile;
+	pfile = fopen(path.c_str(), "w+");
+	std::cerr << "[appendToFile] fd of postFile = " << fileno(pfile) << "\n";
+	for (size_t i = 0; i < n; i++)
+		fputc(content[i], pfile);
+	fclose(pfile);
 }
 
 std::string     getExtension(std::string filename)

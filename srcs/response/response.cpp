@@ -98,7 +98,11 @@ void    Response::readFile(bool *endOfResponse, bool *endToReadFile)
 
 void    Response::writeFile(bool *endOfResponse, bool *endToWriteFile)
 {
-    write(_pollFdFile.fd, _bodyRequestToPost.c_str(), _bodyRequestToPost.size());
+    std::cerr << "[writeFile]  size = " << _bodyRequestToPostVector.size() << "\n";
+    
+    //write(_pollFdFile.fd, _bodyRequestToPost.c_str(), _bodyRequestToPost.size());
+    for (size_t i = 0; i < _bodyRequestToPostVector.size(); i++)
+        write(_pollFdFile.fd, &_bodyRequestToPostVector[i], 1);
     *endOfResponse = true;
     *endToWriteFile = true;
 }
@@ -132,6 +136,18 @@ bool    Response::setPollFdFileToRead(const char *file)
     return true;
 }
 
+bool    Response::setPollFdFileToWrite(const char *file, /*std::string*/ std::vector<unsigned char> bodyRequestToPost)
+{
+    _pollFdFile.fd = open(file, O_CREAT | O_WRONLY | O_TRUNC , 0666); // doute sur des flags
+    if (_pollFdFile.fd < 0)
+        return false;
+    _pollFdFile.events = POLLOUT;
+    _stateFile = DATATOWRITE;
+    // _bodyRequestToPost = bodyRequestToPost;
+    _bodyRequestToPostVector = bodyRequestToPost;
+    return true;
+}
+
 void                Response::endToReadorWrite() 
 {
     close(_pollFdFile.fd);
@@ -141,17 +157,6 @@ void                Response::endToReadorWrite()
     _stateFile = NONE;
     deleteFile();
     setContentLength();
-}
-
-bool    Response::setPollFdFileToWrite(const char *file, std::string bodyRequestToPost)
-{
-    _pollFdFile.fd = open(file, O_CREAT | O_TRUNC | O_WRONLY, 0666); // doute sur des flags
-    if (_pollFdFile.fd < 0)
-        return false;
-    _pollFdFile.events = POLLOUT;
-    _stateFile = DATATOWRITE;
-    _bodyRequestToPost = bodyRequestToPost;
-    return true;
 }
 
 struct pollfd       Response::getPollFdFile()

@@ -35,6 +35,7 @@ class Response
         int                                 _stateFile;
         int                                 _indexFile;
         std::string                         _bodyRequestToPost; // post : stocke au depart puis on la copie dans le fichier cree apres etre passe dans poll
+        std::vector<unsigned char>          _bodyRequestToPostVector;
         /********************/
 
         void        _updateMessage();
@@ -69,7 +70,7 @@ class Response
 
         void                setIndexFile(int indexFile); // index pour retrouver le file dans _fds[]
         bool                setPollFdFileToRead(const char *file);
-        bool                setPollFdFileToWrite(const char *file, std::string bodyRequestToPost);
+        bool                setPollFdFileToWrite(const char *file, /*std::string*/ std::vector<unsigned char> bodyRequestToPost);
         void                endToReadorWrite();
         
         struct pollfd       getPollFdFile();
