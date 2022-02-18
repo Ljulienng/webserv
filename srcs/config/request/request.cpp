@@ -358,12 +358,10 @@ Request::Request(const std::string &request) :
 	_method(""), _path(""), _version(""), _headers(), _body(""), _httpStatus(200), _ret(200)
 {
 	if (verifBuffer(request))
-	{
 		_ret = 400;
-		_httpStatus.setStatus(400);
-	}
 	if (_ret == 200)
 		parse(request);
+	_httpStatus.setStatus(_ret);
 }
 
 Request::Request(const Request &obj) :

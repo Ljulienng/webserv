@@ -84,8 +84,8 @@ std::string     &Response::getMessage()
 
 void    Response::readFile(bool *endOfResponse, bool *endToReadFile)
 {
-    char bufFile[MAX_BUF_LEN];
-    size_t bytes = read(_pollFdFile.fd, bufFile, MAX_BUF_LEN);
+    char bufFile[BUF_SIZE];
+    size_t bytes = read(_pollFdFile.fd, bufFile, BUF_SIZE);
     if (bytes > 0)
         for (size_t i = 0; i < bytes; i++)
             _content.push_back(bufFile[i]);

@@ -85,8 +85,7 @@ void	Hub::_storeFdToPoll()
 void	Hub::process()
 {
 	_storeFdToPoll(); 
-	int pollRet = poll(_fds, _nfds, -1); // call poll and wait for an event
-
+	int pollRet = poll(_fds, _nfds, 1000); // call poll and wait for an event
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
 	{	
 		_closeAllConnections();
@@ -178,12 +177,12 @@ static size_t	indexServer(ClientSocket client)
 bool		Hub::_receiveRequest(size_t i)
 {
 	int 				bytes = 0;
-	std::vector<char>	buffer(MAX_BUF_LEN);
+	std::vector<char>	buffer(BUF_SIZE);
 	ClientSocket* 		client = _clientSockets[_arr[i]->_index];
 	std::vector<Server> servers = Configuration::getInstance().getServers();
 	bool				close = false;
 
-	bytes = recv(client->getPollFd().fd, &buffer[0], MAX_BUF_LEN, 0);
+	bytes = recv(client->getPollFd().fd, &buffer[0], BUF_SIZE, 0);
 	if (bytes < 0)
 	{
 		_closeAllConnections();
@@ -192,7 +191,7 @@ bool		Hub::_receiveRequest(size_t i)
 	else if (bytes > 0)
 	{
 		client->getBuffer().append(buffer.begin(), buffer.end());
-		if (bytes < MAX_BUF_LEN)
+		if (bytes < BUF_SIZE)
 		{
 			client->addRequest();
 			if (client->getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
@@ -249,7 +248,8 @@ void		Hub::_prepareResponse(size_t i)
 				client->getResponses().push_back(response);
 			}
 			else if (_needCgi(*it, configMatch))
-			{	// execute cgi and create 2 cgi sockets (in and out)
+			{
+				// execute cgi and create 2 cgi sockets (in and out)
 				CgiExecutor cgi(*it, client, configMatch); // copy the request to have an empty pool of request and leave the loop
 				_cgiSocketsFromCgi.push_back(cgi.getCgiSocketFromCgi());
 				_cgiSocketsToCgi.push_back(cgi.getCgiSocketToCgi()); 
@@ -273,7 +273,7 @@ void		Hub::_prepareCgiResponse(size_t i)
 {
 	Response*	response = new Response();
 	t_configMatch 	configMatch;
-	
+
 	configMatch = getConfigMatch(_cgiSocketsFromCgi[i]->getRequest(), _cgiSocketsFromCgi[i]->getClient()->getServerName());
 	cgiResponse(response, _cgiSocketsFromCgi[i]->getBuffer(), configMatch);
 	
@@ -296,7 +296,7 @@ void 		Hub::_sendResponse(size_t i)
 	std::list<Response*>	&responses = client->getResponses();
 	std::string				buffer = client->getBuffer();
 	bool					endOfResponse = false, endToReadFile = false, endToWriteFile = false;
-	
+
 	// we process the responses one by one and append them to the client buffer
 	for (std::list<Response*>::iterator it = responses.begin(); it != responses.end(); it++)
 	{

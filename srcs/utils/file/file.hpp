@@ -4,7 +4,6 @@
 #include "webserv.hpp"
 #include "mime.hpp"
 
-#define BUF_SIZE 512
 /*
 ** useful functions to handle files and directories
 */

@@ -41,9 +41,7 @@
 #include <sstream>
 #include <sys/stat.h>
 
-#define MAX_BUF_LEN 2048
-#define WRITE 0
-#define READ 1
+#define BUF_SIZE 1024
 #define MAX_CONNECTIONS 100
 
 // colors

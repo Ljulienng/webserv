@@ -6,8 +6,6 @@
 #include "response.hpp"
 #include "clientSocket.hpp"
 
-#define CGI_BUF_LEN 256
-
 enum state
 {
     INIT,
