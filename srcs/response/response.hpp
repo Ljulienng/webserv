@@ -70,8 +70,9 @@ class Response
         void                setIndexFile(int indexFile); // index pour retrouver le file dans _fds[]
         void                setBodyRequestToPost(std::string bodyRequest);
         void                endToRead();
-        void                setPollFdFileToRead(const char *file);
-        void                setPollFdFileToWrite(const char *file);
+        void                endToWrite();
+        bool                setPollFdFileToRead(const char *file);
+        bool                setPollFdFileToWrite(const char *file);
         struct pollfd       getPollFdFile();
         int                 getStateFile();
         int                 getIndexFile();

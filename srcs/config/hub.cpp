@@ -330,8 +330,8 @@ void 		Hub::_sendResponse(size_t i)
 		{
 			if (endToReadFile)
 				(*it)->endToRead();
-			// else if (endToWriteFile)
-			// 	(*it)->endToWrite();
+			else if (endToWriteFile)
+				(*it)->endToWrite();
 			_nfds--;
 			std::string	message = (*it)->getMessage();
 			buffer.insert(buffer.end(), message.begin(), message.end());

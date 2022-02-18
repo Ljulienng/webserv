@@ -137,18 +137,35 @@ void                Response::endToRead()
     setContentLength();
 }
 
-void    Response::setPollFdFileToRead(const char *file)
+void                Response::endToWrite()
 {
-    _pollFdFile.fd = open(file, O_RDONLY);
-    _pollFdFile.events = POLLIN;
-    _stateFile = DATATOREAD;
+    close(_pollFdFile.fd);
+    _pollFdFile.fd = 0;
+    _pollFdFile.events = 0;
+    _indexFile = -1;
+    _stateFile = NONE;
+    deleteFile();
+    setContentLength();
 }
 
-void    Response::setPollFdFileToWrite(const char *file)
+bool    Response::setPollFdFileToRead(const char *file)
+{
+    _pollFdFile.fd = open(file, O_RDONLY);
+    if (_pollFdFile.fd < 0)
+        return false;
+    _pollFdFile.events = POLLIN;
+    _stateFile = DATATOREAD;
+    return true;
+}
+
+bool    Response::setPollFdFileToWrite(const char *file)
 {
     _pollFdFile.fd = open(file, O_CREAT | O_TRUNC | O_RDWR, 0666); // doute sur des flags
+    if (_pollFdFile.fd < 0)
+        return false;
     _pollFdFile.events = POLLOUT;
     _stateFile = DATATOWRITE;
+    return true;
 }
 
 struct pollfd       Response::getPollFdFile()

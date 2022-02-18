@@ -144,9 +144,9 @@ Response*    getMethodResponse(Response *response, t_configMatch &configMatch)
         Mime    extension(getExtension(configMatch.pathTranslated));
         
         response->setStatus(OK);
-        
         // new version : just create file before to pass in poll() to read the fd 
-        response->setPollFdFileToRead(path.getFilePath().c_str());
+        if (response->setPollFdFileToRead(path.getFilePath().c_str()) == false)
+            return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
         response->addFile();
         response->setContentType(extension.getMime());
         
@@ -159,10 +159,7 @@ Response*    getMethodResponse(Response *response, t_configMatch &configMatch)
         return response;
     }
     else if (path.isDirectory() && configMatch.location.getAutoindex())
-    {
-        std::cerr << "directory\n";
         return autoIndexResponse(response, configMatch.pathTranslated);
-    }
     // a traiter en amont en recuperant la pathTranslated car cgi a executer si .php
     // else if (path.isDirectory() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
     // {
@@ -170,9 +167,7 @@ Response*    getMethodResponse(Response *response, t_configMatch &configMatch)
     //     return indexResponse(response, configMatch.pathTranslated, configMatch.index);
     // }
     else
-    {
         return errorResponse(response, configMatch, NOT_FOUND);
-    }
 }
 
 Response*    postMethodResponse(Response* response, Request &request, t_configMatch &configMatch)
@@ -190,12 +185,22 @@ Response*    postMethodResponse(Response* response, Request &request, t_configMa
         return errorResponse(response, configMatch, FORBIDDEN);
 
     // check if it's a multipart/form-data
+    // upload file for example
     if (request.getHeader("Content-Type").find("multipart/form-data") != std::string::npos)
         return multipart(response, request, configMatch, request.getHeader("Content-Type"));
 
-    // create the file
-    if (!fileToPost.createFile(pathToUpload, request.getBody()))
+    // new version : just create file before to pass in poll() to write the fd 
+    // upload message/text for example
+    if (response->setPollFdFileToWrite(pathToUpload.c_str()) == false)
         return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
+    response->addFile();
+    response->setBodyRequestToPost(request.getBody());
+
+    // ancienne version qui marche mais sans repasser par poll()
+    // create the file
+    // if (!fileToPost.createFile(pathToUpload, request.getBody()))
+    //     return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
+
     response->setStatus(CREATED);
 
     // indicate the url of the resource we created thanks to "location" header
