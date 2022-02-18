@@ -10,6 +10,7 @@
 #include "server.hpp"
 
 class Configuration;
+typedef struct s_multipart t_multipart;
 
 /******* test ********/
 enum fileState
@@ -32,10 +33,13 @@ class Response
         /******* test ********/
         // manage files to read file (get) or append to file (post)
         struct pollfd                       _pollFdFile;
+        std::string                         _fileToWriteIn;
         int                                 _stateFile;
         int                                 _indexFile;
         std::string                         _bodyRequestToPost; // post : stocke au depart puis on la copie dans le fichier cree apres etre passe dans poll
         std::vector<unsigned char>          _bodyRequestToPostVector;
+        std::pair<char*,size_t>             _bodyRequestToPostchar;
+        std::list<t_multipart*>             _multiparts;
         /********************/
 
         void        _updateMessage();
@@ -70,14 +74,16 @@ class Response
 
         void                setIndexFile(int indexFile); // index pour retrouver le file dans _fds[]
         bool                setPollFdFileToRead(const char *file);
-        bool                setPollFdFileToWrite(const char *file, /*std::string*/ std::vector<unsigned char> bodyRequestToPost);
+        bool                setPollFdFileToWrite(std::string file, /*std::string*/ /*std::vector<unsigned char>*/std::pair<char*,size_t>  bodyRequestToPost);
         void                endToReadorWrite();
-        
+        void                setMultiparts(std::list<t_multipart*> parts);
         struct pollfd       getPollFdFile();
         int                 getStateFile();
         int                 getIndexFile();
         /********************/
 
 };
+
+#include "multipart.hpp"
 
 #endif

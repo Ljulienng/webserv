@@ -7,6 +7,8 @@
 #include "configMatch.hpp"
 #include "multipart.hpp"
 
+typedef struct  s_configMatch t_configMatch;
+
 Response*       errorResponse(Response* response, t_configMatch  &configMatch, int status);
 Response*       cgiResponse(Response* response, std::string cgiResponse, t_configMatch  &configMatch);
 Response*       constructResponse(Response* response, Request &request, t_configMatch configMatch);

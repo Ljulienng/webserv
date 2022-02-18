@@ -4,8 +4,9 @@
 #include "webserv.hpp"
 // #include "request.hpp"
 #include "response.hpp"
-#include "configMatch.hpp"
 #include "responseConstructor.hpp"
+
+typedef struct  s_configMatch t_configMatch;
 
 typedef struct  s_multipart
 {
