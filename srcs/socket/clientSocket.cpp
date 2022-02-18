@@ -59,7 +59,8 @@ ClientSocket::ClientSocket() :
 			_buffer(),
 			_requests(),
 			_responses(),
-			_serverName()
+			_serverName(),
+			_bytes(0)
 			// to be completed if new attributes
 {
 	_type = client;

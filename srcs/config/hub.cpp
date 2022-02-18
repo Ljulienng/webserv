@@ -166,21 +166,25 @@ static size_t	indexServer(ClientSocket client)
 */
 bool		Hub::_receiveRequest(size_t i)
 {
-	int 				bytes = 0;
+	int 				bytes = 0, checkRet = 0;
 	std::vector<char>	buffer(MAX_BUF_LEN);
 	ClientSocket* 		client = _clientSockets[_arr[i]->_index];
 	std::vector<Server> servers = Configuration::getInstance().getServers();
 	bool				close = false;
-	struct timeval timeout;      
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 1;
+	// // struct timeval timeout;      
+    // // timeout.tv_sec = 0;
+    // // timeout.tv_usec = 1;
 
 
-	if (setsockopt (client->getPollFd().fd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
-                sizeof timeout) < 0)
-        std::cout << "setsockopt failed";
+	// // if (setsockopt (client->getPollFd().fd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+    // //             sizeof timeout) < 0)
+    //     // std::cout << "setsockopt failed";
 	// fcntl(client->getPollFd().fd, F_SETFL, O_NONBLOCK);
+
 	bytes = recv(client->getPollFd().fd, &buffer[0], MAX_BUF_LEN, 0);
+	client->_bytes += bytes;
+	// std::cout << "bytes = " << bytes << " ret = " << ret << std::endl;
+	
 	if (bytes < 0)
 	{
 		_closeAllConnections();
@@ -189,34 +193,20 @@ bool		Hub::_receiveRequest(size_t i)
 	else if (bytes > 0)
 	{
 		client->getBuffer().append(buffer.begin(), lastChar(buffer));
-		if (bytes < MAX_BUF_LEN)
+		std::cout << client->getBuffer() << std::endl;
+		if ((checkRet = checkRequest(client->getBuffer())) == GOOD)
 		{
-			while (1)
-			{
-				// std::cout << "in the loop bytes = " << bytes << std::endl;
-				if (bytes < 1)
-				{
-					if (bytes == -1)
-					{
-						_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
-						close = true;
-					}
-					break;
-				}
-				buffer.clear();
-				buffer.resize(MAX_BUF_LEN);
-				if ((bytes = recv(client->getPollFd().fd, &buffer[0], MAX_BUF_LEN, 0)) < 1)
-					break ;
-				if (bytes)
-					client->getBuffer().append(buffer.begin(), lastChar(buffer));
-			}
-			// std::cout << client->getBuffer() << "\n size = " << client->getBuffer().size();
 			client->addRequest();
 			if (client->getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
 				client->getRequests().back().getHttpStatus().setStatus(413);
 			std::cout << "error code = " << client->getRequests().back().getHttpStatus().getCode() << std::endl;
 			log::logEvent("Received a new request", client->getFd());
 		}
+		// else if (checkRet == DISCONNECT)
+		// {
+		// 	_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
+		// 	close = true;
+		// }
 	}
 	else //bytes = 0;
 	{

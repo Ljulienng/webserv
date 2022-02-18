@@ -15,6 +15,7 @@ class ClientSocket : public Socket
         std::string             _serverName;
 
     public :
+        int                     _bytes;
         ClientSocket();
         ClientSocket(const ClientSocket &src);
         virtual ~ClientSocket();		

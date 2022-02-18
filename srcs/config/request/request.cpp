@@ -67,15 +67,27 @@ int		Request::verifArg()
 	if (_version.compare("1.1"))
 	{
 		std::cerr << "Bad HTTP version" << std::endl;
-		return ((_ret = 400));
-	}	
-	
+		return ((_ret = 505));
+	}
+
+	// CHECKING PATH
+	if (_path.find('.') != std::string::npos)
+	{
+		std::string file = _path.substr(_path.find('.') + 1, std::string::npos);
+
+		if (file != "html" && file != ("php"))
+		{
+			std::cerr << "Bad extension" << std::endl;
+			return ((_ret = 404));
+		}
+	}
+
 	//CHECKING METHOD
 	for (size_t i = 0; i < methods.size(); i++)
 		if (_method == methods[i])
 			return (_ret);
-	std::cerr << "Invalid method" << std::endl;
-	return ((_ret = 400));
+	std::cerr << "405: Invalid method" << std::endl;
+	return ((_ret = 405));
 }
 
 int		Request::parseFirstLine(std::string line)
@@ -403,4 +415,49 @@ void			Request::debug()
 	std::cout << "\n***** BODY *****\n";
 	std::cout << _body;
 	std::cout << "\n***** END OF DEBUG *****\n";
+}
+
+int			checkRequest(std::string &buffer)
+{
+	int requestType = 0;
+
+	if (buffer.find("GET") == 0)
+		requestType = GET;
+	else if (buffer.find("POST") == 0)
+		requestType = POST;
+	else if (buffer.find("DELETE") == 0)
+		requestType = DELETE;
+	else if (buffer.find("HEAD") == 0 || buffer.find("PUT") == 0)
+		requestType = OTHER;
+	if (requestType == GET || requestType == DELETE || requestType == OTHER)
+	{
+		if (buffer.find("\r\n\r\n") == std::string::npos)
+			return (WAIT);
+	}
+	else if (requestType == POST)
+	{
+		size_t i = buffer.find("\r\n\r\n");
+		std::string body;
+
+		if (i == std::string::npos)
+			return (WAIT);
+		if (buffer.find("\r\n\r\n") + 5 == std::string::npos)
+			return (WAIT);
+		if (buffer.find("Transfer-Encoding: chunked") != std::string::npos)
+		{
+			if (buffer.find("0\r\n\r\n") == std::string::npos)
+				return (WAIT);
+		}
+		else if (buffer.find("Content-Length") != std::string::npos)
+		{
+			size_t j = buffer.find("Content-Length");
+			
+			body.assign(buffer, i + 4, atoi(buffer.substr(j, j + 24).c_str()));
+			if (body.find("\r\n\r\n") == std::string::npos)
+				return (WAIT);
+		}
+		
+	}
+	// std::cout << "requesttype = " << requestType << std::endl;
+	return (GOOD);
 }
