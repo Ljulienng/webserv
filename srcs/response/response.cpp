@@ -99,6 +99,7 @@ void    Response::readFile(bool *endOfResponse, bool *endToReadFile)
 void    Response::writeFile(bool *endOfResponse, bool *endToWriteFile)
 {
     std::list<t_multipart*>::iterator it = _multiparts.begin();
+
     for ( ; it != _multiparts.end(); it++)
         write(_pollFdFile.fd, (*it)->content, (*it)->length);
     it = _multiparts.begin();
