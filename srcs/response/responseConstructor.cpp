@@ -191,10 +191,9 @@ Response*    postMethodResponse(Response* response, Request &request, t_configMa
 
     // new version : just create file before to pass in poll() to write the fd 
     // upload message/text for example
-    if (response->setPollFdFileToWrite(pathToUpload.c_str()) == false)
+    if (response->setPollFdFileToWrite(pathToUpload.c_str(), request.getBody()) == false)
         return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
     response->addFile();
-    response->setBodyRequestToPost(request.getBody());
 
     // ancienne version qui marche mais sans repasser par poll()
     // create the file

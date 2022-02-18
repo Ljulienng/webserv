@@ -50,7 +50,6 @@ class Response
         void                                setContent(std::vector<unsigned char> content, std::string contentType);
         void                                setContentType(std::string contentType);
         void                                setContentLength();
-        
         void                                setStatus(int status);
         
         // GETTERS
@@ -67,12 +66,12 @@ class Response
         void                writeFile(bool *endOfResponse, bool *endToWriteFile);
         void 	            addFile();
         void 	            deleteFile();
+
         void                setIndexFile(int indexFile); // index pour retrouver le file dans _fds[]
-        void                setBodyRequestToPost(std::string bodyRequest);
-        void                endToRead();
-        void                endToWrite();
         bool                setPollFdFileToRead(const char *file);
-        bool                setPollFdFileToWrite(const char *file);
+        bool                setPollFdFileToWrite(const char *file, std::string bodyRequestToPost);
+        void                endToReadorWrite();
+        
         struct pollfd       getPollFdFile();
         int                 getStateFile();
         int                 getIndexFile();

@@ -88,14 +88,29 @@ Response*    multipart(Response* response, Request &request, t_configMatch &conf
 
     // create and write content into the new file for each part
     std::list<t_multipart>::iterator it = parts.begin();
-	while (it != parts.end())
+	std::string filenametest = it->getFilename();
+    std::string bodyContent, bodyBlock, bodyToCopy;
+    std::vector<unsigned char> a;
+    while (it != parts.end())
     {
         std::string filename = it->getFilename();
         if (filename.empty())  
             return errorResponse(response, configMatch, BAD_REQUEST);
-        appendToFile(configMatch.root + configMatch.server.getUploadPath() + "/" + filename, reinterpret_cast<char*>(it->content), it->length);
+        // appendToFile(configMatch.root + configMatch.server.getUploadPath() + "/" + filename, reinterpret_cast<char*>(it->content), it->length);
+        for (size_t i = 0; i < it->length; i++)
+            a.push_back((it->content)[i]);
+        std::cerr << "sizeof a = " << sizeof(a) << "   sizeof it->content = " << sizeof(it->content) << "\n";
+        std::cerr << "size a  = " << a.size() << "   size it->content  = " << it->length  << "\n";
+        std::cerr << "sizeof a = " << sizeof(a[0]) << "   sizeof it->content = " << sizeof((it->content)[0]) << "\n";
+
+        bodyToCopy += std::string(a.begin(), a.end());
         ++it;
     }
+
+    // new version : just create file before to pass in poll() to write the fd 
+    if (response->setPollFdFileToWrite((configMatch.root + configMatch.server.getUploadPath() + "/" + filenametest).c_str(), bodyToCopy) == false)
+        return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
+    response->addFile();
 
     response->setStatus(CREATED);
 	response->setContent(html::buildPage("File upload in : " + configMatch.root + configMatch.server.getUploadPath()), "text/html");

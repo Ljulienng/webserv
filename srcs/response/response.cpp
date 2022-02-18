@@ -121,32 +121,6 @@ void    Response::setIndexFile(int indexFile)
     _indexFile = indexFile;
 }
 
-void    Response::setBodyRequestToPost(std::string bodyRequest)
-{
-    _bodyRequestToPost = bodyRequest;
-}
-
-void                Response::endToRead()
-{
-    close(_pollFdFile.fd);
-    _pollFdFile.fd = 0;
-    _pollFdFile.events = 0;
-    _indexFile = -1;
-    _stateFile = NONE;
-    deleteFile();
-    setContentLength();
-}
-
-void                Response::endToWrite()
-{
-    close(_pollFdFile.fd);
-    _pollFdFile.fd = 0;
-    _pollFdFile.events = 0;
-    _indexFile = -1;
-    _stateFile = NONE;
-    deleteFile();
-    setContentLength();
-}
 
 bool    Response::setPollFdFileToRead(const char *file)
 {
@@ -158,13 +132,25 @@ bool    Response::setPollFdFileToRead(const char *file)
     return true;
 }
 
-bool    Response::setPollFdFileToWrite(const char *file)
+void                Response::endToReadorWrite() 
 {
-    _pollFdFile.fd = open(file, O_CREAT | O_TRUNC | O_RDWR, 0666); // doute sur des flags
+    close(_pollFdFile.fd);
+    _pollFdFile.fd = 0;
+    _pollFdFile.events = 0;
+    _indexFile = -1;
+    _stateFile = NONE;
+    deleteFile();
+    setContentLength();
+}
+
+bool    Response::setPollFdFileToWrite(const char *file, std::string bodyRequestToPost)
+{
+    _pollFdFile.fd = open(file, O_CREAT | O_TRUNC | O_WRONLY, 0666); // doute sur des flags
     if (_pollFdFile.fd < 0)
         return false;
     _pollFdFile.events = POLLOUT;
     _stateFile = DATATOWRITE;
+    _bodyRequestToPost = bodyRequestToPost;
     return true;
 }
 

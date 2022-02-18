@@ -311,13 +311,11 @@ void 		Hub::_sendResponse(size_t i)
 			endOfResponse = true;
 		}
 		else if (_fds[(*it)->getIndexFile()].revents & POLLIN) // getRequest
-		{	
-			// std::cerr << "data to read in a file\n";
+		{	// std::cerr << "data to read in a file\n";
 			(*it)->readFile(&endOfResponse, &endToReadFile);	
 		}
 		else if (_fds[(*it)->getIndexFile()].revents & POLLOUT) // postRequest
-		{
-			std::cerr << "data to write in a file\n";
+		{	// std::cerr << "data to write in a file\n";
 			(*it)->writeFile(&endOfResponse, &endToWriteFile);
 		}
 		else
@@ -328,10 +326,8 @@ void 		Hub::_sendResponse(size_t i)
 		
 		if (endOfResponse)
 		{
-			if (endToReadFile)
-				(*it)->endToRead();
-			else if (endToWriteFile)
-				(*it)->endToWrite();
+			if (endToReadFile || endToWriteFile)
+				(*it)->endToReadorWrite();
 			_nfds--;
 			std::string	message = (*it)->getMessage();
 			buffer.insert(buffer.end(), message.begin(), message.end());
