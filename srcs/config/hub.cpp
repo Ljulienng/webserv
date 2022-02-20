@@ -171,20 +171,8 @@ bool		Hub::_receiveRequest(size_t i)
 	ClientSocket* 		client = _clientSockets[_arr[i]->_index];
 	std::vector<Server> servers = Configuration::getInstance().getServers();
 	bool				close = false;
-	// // struct timeval timeout;      
-    // // timeout.tv_sec = 0;
-    // // timeout.tv_usec = 1;
-
-
-	// // if (setsockopt (client->getPollFd().fd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
-    // //             sizeof timeout) < 0)
-    //     // std::cout << "setsockopt failed";
-	// fcntl(client->getPollFd().fd, F_SETFL, O_NONBLOCK);
 
 	bytes = recv(client->getPollFd().fd, &buffer[0], MAX_BUF_LEN, 0);
-	client->_bytes += bytes;
-	// std::cout << "bytes = " << bytes << " ret = " << ret << std::endl;
-	
 	if (bytes < 0)
 	{
 		_closeAllConnections();
@@ -193,13 +181,14 @@ bool		Hub::_receiveRequest(size_t i)
 	else if (bytes > 0)
 	{
 		client->getBuffer().append(buffer.begin(), lastChar(buffer));
-		std::cout << "buffer = "<< client->getBuffer();
+		// std::cout << "buffer = "<< client->getBuffer();
 		if ((checkRet = checkRequest(client->getBuffer())) == GOOD)
 		{
+			// std::cout << client->getBuffer();
 			client->addRequest();
 			if (client->getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
 				client->getRequests().back().getHttpStatus().setStatus(413);
-			std::cout << "error code = " << client->getRequests().back().getHttpStatus().getCode() << std::endl;
+			// std::cout << "error code = " << client->getRequests().back().getHttpStatus().getCode() << std::endl;
 			log::logEvent("Received a new request", client->getFd());
 		}
 	}
