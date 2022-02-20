@@ -66,27 +66,27 @@ int		Request::verifArg()
 		_version.assign(_version, 5, _version.size() - 2);
 	if (_version.compare("1.1"))
 	{
-		std::cerr << "Bad HTTP version" << std::endl;
+		std::cerr << "505: HTTP version not supported" << std::endl;
 		return ((_ret = 505));
 	}
 
 	// CHECKING PATH
-	if (_path.find('.') != std::string::npos)
-	{
-		std::string file = _path.substr(_path.find('.') + 1, std::string::npos);
+	// if (_path.find('.') != std::string::npos)
+	// {
+	// 	std::string file = _path.substr(_path.find('.') + 1, std::string::npos);
 
-		if (file != "html" && file != ("php"))
-		{
-			std::cerr << "Bad extension" << std::endl;
-			return ((_ret = 404));
-		}
-	}
+	// 	if (file != "html" && file != ("php"))
+	// 	{
+	// 		std::cerr << "Bad extension" << std::endl;
+	// 		return ((_ret = 511));
+	// 	}
+	// }
 
 	//CHECKING METHOD
 	for (size_t i = 0; i < methods.size(); i++)
 		if (_method == methods[i])
 			return (_ret);
-	std::cerr << "405: Invalid method" << std::endl;
+	std::cerr << "405: Method not allowed" << std::endl;
 	return ((_ret = 405));
 }
 
@@ -365,7 +365,8 @@ int									Request::getRet()
 Request::Request(const std::string &request) :
 	_method(""), _path(""), _version(""), _headers(), _body(""), _ret(200)
 {
-	if (verifBuffer(request))
+	int ret = verifBuffer(request);
+	if (ret == 1)
 		_ret = 400;
 	if (_ret == 200)
 		parse(request);
@@ -427,14 +428,16 @@ int			checkRequest(std::string &buffer)
 		requestType = POST;
 	else if (buffer.find("DELETE") == 0)
 		requestType = DELETE;
-	else if (buffer.find("HEAD") == 0 || buffer.find("PUT") == 0)
-		requestType = OTHER;
-	if (requestType == GET || requestType == DELETE || requestType == OTHER)
+	else if (buffer.find("HEAD") == 0)
+		requestType = HEAD;
+	else if (buffer.find("PUT") == 0)
+		requestType = PUT;
+	if (requestType == GET || requestType == DELETE || requestType == HEAD)
 	{
 		if (buffer.find("\r\n\r\n") == std::string::npos)
 			return (WAIT);
 	}
-	else if (requestType == POST)
+	else if (requestType == POST || requestType == PUT)
 	{
 		size_t i = buffer.find("\r\n\r\n");
 		std::string body;
@@ -450,11 +453,12 @@ int			checkRequest(std::string &buffer)
 		}
 		else if (buffer.find("Content-Length") != std::string::npos)
 		{
-			size_t j = buffer.find("Content-Length");
+			// size_t j = buffer.find("Content-Length");
 			
-			body.assign(buffer, i + 4, atoi(buffer.substr(j, j + 24).c_str()));
-			if (body.find("\r\n\r\n") == std::string::npos)
-				return (WAIT);
+			// body.assign(buffer, i + 4, std::string::npos);
+			// std::cout << " body = " << body;
+			// if (body.find("\r\n") == std::string::npos)
+			// 	return (WAIT);
 		}
 		
 	}

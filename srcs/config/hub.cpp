@@ -193,7 +193,7 @@ bool		Hub::_receiveRequest(size_t i)
 	else if (bytes > 0)
 	{
 		client->getBuffer().append(buffer.begin(), lastChar(buffer));
-		std::cout << client->getBuffer() << std::endl;
+		std::cout << "buffer = "<< client->getBuffer();
 		if ((checkRet = checkRequest(client->getBuffer())) == GOOD)
 		{
 			client->addRequest();
@@ -202,11 +202,6 @@ bool		Hub::_receiveRequest(size_t i)
 			std::cout << "error code = " << client->getRequests().back().getHttpStatus().getCode() << std::endl;
 			log::logEvent("Received a new request", client->getFd());
 		}
-		// else if (checkRet == DISCONNECT)
-		// {
-		// 	_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
-		// 	close = true;
-		// }
 	}
 	else //bytes = 0;
 	{

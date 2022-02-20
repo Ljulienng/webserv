@@ -24,6 +24,7 @@ class Str
 };
 
 std::vector<char>::iterator	lastChar(std::vector<char> &str);
+char						lastChar(std::string &str);
 std::vector<std::string>	splitString(std::string &str, char c);
 void						capitalizeString(std::string &str);
 std::string					&removeChar(std::string &str, char c);
