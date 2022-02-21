@@ -288,19 +288,7 @@ int				Request::verifBuffer(const std::string &buffer)
 			return (0);
 	}
 	else
-	{
-		size_t contentLength = atoi(buffer.substr(buffer.find("Content-Length: ") + 16, 10).c_str());
-		// size_t i = 0;
-		std::string	body = buffer.substr(buffer.find("\r\n\r\n") + 4, std::string::npos);
-		//std::cerr << buffer.size() << "\n";
-		//std::cerr << body.size() << "\n";
-		size_t j;
-		for (j = body.size() - 1; !body.c_str()[j]; j--)(void)j;// std::cerr << "size = " << j << "\n"; 
-		/* for (i = 0; body.c_str()[i]; i++);*/
-		if (contentLength > j + 1 /*i*/)
-			return (1);
 		return (0);
-	}
 }
 
 
