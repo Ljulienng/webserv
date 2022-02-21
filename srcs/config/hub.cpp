@@ -305,21 +305,15 @@ void 		Hub::_sendResponse(size_t i)
 			_closeConnection(_arr[i]->_index, _arr[i]->getType());
 			return ;
 		}
-		// std::cerr << "pollin = " << POLLIN << "   revent response fd = " << _fds[(*it)->getIndexFile()].fd << "  " << _fds[(*it)->getIndexFile()].events << "  " << _fds[(*it)->getIndexFile()].revents << "\n"; 
-		if ((*it)->getIndexFile() == -1)
-		{	//std::cerr << "not a file\n";
-			endOfResponse = true;
-		}
-		else if (_fds[(*it)->getIndexFile()].revents & POLLIN) // getRequest
-		{	// std::cerr << "data to read in a file\n";
-			(*it)->readFile(&endOfResponse, &endToReadFile);	
-		}
+
+		if ((*it)->getIndexFile() == -1)						// not a file (directory for example)
+			endOfResponse = true;			
+		else if (_fds[(*it)->getIndexFile()].revents & POLLIN) 	// getRequest
+			(*it)->readFile(&endOfResponse, &endToReadFile); 	// data to read in a file	
 		else if (_fds[(*it)->getIndexFile()].revents & POLLOUT) // postRequest
-		{	// std::cerr << "data to write in a file\n";
-			(*it)->writeFile(&endOfResponse, &endToWriteFile);
-		}
+			(*it)->writeFile(&endOfResponse, &endToWriteFile);	// data to write in a file
 		else
-		{	//std::cerr << "revents != pollin -> end to read\n";
+		{
 			endOfResponse = true;
 			endToReadFile = true;
 		}
@@ -334,10 +328,8 @@ void 		Hub::_sendResponse(size_t i)
 			delete (*it);
 			responses.erase(it++);
 		}
-		
 	}
 	
-	// std::cerr << "nb responses = " << responses.size() << "  buffer size = " << buffer.size() << "\n";
 	if (responses.empty() && !buffer.empty())
 	{
 		// so write into the _fds[i].fd the content of buffer
