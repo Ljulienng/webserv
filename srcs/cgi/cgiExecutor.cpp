@@ -32,7 +32,7 @@ void	CgiExecutor::initHeaders()
 	_env["SCRIPT_FILENAME"] = /*"/app/wordpress/index.php"; */_env.find("PATH_TRANSLATED")->second; // ajout doit etre = PATH_INFO
 	// _env["SCRIPT_NAME"] = newPath; // version JU initiale
 	_env["SCRIPT_NAME"] = _request->getUri().getPath();
-	_env["SERVER_NAME"] = _client->getServerName();
+	_env["SERVER_NAME"] = _client.getServerName();
 	_env["SERVER_PORT"] = _request->getUri().getPort();
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_env["SERVER_SOFTWARE"] = "Webserver/1.0";
@@ -69,6 +69,7 @@ void	CgiExecutor::initHeaders()
 	_envArray[i] = NULL;
 	// for (i = 0; _argArray[i]; i++)
 	// 	std::cerr << _argArray[i] << std::endl;
+	free(buf);
 }
 
 static void		redirOut(int pipe[2])
@@ -154,7 +155,7 @@ CgiSocketToCgi*	CgiExecutor::getCgiSocketToCgi()
 { return _cgiSocketToCgi; }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-CgiExecutor::CgiExecutor(Request request, ClientSocket* client, t_configMatch& configMatch) :
+CgiExecutor::CgiExecutor(Request request, ClientSocket& client, t_configMatch& configMatch) :
 		_request(new Request(request)),
 		_client(client),
 		_cgiSocketFromCgi(),

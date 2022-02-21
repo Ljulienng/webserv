@@ -22,14 +22,14 @@ class CgiExecutor
 		std::vector<unsigned char>			_newBody;
 		std::string							_cgiPath;
         Request*                            _request;
-        ClientSocket*                       _client;
+        ClientSocket&                       _client;
         CgiSocketFromCgi*                   _cgiSocketFromCgi;
         CgiSocketToCgi*                     _cgiSocketToCgi;
         t_configMatch&                      _configMatch;
     
 
     public :
-        CgiExecutor(Request request, ClientSocket* client, t_configMatch& configMatch);
+        CgiExecutor(Request request, ClientSocket& client, t_configMatch& configMatch);
         virtual ~CgiExecutor();	
 
         void    initHeaders();

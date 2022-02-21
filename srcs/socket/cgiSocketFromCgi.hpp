@@ -22,21 +22,21 @@ class CgiSocketFromCgi : public Socket
         int                                 _reader;
         std::string                         _headerBuffer;
         std::map<std::string, std::string>  _headers;
-        ClientSocket*                       _client;
+        ClientSocket&                       _client;
         Request                             _request;
         int                                 _fdUseless;
       
 
     public :
 
-        CgiSocketFromCgi(int fd[2], ClientSocket* client, Request request);
+        CgiSocketFromCgi(int fd[2], ClientSocket& client, Request request);
         virtual ~CgiSocketFromCgi();	
 
         void            readFromCgi();
 
         int             &getState();
         std::string     getBuffer();
-        ClientSocket*   getClient();
+        ClientSocket&   getClient();
         Request         &getRequest();
         int             &getFdUseless();
 

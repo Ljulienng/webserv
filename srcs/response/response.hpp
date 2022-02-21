@@ -30,19 +30,13 @@ class Response
         std::vector<unsigned char>          _content;
         std::string                         _message; // the formatted message to insert to the buffer
 
-        /******* test ********/
         // manage files to read file (get) or append to file (post)
         struct pollfd                       _pollFdFile;
-        std::string                         _fileToWriteIn;
         int                                 _stateFile;
         int                                 _indexFile;
-        std::string                         _bodyRequestToPost; // post : stocke au depart puis on la copie dans le fichier cree apres etre passe dans poll
-        std::vector<unsigned char>          _bodyRequestToPostVector;
-        std::pair<char*,size_t>             _bodyRequestToPostchar;
         std::list<t_multipart*>             _multiparts;
-        /********************/
 
-        void        _updateMessage();
+        void                                _updateMessage();
 
     public :
 		Response();
@@ -50,12 +44,23 @@ class Response
 		~Response();
         Response &operator=(const Response &src);	
 
+        void                    addMultipart(t_multipart* part);
+        void                    readFile(bool *endOfResponse, bool *endToReadFile);
+        void                    writeFile(bool *endOfResponse, bool *endToWriteFile);
+        void 	                addFile();
+        void 	                deleteFile();
+        void                    endToReadorWrite();
+        
+
         // SETTERS
-        void                                setHeader(std::string key, std::string value);
-        void                                setContent(std::vector<unsigned char> content, std::string contentType);
-        void                                setContentType(std::string contentType);
-        void                                setContentLength();
-        void                                setStatus(int status);
+        void                    setHeader(std::string key, std::string value);
+        void                    setContent(std::vector<unsigned char> content, std::string contentType);
+        void                    setContentType(std::string contentType);
+        void                    setContentLength();
+        void                    setStatus(int status);
+        void                    setIndexFile(int indexFile); // index to find the file in _fds[]
+        bool                    setPollFdFileToRead(const char *file);
+        bool                    setPollFdFileToWrite(std::string file);
         
         // GETTERS
         std::map<std::string, std::string>  &getHeaders();
@@ -64,25 +69,10 @@ class Response
         HttpStatus                          &getHttpStatus();
         std::vector<unsigned char>          &getContent();
         std::string                         &getMessage();
-
-
-        /******* test ********/
-        void                readFile(bool *endOfResponse, bool *endToReadFile);
-        void                writeFile(bool *endOfResponse, bool *endToWriteFile);
-        void 	            addFile();
-        void 	            deleteFile();
-
-        void                setIndexFile(int indexFile); // index pour retrouver le file dans _fds[]
-        bool                setPollFdFileToRead(const char *file);
-        bool                setPollFdFileToWrite(std::string file);
-        void                endToReadorWrite();
-        void                setMultiparts(std::list<t_multipart*> parts);
-        void                addMultipart(t_multipart* part);
-        std::list<t_multipart*> &getMultiparts();
-        struct pollfd       getPollFdFile();
-        int                 getStateFile();
-        int                 getIndexFile();
-        /********************/
+        struct pollfd                       &getPollFdFile();
+        int                                 &getStateFile();
+        int                                 &getIndexFile();
+        std::list<t_multipart*>             &getMultiparts();
 
 };
 

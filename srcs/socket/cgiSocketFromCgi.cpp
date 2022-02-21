@@ -31,7 +31,7 @@ int             &CgiSocketFromCgi::getState()
 std::string     CgiSocketFromCgi::getBuffer()
 { return std::string(_buffer.begin(), _buffer.end());}
 
-ClientSocket*   CgiSocketFromCgi::getClient()
+ClientSocket&   CgiSocketFromCgi::getClient()
 { return _client; }
 
 Request         &CgiSocketFromCgi::getRequest()
@@ -41,7 +41,7 @@ int             &CgiSocketFromCgi::getFdUseless()
 { return _fdUseless; }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-CgiSocketFromCgi::CgiSocketFromCgi(int fd[2], ClientSocket* client, Request request) : 
+CgiSocketFromCgi::CgiSocketFromCgi(int fd[2], ClientSocket& client, Request request) : 
         Socket(),
         _state(INIT),
         _buffer(),

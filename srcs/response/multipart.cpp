@@ -43,7 +43,7 @@ void    parseMultipart(Response* response, Request &request, std::string boundar
         {
             if (content[i] == '\r' && content[i + 1] == '\n'
             && content[i + 2] == '-' && content[i + 3] == '-'
-			&& !::strncmp(boundary.c_str(), reinterpret_cast<const char*>(&content[i + 4]), boundary.size()))
+			&& !std::strncmp(boundary.c_str(), reinterpret_cast<const char*>(&content[i + 4]), boundary.size()))
             {
                 i += 2;
                 break ;
@@ -91,30 +91,19 @@ Response*    multipart(Response* response, Request &request, t_configMatch &conf
     // check if the content is ok and get content original file (without headers and boundary)
     parseMultipart(response, request, boundary);
 
-    // create and write content into the new file for each part
+    // check filename
     std::list<t_multipart*>::iterator it = response->getMultiparts().begin();
-
-    std::string filenametest = (*it)->getFilename();
-    // std::string bodyToCopy;
-    // std::vector<unsigned char> a;
+    std::string filename;
     while (it != response->getMultiparts().end())
     {
-        
-        std::string filename = (*it)->getFilename(); std::cerr << "filename = " << filename << "\n";
+        filename = (*it)->getFilename();
         if (filename.empty())  
             return errorResponse(response, configMatch, BAD_REQUEST);
-        // appendToFile(configMatch.root + configMatch.server.getUploadPath() + "/" + filename, reinterpret_cast<char*>(it->content), it->length);
-        // for (size_t i = 0; i < (*it)->length; i++)
-        //     a.push_back(t[i]);
-        // bodyToCopy += std::string(a.begin(), a.end());
-        std::cerr << "[multipart] address " << &(*it)->content << "\n";
         ++it;
     }
-
-    // response->setMultiparts(parts);
-    
+   
     // new version : just create file before to pass in poll() to write the fd 
-    if (response->setPollFdFileToWrite((configMatch.root + configMatch.server.getUploadPath() + "/" + filenametest)) == false)
+    if (response->setPollFdFileToWrite((configMatch.root + configMatch.server.getUploadPath() + "/" + filename)) == false)
         return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
     response->addFile();
 
