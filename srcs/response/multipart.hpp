@@ -14,6 +14,10 @@ typedef struct  s_multipart
     unsigned char                       *content;
     size_t                              length;
     std::string                         getFilename() const;
+
+    s_multipart() {}
+    ~s_multipart() { delete [] content; }
+
 }               t_multipart;
 
 Response*    multipart(Response* response, Request &request, t_configMatch &configMatch, std::string contentTypeHeader);

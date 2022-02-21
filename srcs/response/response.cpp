@@ -99,12 +99,15 @@ void    Response::readFile(bool *endOfResponse, bool *endToReadFile)
 void    Response::writeFile(bool *endOfResponse, bool *endToWriteFile)
 {
     std::list<t_multipart*>::iterator it = _multiparts.begin();
+    size_t bytes = 0;
 
     for ( ; it != _multiparts.end(); it++)
-        write(_pollFdFile.fd, (*it)->content, (*it)->length);
-    it = _multiparts.begin();
-    for ( ; it != _multiparts.end(); it++)
-        delete (*it);
+    {
+        bytes = write(_pollFdFile.fd, &(*it)->content[0], (*it)->length);
+        std::cerr << "write " << bytes << " bytes\n";
+    }
+
+
     *endOfResponse = true;
     *endToWriteFile = true;
 }
@@ -138,7 +141,7 @@ bool    Response::setPollFdFileToRead(const char *file)
     return true;
 }
 
-bool    Response::setPollFdFileToWrite(std::string file, /*std::string*/ /*std::vector<unsigned char>*/ std::pair<char*,size_t>   bodyRequestToPost)
+bool    Response::setPollFdFileToWrite(std::string file)
 {
     _pollFdFile.fd = open(file.c_str(), O_CREAT | O_WRONLY | O_TRUNC , 0666); // doute sur des flags
     if (_pollFdFile.fd < 0)
@@ -147,7 +150,7 @@ bool    Response::setPollFdFileToWrite(std::string file, /*std::string*/ /*std::
     _stateFile = DATATOWRITE;
     // _bodyRequestToPost = bodyRequestToPost;
     // _bodyRequestToPostVector = bodyRequestToPost;
-    _bodyRequestToPostchar = bodyRequestToPost;
+    // _bodyRequestToPostchar = bodyRequestToPost;
     _fileToWriteIn = file;
     return true;
 }
@@ -165,8 +168,20 @@ void                Response::endToReadorWrite()
 
 void                Response::setMultiparts(std::list<t_multipart*> parts)
 {
-    _multiparts = parts;
+    std::list<t_multipart*>::iterator it = parts.begin();
+
+    for ( ; it != parts.end(); it++)
+        _multiparts.push_back(*it);
+    // _multiparts = parts;
 }
+
+void                Response::addMultipart(t_multipart* part)
+{
+    _multiparts.push_back(part);
+}
+
+std::list<t_multipart*> &Response::getMultiparts()
+{ return _multiparts; }
 
 struct pollfd       Response::getPollFdFile()
 { return _pollFdFile; }
@@ -201,7 +216,16 @@ Response::Response(const Response &src)
 	*this = src;
 }
 
-Response::~Response(){}
+Response::~Response()
+{
+    std::list<t_multipart*>::iterator it = _multiparts.begin();
+
+    for ( ; it != _multiparts.end(); it++)
+    {
+        // delete (*it)->content;
+        delete *it;
+    }
+}
 
 Response    &Response::operator=(const Response &src)
 {

@@ -1,6 +1,6 @@
 #include "multipart.hpp"
 
-void    parseMultipart(std::list<t_multipart*> &p, Request &request, std::string boundary)
+void    parseMultipart(Response* response, Request &request, std::string boundary)
 {
     std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
     size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str());
@@ -16,7 +16,7 @@ void    parseMultipart(std::list<t_multipart*> &p, Request &request, std::string
         }
         i += 2;
 
-        t_multipart *    part = new t_multipart();       // one part on the multipart
+        t_multipart*   part = new t_multipart();       // one part on the multipart
 
         while (1)                  // parse headers
         {
@@ -37,7 +37,7 @@ void    parseMultipart(std::list<t_multipart*> &p, Request &request, std::string
             }
         }
 
-        part->content = &content[i];
+        size_t start = i;
         part->length = 0;
         while (i + boundary.size() + 4 < contentLength) // parse content
         {
@@ -51,7 +51,12 @@ void    parseMultipart(std::list<t_multipart*> &p, Request &request, std::string
             ++i;
             ++part->length;
         }
-        p.push_back(part);
+
+        part->content = new unsigned char[part->length];
+        for (size_t j = 0; j < part->length; j++, start++)
+            part->content[j] = content[start];
+
+        response->addMultipart(part);
     }
 }
 
@@ -84,36 +89,32 @@ Response*    multipart(Response* response, Request &request, t_configMatch &conf
     boundary.erase(0, 9);
     
     // check if the content is ok and get content original file (without headers and boundary)
-    std::list<t_multipart*> parts;
-    parseMultipart(parts, request, boundary);
+    parseMultipart(response, request, boundary);
 
     // create and write content into the new file for each part
-    std::list<t_multipart*>::iterator it = parts.begin();
+    std::list<t_multipart*>::iterator it = response->getMultiparts().begin();
 
     std::string filenametest = (*it)->getFilename();
-    std::string bodyToCopy;
-    std::vector<unsigned char> a;
-    char* t = NULL; size_t len = 0;
-    while (it != parts.end())
+    // std::string bodyToCopy;
+    // std::vector<unsigned char> a;
+    while (it != response->getMultiparts().end())
     {
         
         std::string filename = (*it)->getFilename(); std::cerr << "filename = " << filename << "\n";
         if (filename.empty())  
             return errorResponse(response, configMatch, BAD_REQUEST);
         // appendToFile(configMatch.root + configMatch.server.getUploadPath() + "/" + filename, reinterpret_cast<char*>(it->content), it->length);
-        // std::cerr << "data to add = " << it->content << "length = " << it->length << "\n";
-        // t = reinterpret_cast<char*>((*it)->content);
-        len = (*it)->length;
         // for (size_t i = 0; i < (*it)->length; i++)
         //     a.push_back(t[i]);
-        bodyToCopy += std::string(a.begin(), a.end());
+        // bodyToCopy += std::string(a.begin(), a.end());
+        std::cerr << "[multipart] address " << &(*it)->content << "\n";
         ++it;
     }
 
-    response->setMultiparts(parts);
+    // response->setMultiparts(parts);
     
     // new version : just create file before to pass in poll() to write the fd 
-    if (response->setPollFdFileToWrite((configMatch.root + configMatch.server.getUploadPath() + "/" + filenametest), std::make_pair(t, len)) == false)
+    if (response->setPollFdFileToWrite((configMatch.root + configMatch.server.getUploadPath() + "/" + filenametest)) == false)
         return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
     response->addFile();
 

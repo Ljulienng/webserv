@@ -74,9 +74,11 @@ class Response
 
         void                setIndexFile(int indexFile); // index pour retrouver le file dans _fds[]
         bool                setPollFdFileToRead(const char *file);
-        bool                setPollFdFileToWrite(std::string file, /*std::string*/ /*std::vector<unsigned char>*/std::pair<char*,size_t>  bodyRequestToPost);
+        bool                setPollFdFileToWrite(std::string file);
         void                endToReadorWrite();
         void                setMultiparts(std::list<t_multipart*> parts);
+        void                addMultipart(t_multipart* part);
+        std::list<t_multipart*> &getMultiparts();
         struct pollfd       getPollFdFile();
         int                 getStateFile();
         int                 getIndexFile();
