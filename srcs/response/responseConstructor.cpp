@@ -64,6 +64,7 @@ Response*    redirectionResponse(Response* response, std::pair<int, std::string>
 
 /*
 ** transform http://./wordpress/wp-admin/ in htpp://127.0.0.1:8080/wordpress/wp-admin/
+** A CREUSER -> pb avec redirections wordpress
 */
 std::string     treatRelativePath(std::string path)
 {
@@ -184,16 +185,15 @@ Response*    postMethodResponse(Response* response, Request &request, t_configMa
     if (configMatch.server.getUploadPath() == "")
         return errorResponse(response, configMatch, FORBIDDEN);
 
-    // check if it's a multipart/form-data
-    // upload file for example
+    // upload file
     if (request.getHeader("Content-Type").find("multipart/form-data") != std::string::npos)
         return multipart(response, request, configMatch, request.getHeader("Content-Type"));
 
     // new version : just create file before to pass in poll() to write the fd 
-    // upload message/text for example
-    // if (response->setPollFdFileToWrite(pathToUpload.c_str(), request.getBody()) == false)
-    //     return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
-    // response->addFile();
+    // upload message/text
+    if (response->setPollFdFileToWrite(pathToUpload.c_str(), false, request.getBody()) == false)
+        return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
+    response->addFile();
 
     // ancienne version qui marche mais sans repasser par poll()
     // create the file

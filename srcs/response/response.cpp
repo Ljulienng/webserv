@@ -44,10 +44,18 @@ void    Response::readFile(bool *endOfResponse, bool *endToReadFile)
 
 void    Response::writeFile(bool *endOfResponse, bool *endToWriteFile)
 {
-    std::list<t_multipart*>::iterator it = _multiparts.begin();
+    if (_isMultipart)
+    {
+        std::list<t_multipart*>::iterator it = _multiparts.begin();
 
-    for ( ; it != _multiparts.end(); it++)
-        write(_pollFdFile.fd, &(*it)->content[0], (*it)->length);
+        for ( ; it != _multiparts.end(); it++)
+            write(_pollFdFile.fd, &(*it)->content[0], (*it)->length);
+    }
+    else
+    {
+        write(_pollFdFile.fd, &_contentToCopyInFile[0], _contentToCopyInFile.length());
+    }
+    
 
     *endOfResponse = true;
     *endToWriteFile = true;
@@ -120,12 +128,14 @@ bool    Response::setPollFdFileToRead(const char *file)
     return true;
 }
 
-bool    Response::setPollFdFileToWrite(std::string file)
+bool    Response::setPollFdFileToWrite(std::string file, bool multipart, std::string content)
 {
     _pollFdFile.fd = open(file.c_str(), O_CREAT | O_WRONLY | O_TRUNC , 0666);
     if (_pollFdFile.fd < 0)
         return false;
     _pollFdFile.events = POLLOUT;
+    _isMultipart = multipart;
+    _contentToCopyInFile = content;
     _stateFile = DATATOWRITE;
     return true;
 }
@@ -184,7 +194,9 @@ Response::Response() :
         _pollFdFile(),
         _stateFile(NONE),
         _indexFile(-1),
-        _multiparts()
+        _multiparts(),
+        _isMultipart(false),
+        _contentToCopyInFile()
 {
     setHeader("Server", "Webserv_42");
     setHeader("Date", log::getTimestamp());
@@ -216,6 +228,8 @@ Response    &Response::operator=(const Response &src)
         _stateFile = src._stateFile;
         _indexFile = src._indexFile;
         _multiparts = src._multiparts;
+        _isMultipart = src._isMultipart;
+        _contentToCopyInFile = src._contentToCopyInFile;
 		// to be completed if new attributes
 	}
 	return (*this);

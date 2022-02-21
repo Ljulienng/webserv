@@ -35,6 +35,8 @@ class Response
         int                                 _stateFile;
         int                                 _indexFile;
         std::list<t_multipart*>             _multiparts;
+        bool                                _isMultipart;
+        std::string                         _contentToCopyInFile;
 
         void                                _updateMessage();
 
@@ -60,7 +62,7 @@ class Response
         void                    setStatus(int status);
         void                    setIndexFile(int indexFile); // index to find the file in _fds[]
         bool                    setPollFdFileToRead(const char *file);
-        bool                    setPollFdFileToWrite(std::string file);
+        bool                    setPollFdFileToWrite(std::string file, bool multipart, std::string content);
         
         // GETTERS
         std::map<std::string, std::string>  &getHeaders();

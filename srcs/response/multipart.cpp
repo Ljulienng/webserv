@@ -103,7 +103,7 @@ Response*    multipart(Response* response, Request &request, t_configMatch &conf
     }
    
     // new version : just create file before to pass in poll() to write the fd 
-    if (response->setPollFdFileToWrite((configMatch.root + configMatch.server.getUploadPath() + "/" + filename)) == false)
+    if (response->setPollFdFileToWrite((configMatch.root + configMatch.server.getUploadPath() + "/" + filename), true, "") == false)
         return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
     response->addFile();
 
