@@ -25,6 +25,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include <poll.h>
 
 // C functions
@@ -45,6 +46,10 @@
 #define WRITE 0
 #define READ 1
 #define MAX_CONNECTIONS 100
+#define GOOD 0
+#define WAIT 1
+#define DISCONNECT 2
+#define OTHER 3
 
 // colors
 #define RED  	"\033[31m"

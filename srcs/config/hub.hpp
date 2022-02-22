@@ -9,6 +9,7 @@
 #include "cgiSocketFromCgi.hpp"
 #include "cgiSocketToCgi.hpp"
 #include "cgiExecutor.hpp"
+#include "str.hpp"
 
 extern bool    g_run; 
 

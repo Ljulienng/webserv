@@ -166,7 +166,7 @@ static size_t	indexServer(ClientSocket client)
 */
 bool		Hub::_receiveRequest(size_t i)
 {
-	int 				bytes = 0;
+	int 				bytes = 0, checkRet = 0;
 	std::vector<char>	buffer(MAX_BUF_LEN);
 	ClientSocket* 		client = _clientSockets[_arr[i]->_index];
 	std::vector<Server> servers = Configuration::getInstance().getServers();
@@ -180,12 +180,15 @@ bool		Hub::_receiveRequest(size_t i)
 	}
 	else if (bytes > 0)
 	{
-		client->getBuffer().append(buffer.begin(), buffer.end());
-		if (bytes < MAX_BUF_LEN)
+		client->getBuffer().append(buffer.begin(), lastChar(buffer));
+		// std::cout << "buffer = "<< client->getBuffer();
+		if ((checkRet = checkRequest(client->getBuffer())) == GOOD)
 		{
+			// std::cout << client->getBuffer();
 			client->addRequest();
 			if (client->getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
 				client->getRequests().back().getHttpStatus().setStatus(413);
+			// std::cout << "error code = " << client->getRequests().back().getHttpStatus().getCode() << std::endl;
 			log::logEvent("Received a new request", client->getFd());
 		}
 	}
