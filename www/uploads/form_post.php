@@ -1,1 +1,1 @@
-message=coucou
+message=wre

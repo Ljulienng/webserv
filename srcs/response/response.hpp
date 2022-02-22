@@ -12,17 +12,16 @@
 class Configuration;
 typedef struct s_multipart t_multipart;
 
-/******* test ********/
-enum fileState
-{
-    NONE,
-    DATATOREAD,
-    DATATOWRITE
-};
-/********************/
-
 class Response
 {
+    public:
+        enum fileState
+        {
+            NONE,
+            DATATOREAD,
+            DATATOWRITE
+        };
+
     private :
         std::map<std::string, std::string>  _headers;
         std::string                         _httpVersion;

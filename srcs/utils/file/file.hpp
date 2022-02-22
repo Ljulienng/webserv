@@ -39,7 +39,6 @@ class File
 };
 
 void 			appendToFile(const std::string &path, const char *content, size_t n);
-void 			appendToFileBis(const std::string &path, const char *content, size_t n);
 std::string     getExtension(std::string filename);
 // bool			cmp_by_filename(const std::string &a, const std::string &b);
 

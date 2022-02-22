@@ -6,18 +6,10 @@
 #include "response.hpp"
 #include "clientSocket.hpp"
 
-enum state
-{
-    INIT,
-    IN_PROGRESS,
-    HEADERS_DONE,
-    DONE
-};
 
 class CgiSocketFromCgi : public Socket
 {
     protected :
-        int                                 _state;
         std::vector<unsigned char>          _buffer;
         int                                 _reader;
         std::string                         _headerBuffer;
@@ -34,7 +26,6 @@ class CgiSocketFromCgi : public Socket
 
         void            readFromCgi();
 
-        int             &getState();
         std::string     getBuffer();
         ClientSocket&   getClient();
         Request         &getRequest();

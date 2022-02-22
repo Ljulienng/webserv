@@ -10,7 +10,6 @@ void    CgiSocketFromCgi::readFromCgi()
     size_t                      bytes;
     std::vector<unsigned char>  buf(50 + 1);
 
-    _state = IN_PROGRESS;
     bytes = read(_pollFd.fd, &buf[0], 50);
     // std::cerr << "Return of the cgi : bytes to read : " << bytes << "\n";
     if (bytes > 0)
@@ -25,9 +24,6 @@ void    CgiSocketFromCgi::readFromCgi()
 }
 
 /* GETTERS */
-int             &CgiSocketFromCgi::getState()
-{ return _state; }
-
 std::string     CgiSocketFromCgi::getBuffer()
 { return std::string(_buffer.begin(), _buffer.end());}
 
@@ -43,7 +39,6 @@ int             &CgiSocketFromCgi::getFdUseless()
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 CgiSocketFromCgi::CgiSocketFromCgi(int fd[2], ClientSocket& client, Request request) : 
         Socket(),
-        _state(INIT),
         _buffer(),
         _reader(0),
         _headerBuffer(),

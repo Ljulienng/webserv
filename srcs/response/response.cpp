@@ -46,34 +46,26 @@ void    Response::writeFile(bool *endOfResponse, bool *endToWriteFile)
 {
     if (_isMultipart)
     {
-        std::list<t_multipart*>::iterator it = _multiparts.begin();
-        
-        for ( ; it != _multiparts.end(); it++)
+        if (!_multiparts.empty())
+        {
+            std::list<t_multipart*>::iterator it = _multiparts.begin();
             write(_pollFdFile.fd, &(*it)->content[0], (*it)->length);
-        
-        // size_t  j = 0;
-        // size_t len = 0;
+            delete *it;
+            _multiparts.erase(it);
 
-        // for ( ; it != _multiparts.end(); it++)
-        //     len += (*it)->length;
-
-        // unsigned char * toCopy = new unsigned char[len];
-        // it = _multiparts.begin();
-        // for ( ; it != _multiparts.end(); it++)
-        //     for (size_t i = 0; i < (*it)->length; i++)
-        //         toCopy[j] = ((*it)->content)[i];   
-        // write(_pollFdFile.fd, &toCopy[0], len);
-        // delete [] toCopy;
-        // 
+        }
+        if (_multiparts.empty())
+        {
+            *endOfResponse = true;
+            *endToWriteFile = true;
+        }
     }
     else
     {
         write(_pollFdFile.fd, &_contentToCopyInFile[0], _contentToCopyInFile.length());
-    }
-    
-
-    *endOfResponse = true;
-    *endToWriteFile = true;
+        *endOfResponse = true;
+        *endToWriteFile = true;
+    } 
 }
 
 void 	Response::addFile()

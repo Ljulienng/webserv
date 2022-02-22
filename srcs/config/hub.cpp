@@ -72,7 +72,7 @@ void	Hub::_storeFdToPoll()
 	{
 		for (std::list<Response*>::iterator itR = (*it)->getResponses().begin(); itR != (*it)->getResponses().end(); itR++)
 		{
-			if ((*itR)->getStateFile() != NONE)
+			if ((*itR)->getStateFile() != Response::NONE)
 			{
 				_fds[_nfds] = (*itR)->getPollFdFile();
 				(*itR)->setIndexFile(_nfds);

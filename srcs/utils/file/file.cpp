@@ -98,7 +98,11 @@ std::string		&File::getFilePath()
 { return _filePath; }
 
 std::vector<unsigned char>	&File::getFileContent()
-{ return _fileContent; }
+{
+	if (isRegularFile())
+		openFile();
+	return _fileContent;
+}
 
 struct stat		&File::getfileStat()
 { return _fileStat; }
@@ -140,16 +144,14 @@ void	File::openFile()
 File::File() :
 	_filePath(),
 	_fileContent(),
-	_fileStat() {}
+	_fileStat()
+{}
 
 File::File(std::string filePath) : 
 	_filePath(filePath),
 	_fileContent(),
 	_fileStat()
-{	
-	if (isRegularFile())
-		openFile();
-}
+{}
 
 File::File(const File &src)
 {
@@ -176,27 +178,6 @@ void 	appendToFile(const std::string &path, const char *content, size_t n)
 	file.open(path.c_str(), std::ofstream::binary);
 	file.write(content, n);
 	file.close();
-
-	//V2
-	// (void)n;
-	// std::string toAppend(content, 0, n);
-	// std::ofstream file;
-	// file.open(path.c_str(), std::ofstream::binary);
-	// if (file.is_open())
-	// {
-	// 	file << toAppend;
-	// 	file.close();
-	// }
-}
-
-void 	appendToFileBis(const std::string &path, const char *content, size_t n)
-{
-	FILE * pfile;
-	pfile = fopen(path.c_str(), "w+");
-	std::cerr << "[appendToFile] fd of postFile = " << fileno(pfile) << "\n";
-	for (size_t i = 0; i < n; i++)
-		fputc(content[i], pfile);
-	fclose(pfile);
 }
 
 std::string     getExtension(std::string filename)
