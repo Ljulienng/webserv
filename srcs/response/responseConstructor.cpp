@@ -19,7 +19,15 @@ Response*    errorResponse(Response* response, t_configMatch  &configMatch, int 
         File    errorPath(configMatch.root + errorPage->second);
         if (errorPath.isRegularFile())
         {
-            response->setContent(errorPath.getFileContent(), "text/html");
+            // new version : just create file before to pass in poll() to read the fd 
+            if (response->setPollFdFileToRead((configMatch.root + errorPage->second).c_str()) == false)
+                return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
+            response->addFile();
+            response->setContentType("text/html");
+            
+            /* ancienne version qui marche mais sans repasser par poll()*/
+            // response->setContent(errorPath.getFileContent(), "text/html");
+            
             return response;
         }
     }
