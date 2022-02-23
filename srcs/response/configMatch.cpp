@@ -28,7 +28,7 @@ std::string     getPathTranslated(std::string uri, t_configMatch &configMatch)
     std::string pathRoot = getUriFolder(uri); (void)pathRoot;
 
     // change root if the request match a location block with a root directive
-    if (configMatch.location.getPath() == uri /*pathRoot*/ && configMatch.location.getRoot().empty() == false)
+    if (configMatch.location.getPath() == pathRoot && configMatch.location.getRoot().empty() == false)
     {
         path.erase(0, configMatch.location.getPath().size());
 
@@ -46,7 +46,7 @@ std::string     getPathTranslated(std::string uri, t_configMatch &configMatch)
     // add index file if we have one and if no autoindex directive
     if (configMatch.location.getAutoindex() == false)
     {
-        if ((uri == "/" /*|| lastChar(path) == '/'*/) && configMatch.index.empty() == false)
+        if ((uri == "/" || lastChar(path) == '/') && configMatch.index.empty() == false)
             path.insert(path.size(), configMatch.index);
         else if (uri == pathRoot && configMatch.location.getIndex().empty() == false)
             path.insert(path.size(), configMatch.location.getIndex());

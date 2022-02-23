@@ -190,8 +190,7 @@ bool		Hub::_receiveRequest(size_t i)
 	}
 	else if (bytes > 0)
 	{
-		// client->getBuffer().append(buffer.begin(), lastChar(buffer));
-		client->getBuffer().append(buffer.begin(), buffer.end());
+		client->getBuffer().append(buffer.begin(), lastChar(buffer));
 		// std::cout << "buffer = "<< client->getBuffer();
 		// if ((checkRet = checkRequest(client->getBuffer())) == GOOD)
 		if (bytes < BUF_SIZE)
@@ -200,7 +199,6 @@ bool		Hub::_receiveRequest(size_t i)
 			client->addRequest();
 			if (client->getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
 				client->getRequests().back().getHttpStatus().setStatus(413);
-			// std::cout << "error code = " << client->getRequests().back().getHttpStatus().getCode() << std::endl;
 			log::logEvent("Received a new request", client->getFd());
 		}
 	}
