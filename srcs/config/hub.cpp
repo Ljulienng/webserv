@@ -190,7 +190,8 @@ bool		Hub::_receiveRequest(size_t i)
 	}
 	else if (bytes > 0)
 	{
-		client->getBuffer().append(buffer.begin(), lastChar(buffer));
+		// client->getBuffer().append(buffer.begin(), lastChar(buffer));
+		client->getBuffer().append(buffer.begin(), buffer.end());
 		// std::cout << "buffer = "<< client->getBuffer();
 		// if ((checkRet = checkRequest(client->getBuffer())) == GOOD)
 		if (bytes < BUF_SIZE)

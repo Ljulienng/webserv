@@ -25,10 +25,10 @@ std::string     getUriFolder(std::string uri)
 std::string     getPathTranslated(std::string uri, t_configMatch &configMatch)
 {
     std::string path = uri;
-    std::string pathRoot = getUriFolder(uri);
+    std::string pathRoot = getUriFolder(uri); (void)pathRoot;
 
     // change root if the request match a location block with a root directive
-    if (configMatch.location.getPath() == pathRoot && configMatch.location.getRoot().empty() == false)
+    if (configMatch.location.getPath() == uri /*pathRoot*/ && configMatch.location.getRoot().empty() == false)
     {
         path.erase(0, configMatch.location.getPath().size());
 
