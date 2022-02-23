@@ -77,7 +77,7 @@ void	Hub::_storeFdToPoll()
 				_fds[_nfds] = (*itR)->getPollFdFile();
 				(*itR)->setIndexFile(_nfds);
 				_nfds++;
-			}
+			}		
 		}
 	}
 }
@@ -87,7 +87,7 @@ void	Hub::process()
 	_storeFdToPoll(); 
 	int pollRet = poll(_fds, _nfds, 1000); // call poll and wait for an event
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
-	{	
+	{
 		_closeAllConnections();
 		return ;
 	}
@@ -184,9 +184,11 @@ bool		Hub::_receiveRequest(size_t i)
 
 	bytes = recv(client->getPollFd().fd, &buffer[0], BUF_SIZE, 0);
 	if (bytes < 0)
-	{
-		_closeAllConnections();
-		exit(EXIT_FAILURE);
+	{	std::cerr << "closeconnection client 0\n"; // test ne pas exit
+		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
+		close = true;
+		// _closeAllConnections();
+		// exit(EXIT_FAILURE);
 	}
 	else if (bytes > 0)
 	{
@@ -393,8 +395,18 @@ void		Hub::_closeConnection(size_t i, int type)
 void		Hub::_closeAllConnections()
 {	
 	size_t tmp = _nfds - g_fileArr.size();
+	// std::cerr << " _nfds = " << _nfds << "\n";
+	// std::cerr << tmp << " socket to close and delete\n";
+	// std::cerr << _listenSockets.size() << " _listenSockets\n";
+	// std::cerr << _clientSockets.size() << " _clientSockets\n";
+	// std::cerr << g_fileArr.size() << " g_fileArr\n";
+	tmp = _listenSockets.size() + _clientSockets.size() + _cgiSocketsFromCgi.size() + _cgiSocketsToCgi.size();
+	// std::cerr << tmp << " socket to close and delete\n";
 	for (size_t i = 0; i < tmp; i++)
 		_closeConnection(0, _arr[0]->getType());
+	for (size_t i = 0; i < g_fileArr.size(); i++)
+		close(g_fileArr[i]->fd);
+		// std::cerr << "fd " << g_fileArr[i]->fd << " not closed\n";
 }
 
 
