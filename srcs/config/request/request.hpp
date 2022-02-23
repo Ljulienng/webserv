@@ -6,6 +6,11 @@
 #include "uri.hpp"
 #include "str.hpp"
 
+# define GET 1
+# define POST 2
+# define DELETE 3
+# define HEAD 4
+# define PUT 5
 
 class Request
 {
@@ -60,6 +65,8 @@ public:
 	void								debug();
 
 };
+
+int				checkRequest(std::string &buffer);
 
 
 #endif

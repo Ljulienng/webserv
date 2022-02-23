@@ -1,5 +1,20 @@
 #include "str.hpp"
 
+std::vector<char>::iterator	lastChar(std::vector<char> &str)
+{
+	std::vector<char>::iterator it;
+	for (it = str.begin(); *it != 0; it++);
+	return (it);
+}
+
+char	lastChar(std::string &str)
+{
+	size_t i;
+	for (i = 0; str[i] != 0; i++);
+	return (str[i - 1]);
+}
+
+
 std::vector<std::string>	splitString(std::string &str, char c)
 {
 	std::istringstream			strStream(str);

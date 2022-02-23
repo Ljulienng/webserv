@@ -1,1 +1,1 @@
-message=wre
+message=test

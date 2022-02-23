@@ -2,6 +2,8 @@
 # define CONFIGMATCH_HPP
 
 #include "webserv.hpp"
+#include "file.hpp"
+#include "str.hpp"
 #include "server.hpp"
 #include "configuration.hpp"
 #include "location.hpp"
