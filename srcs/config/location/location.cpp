@@ -68,10 +68,7 @@ void	Location::setAutoindex(std::string autoIndex)
 void	Location::setMaxBodySize(std::string maxBodySize)
 {
 	Str val(maxBodySize);
- 
 	_maxBodySize = val.getNum();
-
-	// std::vector<std::string> tmp = tokenize(maxBodySize, " \t\n");
 }
 
 void	Location::setRedirection(std::string redirection)

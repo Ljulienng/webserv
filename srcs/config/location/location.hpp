@@ -15,7 +15,6 @@ class Location
 		bool						_autoindex;
 		size_t						_maxBodySize; 
 		std::pair<int, std::string>	_redirection;
-		// need to set the type of action : cgi, redirection or nothing
 
 
     public :

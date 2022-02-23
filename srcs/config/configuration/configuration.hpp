@@ -5,14 +5,9 @@
 #include "server.hpp"
 #include "str.hpp"
 #include "file.hpp"
-#include "clientSocket.hpp"
 #include "listeningSocket.hpp"
 #include "singleton.hpp"
 
-class ClientSocket;
-/*
-** informations from the configuration file : cgi, bodyMaxSize, a list of server(s) ...
-*/
 class Configuration : public Singleton<Configuration>
 {
 	public :
@@ -25,7 +20,6 @@ class Configuration : public Singleton<Configuration>
 		std::string							_configFile;
 		std::map<int, std::string>			_errorPages;
 		std::vector<Server>					_servers;
-		std::vector<ClientSocket>			_clients;
 
 		void		_cleanSpaces(std::string &buf);
 		size_t		_parseServer(str_ite it, str_ite ite);
@@ -40,9 +34,7 @@ class Configuration : public Singleton<Configuration>
 	     
 		Configuration();
 		Configuration(std::string configFile);
-		Configuration(const Configuration &src);
 		~Configuration();	
-		Configuration &operator=(const Configuration &src);
 
 		void 		parseConfigPath(std::string configFile);
 		void		parse();
@@ -52,7 +44,6 @@ class Configuration : public Singleton<Configuration>
 		// GETTERS
 		std::map<int, std::string>			&getErrorPages();
 		std::vector<Server>					&getServers();
-		std::vector<ClientSocket>			&getClients();
 };
 
 #endif

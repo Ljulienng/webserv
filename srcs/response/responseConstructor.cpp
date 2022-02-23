@@ -20,14 +20,9 @@ Response*    errorResponse(Response* response, t_configMatch  &configMatch, int 
         if (errorPath.isRegularFile())
         {
             // new version : just create file before to pass in poll() to read the fd 
-            if (response->setPollFdFileToRead((configMatch.root + errorPage->second).c_str()) == false)
-                return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
+            response->setPollFdFileToRead((configMatch.root + errorPage->second).c_str());
             response->addFile();
-            response->setContentType("text/html");
-            
-            /* ancienne version qui marche mais sans repasser par poll()*/
-            // response->setContent(errorPath.getFileContent(), "text/html");
-            
+            response->setContentType("text/html");           
             return response;
         }
     }
@@ -72,7 +67,7 @@ Response*    redirectionResponse(Response* response, std::pair<int, std::string>
 
 /*
 ** transform http://./wordpress/wp-admin/ in htpp://127.0.0.1:8080/wordpress/wp-admin/
-** A CREUSER -> pb avec redirections wordpress
+** A CREUSER -> pb constate avec redirections wordpress
 */
 std::string     treatRelativePath(std::string path)
 {
@@ -159,12 +154,6 @@ Response*    getMethodResponse(Response *response, t_configMatch &configMatch)
         response->addFile();
         response->setContentType(extension.getMime());
         
-        /* ancienne version qui marche mais sans repasser par poll()
-        if (getExtension(configMatch.pathTranslated) == "php") // display content file if no cgi
-            response.setContent(path.getFileContent(), "text/plain");
-        else
-            response.setContent(path.getFileContent(), extension.getMime());
-        */
         return response;
     }
     else if (path.isDirectory() && configMatch.location.getAutoindex())
@@ -202,11 +191,6 @@ Response*    postMethodResponse(Response* response, Request &request, t_configMa
     if (response->setPollFdFileToWrite(pathToUpload.c_str(), false, request.getBody()) == false)
         return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
     response->addFile();
-
-    // ancienne version qui marche mais sans repasser par poll()
-    // create the file
-    // if (!fileToPost.createFile(pathToUpload, request.getBody()))
-    //     return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
 
     response->setStatus(CREATED);
 

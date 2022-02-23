@@ -50,7 +50,6 @@ bool	_matchLocation(std::string locationPath, std::string uriRequest)
 */
 bool	_isMorePreciseLocation(std::string locationPath, std::string prevLocationPath)
 {
-	//std::cout << "[_isMorePreciseLocation]   locpath = " << locationPath << "   prevLocationPath = " << prevLocationPath << "\n";
 	return (locationPath.size() > prevLocationPath.size());
 }
 
@@ -69,10 +68,7 @@ Location 	&Server::findLocation(std::string uriRequest)
 		if (_matchLocation(_locations[i].getPath(), uriRequest))
 		{
 			if (_isMorePreciseLocation(_locations[i].getPath(), _locations[indexMatch].getPath()))
-			{
 				indexMatch = i;
-				//std::cout << "Choose location = " << _locations[indexMatch].getPath() << "\n";
-			}
 		}
 	}
 	return _locations[indexMatch];
@@ -205,9 +201,6 @@ size_t		&Server::getMaxBodySize()
 std::string		&Server::getUploadPath()
 { return _uploadPath; }
 
-// Socket		&Server::getSocket()
-// { return _socket; }
-
 std::pair<std::string, std::string>		&Server::getCgi()
 { return _cgi; }
 
@@ -219,7 +212,7 @@ Server::Server() : 	_name(),
 					_port(),
 					_root(),
 					_index(),
-					_maxBodySize(1000000), // default nginx
+					_maxBodySize(100000),
 					_uploadPath(),
 					_locations(),
 					_cgi()

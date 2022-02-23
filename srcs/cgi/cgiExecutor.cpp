@@ -116,7 +116,7 @@ void		CgiExecutor::execCgi()
 		redirIn(pipeIn);
 		// chdir("/home/user42/Documents/Projects/12-Webserv/ourwebserv_");
 		if ((execve(_cgiPath.c_str(), _argArray, _envArray)) == -1)
-			throw (std::string("Can't execute the script")); // Error 500 to assign
+			std::cerr << "Can't execute the script" << std::endl;
 		exit(errno);
 	}
 	else if (pid > 0)
@@ -144,9 +144,6 @@ void		CgiExecutor::clean()
 		delete [] _argArray[i];
 	delete [] _argArray;
 }
-
-std::string			CgiExecutor::getBody()
-{ return std::string(_newBody.begin(), _newBody.end()); }
 
 CgiSocketFromCgi*	CgiExecutor::getCgiSocketFromCgi()
 { return _cgiSocketFromCgi; }
