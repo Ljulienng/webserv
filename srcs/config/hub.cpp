@@ -23,6 +23,7 @@ void	Hub::_addListeningSocket(Server& server)
 	newListenSocket->setPollFd(newPollFd);
 	newListenSocket->start(server.getIp(), server.getPort());
 	_listenSockets.push_back(newListenSocket);
+	log::logEvent("Listen on 127.0.0.1:8080", newListenSocket->getFd(), Socket::server);
 }
 
 void	Hub::_addClientSocket(int acceptRet, Socket* listenSocket)
@@ -168,7 +169,7 @@ void		Hub::_acceptIncomingConnections(size_t i)
 			_closeConnection(0, Socket::client); // disconnect the first client
 			return ;
 		}
-		int acceptRet = accept(_arr[i]->getPollFd().fd, NULL, NULL);
+		int acceptRet = accept(_arr[i]->getFd(), NULL, NULL);
 
 		if (acceptRet == -1) // no connection is present
 			break ;
@@ -176,7 +177,7 @@ void		Hub::_acceptIncomingConnections(size_t i)
 		_addClientSocket(acceptRet, _arr[i]);
 
 		// add the new incoming connection to the pollfd structure
-		log::logEvent("New incoming connection", acceptRet);
+		log::logEvent("New incoming connection", acceptRet, Socket::client);
 	}
 }
 
@@ -200,7 +201,7 @@ bool		Hub::_receiveRequest(size_t i)
 	ClientSocket* 		client = _clientSockets[_arr[i]->_index];
 	std::vector<Server> servers = Configuration::getInstance().getServers();
 
-	bytes = recv(client->getPollFd().fd, &buffer[0], BUF_SIZE, 0);
+	bytes = recv(client->getFd(), &buffer[0], BUF_SIZE, 0);
 	if (bytes <= 0)
 	{
 		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
@@ -216,7 +217,7 @@ bool		Hub::_receiveRequest(size_t i)
 			client->addRequest();
 			if (client->getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
 				client->getRequests().back().getHttpStatus().setStatus(413);
-			log::logEvent("Received a new request", client->getFd());
+			log::logEvent("Received a new request", client->getFd(), Socket::client);
 		}
 	}
 
@@ -352,8 +353,8 @@ bool 		Hub::_sendResponse(size_t i)
 	if (responses.empty() && !buffer.empty())
 	{
 		// so write into the _fds[i].fd the content of buffer
-		int bytes = write(client->getPollFd().fd, &buffer[0], buffer.size());
-		log::logEvent("Response sent", client->getPollFd().fd);
+		int bytes = write(client->getFd(), &buffer[0], buffer.size());
+		log::logEvent("Response sent", client->getFd(), Socket::client);
 		if (bytes <= 0)
 		{
 			_closeAllConnections();
@@ -368,35 +369,34 @@ bool 		Hub::_sendResponse(size_t i)
 
 void		Hub::_closeConnection(size_t i, int type)
 {
-		std::cerr << "Connection closed ";
 		if (type == Socket::server)
 		{
-			std::cerr << "[server : fd " << _listenSockets[i]->getPollFd().fd << "] \n";
-			close(_listenSockets[i]->getPollFd().fd);
+			log::logEvent("Connection closed", _listenSockets[i]->getFd(), Socket::server);
+			close(_listenSockets[i]->getFd());
 			delete _listenSockets[i];
 			_listenSockets.erase(_listenSockets.begin() + i);
 		}
 		else if (type == Socket::client)
 		{
-			std::cerr << "[client : fd " << _clientSockets[i]->getPollFd().fd << "] \n";
-			close(_clientSockets[i]->getPollFd().fd);
+			log::logEvent("Connection closed", _clientSockets[i]->getFd(), Socket::client);
+			close(_clientSockets[i]->getFd());
 			delete _clientSockets[i];
 			_clientSockets.erase(_clientSockets.begin() + i);
 		}
 		else if (type == Socket::cgiFrom)
 		{
-			std::cerr << "[cgi From : fd " << _cgiSocketsFromCgi[i]->getPollFd().fd << "] \n";
-			close(_cgiSocketsFromCgi[i]->getPollFd().fd);
-			_cgiSocketsFromCgi[i]->getPollFd().fd = 0;
+			log::logEvent("Connection closed", _cgiSocketsFromCgi[i]->getFd(), Socket::cgiFrom);
+			close(_cgiSocketsFromCgi[i]->getFd());
+			_cgiSocketsFromCgi[i]->getFd() = 0;
 			close(_cgiSocketsFromCgi[i]->getFdUseless());
 			delete _cgiSocketsFromCgi[i];
 			_cgiSocketsFromCgi.erase(_cgiSocketsFromCgi.begin() + i);
 		}
 		else if (type == Socket::cgiTo)
 		{
-			std::cerr << "[cgi To : fd " << _cgiSocketsToCgi[i]->getPollFd().fd << "] \n";
-			close(_cgiSocketsToCgi[i]->getPollFd().fd);
-			_cgiSocketsToCgi[i]->getPollFd().fd = 0;
+			log::logEvent("Connection closed", _cgiSocketsToCgi[i]->getFd(), Socket::cgiTo);
+			close(_cgiSocketsToCgi[i]->getFd());
+			_cgiSocketsToCgi[i]->getFd() = 0;
 			close(_cgiSocketsToCgi[i]->getFdUseless());
 			delete _cgiSocketsToCgi[i];
 			_cgiSocketsToCgi.erase(_cgiSocketsToCgi.begin() + i);

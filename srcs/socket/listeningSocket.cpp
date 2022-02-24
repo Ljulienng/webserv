@@ -4,7 +4,6 @@ void 	ListeningSocket::start(std::string ip, unsigned short port)
 {
 	setNonBlock();
 	setSocketOptions();
-	std::cout << "ip = " << ip << "   port = " << port << "\n";
 	setAddr(AF_INET, ip.c_str(), port);
 	bindSocket();
 	listenSocket();
