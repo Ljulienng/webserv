@@ -7,6 +7,7 @@
     $fileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
     // echo "Target file - " . $target_file . "<br>";  
     echo "Size file - " . $_FILES["file"]["size"] . "<br>"; 
+    
     // Check file size
     if ($_FILES["file"]["size"] > 50000)
     {
