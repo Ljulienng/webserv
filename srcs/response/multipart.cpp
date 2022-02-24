@@ -5,9 +5,9 @@ void    parseMultipart(Response* response, Request &request, std::string boundar
     std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
     size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str());
     size_t				        i = 0;
-
+    
     while (i + boundary.size() + 6 <= contentLength)
-    {
+    {   std::cerr << "[parseMultipart] 0\n";
         i += boundary.size() + 2;   // skip boundary
         if (content[i] == '-' && content[i + 1] == '-')
         {
@@ -15,7 +15,7 @@ void    parseMultipart(Response* response, Request &request, std::string boundar
             break ;
         }
         i += 2;
-
+        std::cerr << "[parseMultipart] 1\n";
         t_multipart*   part = new t_multipart();       // one part on the multipart
 
         while (1)                  // parse headers
@@ -36,11 +36,13 @@ void    parseMultipart(Response* response, Request &request, std::string boundar
                 }
             }
         }
-
+        std::cerr << "[parseMultipart] 2\n";
+        std::cerr << "contentLength = " << contentLength << "\n";
+        std::cerr << "content size = " << content.size() << "\n";
         size_t start = i;
         part->length = 0;
         while (i + boundary.size() + 4 < contentLength) // parse content
-        {
+        {   //std::cerr << "i = " << i << "\n";
             if (content[i] == '\r' && content[i + 1] == '\n'
             && content[i + 2] == '-' && content[i + 3] == '-'
 			&& !std::strncmp(boundary.c_str(), reinterpret_cast<const char*>(&content[i + 4]), boundary.size()))
@@ -51,12 +53,13 @@ void    parseMultipart(Response* response, Request &request, std::string boundar
             ++i;
             ++part->length;
         }
-
+        std::cerr << "[parseMultipart] 3\n";
         part->content = new unsigned char[part->length];
         for (size_t j = 0; j < part->length; j++, start++)
             part->content[j] = content[start];
 
         response->addMultipart(part);
+        std::cerr << "[parseMultipart] 4\n";
     }
 }
 

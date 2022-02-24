@@ -45,7 +45,7 @@ class Hub
 		bool				_receiveRequest(size_t i);
 		void				_prepareResponse(size_t i);
 		void				_prepareCgiResponse(size_t i);
-		void 				_sendResponse(size_t i);
+		bool 				_sendResponse(size_t i);
 		void				_closeConnection(size_t i, int type);
 		void				_closeAllConnections();
 		

@@ -87,9 +87,8 @@ int		Hub::_waitPollEvent()
 	int	pollRet = 0;
 
 	_storeFdToPoll();
-	while (!pollRet)
-		pollRet = poll(_fds, _nfds, 1000);
-
+	pollRet = poll(_fds, _nfds, 1000);
+	
 	return pollRet;
 }
 
@@ -100,6 +99,7 @@ void	Hub::process()
 		_closeAllConnections();
 		return ;
 	}
+	
 	static size_t cgiCount[MAX_CGI_RUNNING] = {0};
 	for (size_t i = 0; i < _nfds - g_fileArr.size(); i++) 
 	{
@@ -107,10 +107,10 @@ void	Hub::process()
 		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && cgiCount[i] > 0)
 		{
 			_prepareCgiResponse(_arr[i]->_index);
-			//close both connections at the same time
 			_closeConnection(_arr[i]->_index, Socket::cgiFrom);
 			_closeConnection(_arr[i]->_index, Socket::cgiTo);
 			cgiCount[i] = 0;
+			break ;
 		}
 		else if (_fds[i].revents == 0)
 			continue;
@@ -120,8 +120,9 @@ void	Hub::process()
 				_acceptIncomingConnections(i);
 			else if (_arr[i]->getType() == Socket::client)
 			{
-				if (!_receiveRequest(i)) // client not disconnected
-					_prepareResponse(i);
+				if (!_receiveRequest(i)) // client disconnected
+					break ;
+				_prepareResponse(i);				
 			}
 			else if (_arr[i]->getType() == Socket::cgiFrom)
 			{
@@ -132,12 +133,18 @@ void	Hub::process()
 		else if ((_fds[i].revents & POLLOUT) == POLLOUT)
 		{
 			if (_arr[i]->getType() == Socket::client)
-				_sendResponse(i);
+			{
+				if (!_sendResponse(i))
+					break ;
+			}
 			else if (_arr[i]->getType() == Socket::cgiTo)
 				_cgiSocketsToCgi[_arr[i]->_index]->writeToCgi();
 		}
 		else if ((_fds[i].revents & POLLERR) == POLLERR || (_fds[i].revents & POLLHUP) == POLLHUP)
+		{
 			_closeConnection(_arr[i]->_index, _arr[i]->getType());
+			break ;
+		}
 		else
 		{
 			_closeAllConnections();
@@ -192,21 +199,20 @@ bool		Hub::_receiveRequest(size_t i)
 	std::vector<char>	buffer(BUF_SIZE);
 	ClientSocket* 		client = _clientSockets[_arr[i]->_index];
 	std::vector<Server> servers = Configuration::getInstance().getServers();
-	bool				close = false;
 
 	bytes = recv(client->getPollFd().fd, &buffer[0], BUF_SIZE, 0);
-	if (bytes < 0)
+	if (bytes <= 0)
 	{
 		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
-		close = true;
+		return false;
 	}
-	else if (bytes > 0)
-	{
+	else
+	{	//static int b = 0; b += bytes;
 		client->getBuffer().append(buffer.begin(), lastChar(buffer));
 		// std::cout << "buffer = "<< client->getBuffer();
-		// if ((checkRet = checkRequest(client->getBuffer())) == GOOD)
+		//if ((checkRet = checkRequest(client->getBuffer())) == GOOD && bytes < BUF_SIZE)
 		if (bytes < BUF_SIZE)
-		{	(void)checkRet;
+		{	(void)checkRet; //std::cout << "recv = "<< b << "\n";
 			// std::cout << client->getBuffer();
 			client->addRequest();
 			if (client->getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
@@ -214,12 +220,8 @@ bool		Hub::_receiveRequest(size_t i)
 			log::logEvent("Received a new request", client->getFd());
 		}
 	}
-	else //bytes = 0;
-	{
-		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
-		close = true;
-	}
-	return close;
+
+	return true;
 }
 
 static bool _needCgi(Request request, t_configMatch configMatch)
@@ -306,7 +308,7 @@ void		Hub::_prepareCgiResponse(size_t i)
 **  - append each response in a buffer
 **  - write/send in the buffer the response 
 */
-void 		Hub::_sendResponse(size_t i)
+bool 		Hub::_sendResponse(size_t i)
 {
 	ClientSocket* 			client = _clientSockets[_arr[i]->_index];
 	std::list<Response*>&	responses = client->getResponses();
@@ -319,7 +321,7 @@ void 		Hub::_sendResponse(size_t i)
 		if ((*it)->getHeader("Connection") == "close")
 		{
 			_closeConnection(_arr[i]->_index, _arr[i]->getType());
-			return ;
+			return false;
 		}
 
 		if ((*it)->getIndexFile() == -1)						// not a file (directory for example)
@@ -334,7 +336,8 @@ void 		Hub::_sendResponse(size_t i)
 			endToReadFile = true;
 		}
 		
-		if (endOfResponse)
+		// we can add the response to the buffer
+		if (endOfResponse)	
 		{
 			if (endToReadFile || endToWriteFile)
 				(*it)->endToReadorWrite();
@@ -346,6 +349,7 @@ void 		Hub::_sendResponse(size_t i)
 		}
 	}
 	
+	// responses have been processed, we can send to the client
 	if (responses.empty() && !buffer.empty())
 	{
 		// so write into the _fds[i].fd the content of buffer
@@ -356,10 +360,11 @@ void 		Hub::_sendResponse(size_t i)
 			_closeAllConnections();
 			exit(EXIT_FAILURE);
 		}
-		buffer.erase(buffer.begin(), buffer.begin() + bytes); // clear the buffer
+		buffer.erase(buffer.begin(), buffer.begin() + bytes);
 		if (buffer.empty()) // finished to write so we are now waiting for reading
 			client->getPollFd().events = POLLIN;
 	}
+	return true;
 }
 
 void		Hub::_closeConnection(size_t i, int type)
@@ -397,7 +402,7 @@ void		Hub::_closeConnection(size_t i, int type)
 			delete _cgiSocketsToCgi[i];
 			_cgiSocketsToCgi.erase(_cgiSocketsToCgi.begin() + i);
 		}
-			
+
 		// need to clean the indexing that changed after the deletion
 		_storeFdToPoll();
 }

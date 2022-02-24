@@ -5,7 +5,7 @@
 void            ClientSocket::addRequest()
 {
 	Request newRequest(_buffer);
-	
+
 	_requests.push_back(newRequest);
 	_buffer.clear();
 }
