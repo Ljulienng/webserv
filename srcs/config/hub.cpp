@@ -50,10 +50,8 @@ void	Hub::_storeFdToPoll()
 		_arr.push_back(*it);
 		_arr[_nfds]->_index = _nfds;
 	}
-	// std::cerr << "store  of the " << _clientSockets.size() <<" _clientSockets  _nfds = " << _nfds << "\n";
 	for (std::vector<ClientSocket*>::iterator it = _clientSockets.begin(); it != _clientSockets.end(); it++, _nfds++)
 	{
-		// std::cerr << "nfds = " << _nfds << "\n";
 		_fds[_nfds] = (*it)->getPollFd();
 		_arr.push_back(*it);
 		_arr[_nfds]->_index = _nfds - _listenSockets.size();
@@ -84,11 +82,20 @@ void	Hub::_storeFdToPoll()
 	}
 }
 
+int		Hub::_waitPollEvent()
+{
+	int	pollRet = 0;
+
+	_storeFdToPoll();
+	while (!pollRet)
+		pollRet = poll(_fds, _nfds, 1000);
+
+	return pollRet;
+}
+
 void	Hub::process()
 {
-	_storeFdToPoll();
-	int pollRet = poll(_fds, _nfds, 1000); // call poll and wait for an event
-	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
+	if (_waitPollEvent() < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
 	{
 		_closeAllConnections();
 		return ;
@@ -151,8 +158,6 @@ void		Hub::_acceptIncomingConnections(size_t i)
 	{
 		if (_clientSockets.size() == MAX_CONNECTIONS)
 		{
-			std::cerr << "nb of connections = " << MAX_CONNECTIONS << "\n";
-			// exit(0);
 			_closeConnection(0, Socket::client); // disconnect the first client
 			return ;
 		}
@@ -191,11 +196,9 @@ bool		Hub::_receiveRequest(size_t i)
 
 	bytes = recv(client->getPollFd().fd, &buffer[0], BUF_SIZE, 0);
 	if (bytes < 0)
-	{	// test ne pas exit
+	{
 		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
 		close = true;
-		// _closeAllConnections();
-		// exit(EXIT_FAILURE);
 	}
 	else if (bytes > 0)
 	{

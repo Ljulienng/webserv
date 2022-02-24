@@ -40,6 +40,7 @@ class Hub
 		void				_addListeningSocket(Server& server);
 		void				_addClientSocket(int acceptRet, Socket* socket);
 		void				_storeFdToPoll();
+		int					_waitPollEvent();
 		void				_acceptIncomingConnections(size_t i);
 		bool				_receiveRequest(size_t i);
 		void				_prepareResponse(size_t i);
