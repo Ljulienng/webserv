@@ -99,7 +99,7 @@ void	Hub::process()
 		_closeAllConnections();
 		return ;
 	}
-	
+
 	static size_t cgiCount[MAX_CGI_RUNNING] = {0};
 	for (size_t i = 0; i < _nfds - g_fileArr.size(); i++) 
 	{
@@ -207,13 +207,12 @@ bool		Hub::_receiveRequest(size_t i)
 		return false;
 	}
 	else
-	{	//static int b = 0; b += bytes;
+	{
 		client->getBuffer().append(buffer.begin(), lastChar(buffer));
-		// std::cout << "buffer = "<< client->getBuffer();
-		//if ((checkRet = checkRequest(client->getBuffer())) == GOOD && bytes < BUF_SIZE)
-		if (bytes < BUF_SIZE)
-		{	(void)checkRet; //std::cout << "recv = "<< b << "\n";
-			// std::cout << client->getBuffer();
+		// std::cerr << "[_receiveRequest] buffer.size() " << client->getBuffer().size() << "\n";
+		if ((checkRet = checkRequest(client->getBuffer())) == GOOD && bytes < BUF_SIZE)
+		// if (bytes < BUF_SIZE)
+		{	(void)checkRet;
 			client->addRequest();
 			if (client->getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
 				client->getRequests().back().getHttpStatus().setStatus(413);
