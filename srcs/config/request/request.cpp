@@ -295,7 +295,7 @@ int				Request::verifBuffer(const std::string &buffer)
 				return (1);
 		}
 		else
-			return (0);		
+			return (0);
 	}
 	else
 		return (0);
@@ -363,7 +363,7 @@ int									Request::getRet()
 */
 
 Request::Request(const std::string &request) :
-	_method(""), _path(""), _version(""), _headers(), _body(""), _ret(200)
+	_method(""), _path(""), _version(""), _headers(), _body(""), _httpStatus(200), _ret(200)
 {
 	int ret = verifBuffer(request);
 	if (ret == 1)

@@ -43,8 +43,7 @@ bool 	File::createFile(std::string filename)
 	return true;
 }
 
-
-// A SUPPRIMER NON UTILISE (! write pas dans poll())
+// (! write pas dans poll())
 bool	File::createFile(std::string filename, std::string content)
 {
 	int fd;
@@ -99,7 +98,11 @@ std::string		&File::getFilePath()
 { return _filePath; }
 
 std::vector<unsigned char>	&File::getFileContent()
-{ return _fileContent; }
+{
+	if (isRegularFile())
+		openFile();
+	return _fileContent;
+}
 
 struct stat		&File::getfileStat()
 { return _fileStat; }
@@ -141,16 +144,14 @@ void	File::openFile()
 File::File() :
 	_filePath(),
 	_fileContent(),
-	_fileStat() {}
+	_fileStat()
+{}
 
 File::File(std::string filePath) : 
 	_filePath(filePath),
 	_fileContent(),
 	_fileStat()
-{	
-	if (isRegularFile())
-		openFile();
-}
+{}
 
 File::File(const File &src)
 {
@@ -173,20 +174,10 @@ File &File::operator=(const File &src)
 /* NON MEMBERS*/
 void 	appendToFile(const std::string &path, const char *content, size_t n)
 {
-	// std::ofstream file;
-	// file.open(path.c_str(), std::ofstream::binary);
-	// file.write(content, n);
-	// file.close();
-
-	(void)n;
-	std::string toAppend(content, 0, n);
 	std::ofstream file;
 	file.open(path.c_str(), std::ofstream::binary);
-	if (file.is_open())
-	{
-		file << toAppend;
-		file.close();
-	}
+	file.write(content, n);
+	file.close();
 }
 
 std::string     getExtension(std::string filename)

@@ -10,7 +10,7 @@ void            ClientSocket::addRequest()
 	_buffer.clear();
 }
 
-void		ClientSocket::addResponse(Response response)
+void		ClientSocket::addResponse(Response* response)
 {
 	_responses.push_back(response);
 }
@@ -46,7 +46,7 @@ std::string  		&ClientSocket::getBuffer()
 std::list<Request>	&ClientSocket::getRequests()
 { return _requests; }
 
-std::list<Response>    &ClientSocket::getResponses()
+std::list<Response*>    &ClientSocket::getResponses()
 { return		_responses; }
 
 std::string			&ClientSocket::getServerName()
@@ -70,7 +70,8 @@ ClientSocket::ClientSocket(const ClientSocket &src) : Socket()
 	*this = src;
 }
 
-ClientSocket::~ClientSocket() {}
+ClientSocket::~ClientSocket()
+{}
 
 ClientSocket &ClientSocket::operator=(const ClientSocket &src)
 {

@@ -127,8 +127,8 @@ HttpStatus::HttpStatus(const HttpStatus &src)
 	*this = src;
 }
 
-HttpStatus::~HttpStatus() {}
-
+HttpStatus::~HttpStatus()
+{}
 
 HttpStatus &HttpStatus::operator=(const HttpStatus &src)
 {

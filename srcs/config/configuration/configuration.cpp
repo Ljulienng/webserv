@@ -64,7 +64,7 @@ size_t	Configuration::_parseNextPair(str_ite it, str_ite ite, std::map<std::stri
 	if (*it == '"')
 		value = std::string(start, it);
 	m.insert(std::make_pair(key, value));
-	// std::cout << "key = " << key << "  value = " << value << "\n";
+
 	return (key.size() + value.size() + 5); // key + value + : + "" ""
 }
 
@@ -258,15 +258,11 @@ std::map<int, std::string>		&Configuration::getErrorPages()
 std::vector<Server>		&Configuration::getServers()
 { return _servers; }
 
-std::vector<ClientSocket>	&Configuration::getClients()
-{ return _clients; }
-
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 Configuration::Configuration() : Singleton(),
 									_configFile(),
 									_errorPages(),
-									_servers(),
-									_clients()
+									_servers()
 									// to be completed if new attributes
 {}
 
@@ -274,30 +270,11 @@ Configuration::Configuration(std::string configFile) :
 									Singleton(),
 									_configFile(configFile),
 									_errorPages(),
-									_servers(),
-									_clients()					
+									_servers()				
 									// to be completed if new attributes
 {}
 
-Configuration::Configuration(const Configuration &src)
-{
-	*this = src;
-}
-
 Configuration::~Configuration() {}
-
-Configuration &Configuration::operator=(const Configuration &src)
-{
-	if (&src != this)
-	{
-		_configFile = src._configFile;
-		_errorPages = src._errorPages;
-		_servers = src._servers;
-		// _clients = src._clients;
-		// to be completed if new attributes
-	}
-	return (*this);
-}
 
 /* NON MEMBER FUNCTIONS */
 

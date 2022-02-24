@@ -52,22 +52,10 @@ Socket::e_type          &Socket::getType()
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 Socket::Socket() :
 			_index(0),
-			_fd(),
 			_pollFd(),
 			_addr(),
 			_serverName(),
 			_type(none)
-			// to be completed if new attributes
-{}
-
-Socket::Socket(int sockFd, struct sockaddr_in sockaddr, e_type type) :	
-			_index(0),
-			_fd(sockFd),
-			_pollFd(),
-			_addr(sockaddr),
-			_serverName(),
-			_type(type)
-			
 			// to be completed if new attributes
 {}
 
@@ -82,7 +70,6 @@ Socket &Socket::operator=(const Socket &src)
 {
 	if (&src != this)
 	{
-		_fd = src._fd;
 		_addr = src._addr;
 		// to be completed if new attributes
 	}
