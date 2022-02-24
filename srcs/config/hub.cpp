@@ -23,7 +23,7 @@ void	Hub::_addListeningSocket(Server& server)
 	newListenSocket->setPollFd(newPollFd);
 	newListenSocket->start(server.getIp(), server.getPort());
 	_listenSockets.push_back(newListenSocket);
-	log::logEvent("Listen on 127.0.0.1:8080", newListenSocket->getFd(), Socket::server);
+	log::logEvent("Listen on 127.0.0.1:" +  myItoa(server.getPort()), newListenSocket->getFd(), Socket::server);
 }
 
 void	Hub::_addClientSocket(int acceptRet, Socket* listenSocket)

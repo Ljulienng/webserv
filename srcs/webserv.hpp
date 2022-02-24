@@ -40,6 +40,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 #include <sys/stat.h>
 
 #define BUF_SIZE 2048

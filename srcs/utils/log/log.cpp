@@ -43,9 +43,11 @@ namespace log {
 
     void			logEvent(std::string msg, int fd, int type)
     {
-        std::cerr << "[ " << getTime() << " ] ";
-        std::cerr << "[ " << getType(type) << " : " << fd << " ] ";
-        std::cerr << ORG << msg  << RESET << std::endl;
+        std::cerr << "[ " << std::setw(8) << getTime() << " ] ";
+        std::cerr << "[ " << std::left << std::setw(8) << getType(type) << " : ";
+        std::cerr << std::left << std::setw(3)  << fd << " ] ";
+        msg.find("closed") == std::string::npos ? std::cerr << ORG : std::cerr << BLU;
+        std::cerr << msg  << RESET << std::endl;
     }
 
 }
