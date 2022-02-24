@@ -39,8 +39,18 @@ void	Hub::_addClientSocket(int acceptRet, Socket* listenSocket)
 	_clientSockets.push_back(newClientSocket);
 }
 
+void	Hub::_checkMaxConnection()
+{
+	std::cerr << "_clientSockets.size() = " << _clientSockets.size() << "\n";
+	if (_clientSockets.size() > (MAX_CONNECTIONS / 2))
+		for (size_t i = 0; i < _clientSockets.size() / 2; i++)
+			_closeConnection(0, Socket::client, 0);
+}
+
+
 void	Hub::_storeFdToPoll()
 {
+	// _checkMaxConnection();
 	memset(_fds, 0, sizeof(_fds));
 	_nfds = 0;
 	_arr.clear();
@@ -50,12 +60,15 @@ void	Hub::_storeFdToPoll()
 		_arr.push_back(*it);
 		_arr[_nfds]->_index = _nfds;
 	}
+	std::cerr << "store  of the " << _clientSockets.size() <<" _clientSockets  _nfds = " << _nfds << "\n";
 	for (std::vector<ClientSocket*>::iterator it = _clientSockets.begin(); it != _clientSockets.end(); it++, _nfds++)
 	{
+		std::cerr << "nfds = " << _nfds << "\n";
 		_fds[_nfds] = (*it)->getPollFd();
 		_arr.push_back(*it);
 		_arr[_nfds]->_index = _nfds - _listenSockets.size();
 	}
+	std::cerr << "store  of _cgiSockets\n";
 	for (std::vector<CgiSocketFromCgi*>::iterator it = _cgiSocketsFromCgi.begin(); it != _cgiSocketsFromCgi.end(); it++, _nfds++)
 	{ 
 		_fds[_nfds] = (*it)->getPollFd();
@@ -84,7 +97,7 @@ void	Hub::_storeFdToPoll()
 
 void	Hub::process()
 {
-	_storeFdToPoll(); 
+	_storeFdToPoll();
 	int pollRet = poll(_fds, _nfds, 1000); // call poll and wait for an event
 	if (pollRet < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
 	{
@@ -99,8 +112,8 @@ void	Hub::process()
 		{
 			_prepareCgiResponse(_arr[i]->_index);
 			//close both connections at the same time
-			_closeConnection(_arr[i]->_index, _arr[i]->getType());		
-			_closeConnection(_arr[i]->_index, Socket::cgiTo);
+			_closeConnection(_arr[i]->_index, Socket::cgiFrom, INDEXING);
+			_closeConnection(_arr[i]->_index, Socket::cgiTo, INDEXING);
 			cgiCount[i] = 0;
 		}
 		else if (_fds[i].revents == 0)
@@ -128,7 +141,7 @@ void	Hub::process()
 				_cgiSocketsToCgi[_arr[i]->_index]->writeToCgi();
 		}
 		else if ((_fds[i].revents & POLLERR) == POLLERR || (_fds[i].revents & POLLHUP) == POLLHUP)
-			_closeConnection(_arr[i]->_index, _arr[i]->getType());
+			_closeConnection(_arr[i]->_index, _arr[i]->getType(), INDEXING);
 		else
 		{
 			_closeAllConnections();
@@ -148,7 +161,12 @@ void		Hub::_acceptIncomingConnections(size_t i)
 	while (1)
 	{
 		if (_clientSockets.size() == MAX_CONNECTIONS)
-			_closeConnection(0, Socket::client); // disconnect the first client
+		{
+			std::cerr << "nb of connections = " << MAX_CONNECTIONS << "\n";
+			// exit(0);
+			_closeConnection(0, Socket::client, INDEXING); // disconnect the first client
+			return ;
+		}
 		int acceptRet = accept(_arr[i]->getPollFd().fd, NULL, NULL);
 
 		if (acceptRet == -1) // no connection is present
@@ -185,7 +203,7 @@ bool		Hub::_receiveRequest(size_t i)
 	bytes = recv(client->getPollFd().fd, &buffer[0], BUF_SIZE, 0);
 	if (bytes < 0)
 	{	// test ne pas exit
-		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
+		_closeConnection(_arr[i]->_index, _arr[i]->getType(), INDEXING); // disconnect the client
 		close = true;
 		// _closeAllConnections();
 		// exit(EXIT_FAILURE);
@@ -206,7 +224,7 @@ bool		Hub::_receiveRequest(size_t i)
 	}
 	else //bytes = 0;
 	{
-		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
+		_closeConnection(_arr[i]->_index, _arr[i]->getType(), INDEXING); // disconnect the client
 		close = true;
 	}
 	return close;
@@ -308,7 +326,7 @@ void 		Hub::_sendResponse(size_t i)
 	{
 		if ((*it)->getHeader("Connection") == "close")
 		{
-			_closeConnection(_arr[i]->_index, _arr[i]->getType());
+			_closeConnection(_arr[i]->_index, _arr[i]->getType(), INDEXING);
 			return ;
 		}
 
@@ -352,7 +370,7 @@ void 		Hub::_sendResponse(size_t i)
 	}
 }
 
-void		Hub::_closeConnection(size_t i, int type)
+void		Hub::_closeConnection(size_t i, int type, bool indexing)
 {
 		std::cerr << "Connection closed ";
 		if (type == Socket::server)
@@ -389,7 +407,8 @@ void		Hub::_closeConnection(size_t i, int type)
 		}
 			
 		// need to clean the indexing that changed after the deletion
-		_storeFdToPoll();
+		if (indexing)
+			_storeFdToPoll();
 }
 
 void		Hub::_closeAllConnections()
@@ -397,7 +416,7 @@ void		Hub::_closeAllConnections()
 	size_t tmp = _nfds - g_fileArr.size();
 	tmp = _listenSockets.size() + _clientSockets.size() + _cgiSocketsFromCgi.size() + _cgiSocketsToCgi.size();
 	for (size_t i = 0; i < tmp; i++)
-		_closeConnection(0, _arr[0]->getType());
+		_closeConnection(0, _arr[0]->getType(), INDEXING);
 	for (size_t i = 0; i < g_fileArr.size(); i++)
 		close(g_fileArr[i]->fd);
 }

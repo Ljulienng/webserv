@@ -21,6 +21,8 @@ class Server;
 
 #define MAX_CGI_RUNNING 100
 
+#define INDEXING 1
+
 /*
 ** general class to handle the program
 */
@@ -39,13 +41,14 @@ class Hub
 
 		void				_addListeningSocket(Server& server);
 		void				_addClientSocket(int acceptRet, Socket* socket);
+		void				_checkMaxConnection();
 		void				_storeFdToPoll();
 		void				_acceptIncomingConnections(size_t i);
 		bool				_receiveRequest(size_t i);
 		void				_prepareResponse(size_t i);
 		void				_prepareCgiResponse(size_t i);
 		void 				_sendResponse(size_t i);
-		void				_closeConnection(size_t i, int type);
+		void				_closeConnection(size_t i, int type, bool indexing);
 		void				_closeAllConnections();
 		
 		Hub();
