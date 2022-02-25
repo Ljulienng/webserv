@@ -23,7 +23,7 @@ void	Hub::_addListeningSocket(Server& server)
 	newListenSocket->setPollFd(newPollFd);
 	newListenSocket->start(server.getIp(), server.getPort());
 	_listenSockets.push_back(newListenSocket);
-	log::logEvent("Listen on 127.0.0.1:" +  myItoa(server.getPort()), newListenSocket->getFd(), Socket::server);
+	log::logEvent("Listen on " + server.getIp() + ":" + myItoa(server.getPort()), newListenSocket->getFd(), Socket::server);
 }
 
 void	Hub::_addClientSocket(int acceptRet, Socket* listenSocket)
@@ -93,6 +93,23 @@ int		Hub::_waitPollEvent()
 	return pollRet;
 }
 
+bool	Hub::_cgiClosed(size_t i, size_t *cgiCount)
+{
+	static size_t timer[MAX_CGI_RUNNING] = {0};
+
+	timer[i]++;
+	if (timer[i] > 1)
+	{
+		_prepareCgiResponse(_arr[i]->_index);
+		_closeConnection(_arr[i]->_index, Socket::cgiFrom);
+		_closeConnection(_arr[i]->_index, Socket::cgiTo);
+		cgiCount[i] = 0;
+		timer[i] = 0;
+		return true;
+	}
+	return false;
+}
+
 void	Hub::process()
 {
 	if (_waitPollEvent() < 0) // poll failed or SIGINT received [poll is a blocking function and SIGINT will unblock it]
@@ -106,12 +123,9 @@ void	Hub::process()
 	{
 		// only way found to detect end of cgi POLLIN to send response to the client
 		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && cgiCount[i] > 0)
-		{
-			_prepareCgiResponse(_arr[i]->_index);
-			_closeConnection(_arr[i]->_index, Socket::cgiFrom);
-			_closeConnection(_arr[i]->_index, Socket::cgiTo);
-			cgiCount[i] = 0;
-			break ;
+		{	
+			if (_cgiClosed(i, cgiCount))
+				break ;
 		}
 		else if (_fds[i].revents == 0)
 			continue;
@@ -212,7 +226,7 @@ bool		Hub::_receiveRequest(size_t i)
 		client->getBuffer().append(buffer.begin(), lastChar(buffer));
 		if ((checkRet = checkRequest(client->getBuffer())) == GOOD && bytes < BUF_SIZE)
 		// if (bytes < BUF_SIZE)
-		{	std::cerr << "[_receiveRequest] buffer :\n" << std::string(client->getBuffer().begin(), client->getBuffer().begin() + 100) << "\n";
+		{	//std::cerr << "[_receiveRequest] buffer :\n" << std::string(client->getBuffer().begin(), client->getBuffer().begin() + 100) << "\n";
 			client->addRequest();
 			if (client->getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
 				client->getRequests().back().getHttpStatus().setStatus(413);
