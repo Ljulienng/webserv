@@ -226,7 +226,7 @@ bool		Hub::_receiveRequest(size_t i)
 		client->getBuffer().append(buffer.begin(), lastChar(buffer));
 		if ((checkRet = checkRequest(client->getBuffer())) == GOOD && bytes < BUF_SIZE)
 		// if (bytes < BUF_SIZE)
-		{	//std::cerr << "[_receiveRequest] buffer :\n" << std::string(client->getBuffer().begin(), client->getBuffer().begin() + 100) << "\n";
+		{	std::cerr<<"bytes = " <<bytes<<"\n";std::cerr << "[_receiveRequest] buffer :\n" << std::string(client->getBuffer().begin(), client->getBuffer().begin() + 100) << "\n";
 			client->addRequest();
 			if (client->getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
 				client->getRequests().back().getHttpStatus().setStatus(413);
