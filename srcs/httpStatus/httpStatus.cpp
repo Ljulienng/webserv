@@ -98,7 +98,10 @@ void            HttpStatus::setStatus(int status)
 {
 	_code = status;
 	if (_existingStatus.find(_code) == _existingStatus.end())
-		throw (std::string("Error to set HTTP status : code " + myItoa(_code) + " doesn't exist"));
+	{
+		std::cerr << "Error to set HTTP status : code " << myItoa(_code) << " doesn't exist" << std::endl;
+		_code = 0;
+	}
 	_message = _existingStatus.find(_code)->second;
 }
 
@@ -137,7 +140,6 @@ HttpStatus &HttpStatus::operator=(const HttpStatus &src)
 		_existingStatus = src._existingStatus;
 		_code = src._code;
 		_message = src._message;
-		// to be completed if new attributes
 	}
 	return (*this);
 }

@@ -8,18 +8,18 @@ void    CgiSocketFromCgi::readFromCgi()
 {
     std::string                 cgiResponse;
     size_t                      bytes;
-    std::vector<unsigned char>  buf(50 + 1);
+    std::vector<unsigned char>  buf(300000);
 
-    bytes = read(_pollFd.fd, &buf[0], 50);
-    // std::cerr << "Return of the cgi : bytes to read : " << bytes << "\n";
+    bytes = read(_pollFd.fd, &buf[0], 300000);
+    std::cerr << "Return of the cgi : bytes to read : " << bytes << "\n";
     if (bytes > 0)
     {
         for (size_t i = 0; i < bytes; i++)
         {
             _buffer.push_back(buf[i]);
-            // std::cerr << buf[i];
+            std::cerr << buf[i];
         }
-        // std::cerr << "\n";
+        std::cerr << "\n";
     }   
 }
 

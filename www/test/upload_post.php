@@ -9,7 +9,7 @@
     echo "Size file - " . $_FILES["file"]["size"] . "<br>"; 
     
     // Check file size
-    if ($_FILES["file"]["size"] > 50000)
+    if ($_FILES["file"]["size"] > 100000)
     {
         echo "Sorry, your file is too large.<br>";
         $uploadOk = 0;
