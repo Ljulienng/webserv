@@ -29,7 +29,7 @@ void	CgiExecutor::initHeaders()
 	_env["REMOTE_USER"] = _request->getHeader("Authorization");
 	_env["REQUEST_METHOD"] = _request->getMethod();
 	_env["REQUEST_URI"] = _env.find("PATH_INFO")->second; // ajout
-	_env["SCRIPT_FILENAME"] = /*"/app/wordpress/index.php"; */_env.find("PATH_TRANSLATED")->second; // ajout doit etre = PATH_INFO
+	_env["SCRIPT_FILENAME"] = _env.find("PATH_TRANSLATED")->second; // ajout doit etre = PATH_INFO
 	// _env["SCRIPT_NAME"] = newPath; // version JU initiale
 	_env["SCRIPT_NAME"] = _request->getUri().getPath();
 	_env["SERVER_NAME"] = _client.getServerName();
@@ -61,7 +61,7 @@ void	CgiExecutor::initHeaders()
 	
 	for	(std::map<std::string, std::string>::iterator it = _env.begin(); it != _env.end(); it++)
 	{
-		str = it->first + "=" + it->second; std::cerr << str << "\n";
+		str = it->first + "=" + it->second;
 		_envArray[i] = new char[str.size() + 1];
 		strcpy(_envArray[i], str.c_str());
 		i++;
@@ -85,14 +85,17 @@ static void		redirIn(int pipe[2])
 	close(pipe[0]);
 }
 
+static void		closePipes(int pipes[2])
+{
+	close(pipes[0]);
+	close(pipes[1]);
+}
+
 static void		createPipe(int pipeOut[2], int pipeIn[2])
 {
 	pipe(pipeOut);
 	if (pipe(pipeIn) < 0)
-	{
-		close(pipeOut[0]);
-		close(pipeOut[1]);
-	}
+		closePipes(pipeOut);
 }
 
 void		CgiExecutor::execCgi()
@@ -105,10 +108,8 @@ void		CgiExecutor::execCgi()
 	pid = fork();
 	if (pid < 0)
 	{
-		close(pipeOut[0]);
-		close(pipeOut[1]);
-		close(pipeIn[0]);
-		close(pipeIn[1]);
+		closePipes(pipeOut);
+		closePipes(pipeIn);
 	}
 	else if (pid == 0)
 	{

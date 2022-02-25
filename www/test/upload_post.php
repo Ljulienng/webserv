@@ -6,20 +6,21 @@
     $uploadOk = 1;
     $fileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
     // echo "Target file - " . $target_file . "<br>";  
-
+    echo "Size file - " . $_FILES["file"]["size"] . "<br>"; 
+    
     // Check file size
-    if ($_FILES["file"]["size"] > 500000)
+    if ($_FILES["file"]["size"] > 100000)
     {
         echo "Sorry, your file is too large.<br>";
         $uploadOk = 0;
     }
 
     // Allow certain file formats
-    if($fileType != "txt" && $fileType != "cpp" && $fileType != "hpp")
-    {
-      echo "Sorry, only .txt .cpp and .hpp files are allowed.<br>";
-      $uploadOk = 0;
-    }
+    // if($fileType != "txt" && $fileType != "cpp" && $fileType != "hpp")
+    // {
+    //   echo "Sorry, only .txt .cpp and .hpp files are allowed.<br>";
+    //   $uploadOk = 0;
+    // }
 
     // Check if $uploadOk is set to 0 by an error
     if ($uploadOk == 0)
@@ -35,7 +36,7 @@
         } 
         else
         {
-            echo "Sorry, there was an error uploading your file.";
+            echo "Sorry, there was an error uploading your file [error type " .$_FILES["file"]["error"] ."]";
         }
     }
 ?>

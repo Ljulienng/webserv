@@ -5,7 +5,8 @@ void    parseMultipart(Response* response, Request &request, std::string boundar
     std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
     size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str());
     size_t				        i = 0;
-
+    std::cerr << "contentLength = " << contentLength << "\n";
+    std::cerr << "content size = " << content.size() << "\n";
     while (i + boundary.size() + 6 <= contentLength)
     {
         i += boundary.size() + 2;   // skip boundary
@@ -36,11 +37,12 @@ void    parseMultipart(Response* response, Request &request, std::string boundar
                 }
             }
         }
-
         size_t start = i;
         part->length = 0;
         while (i + boundary.size() + 4 < contentLength) // parse content
         {
+            if (i + 4 > content.size())
+                return ;
             if (content[i] == '\r' && content[i + 1] == '\n'
             && content[i + 2] == '-' && content[i + 3] == '-'
 			&& !std::strncmp(boundary.c_str(), reinterpret_cast<const char*>(&content[i + 4]), boundary.size()))
@@ -51,7 +53,6 @@ void    parseMultipart(Response* response, Request &request, std::string boundar
             ++i;
             ++part->length;
         }
-
         part->content = new unsigned char[part->length];
         for (size_t j = 0; j < part->length; j++, start++)
             part->content[j] = content[start];

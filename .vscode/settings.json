@@ -50,6 +50,8 @@
 		"functional": "cpp",
 		"numeric": "cpp",
 		"random": "cpp",
-		"ranges": "cpp"
+		"ranges": "cpp",
+		"ctime": "cpp",
+		"iomanip": "cpp"
 	}
 }

@@ -39,12 +39,14 @@ class Hub
 
 		void				_addListeningSocket(Server& server);
 		void				_addClientSocket(int acceptRet, Socket* socket);
+		bool				_cgiClosed(size_t i, size_t *cgiCount);
 		void				_storeFdToPoll();
+		int					_waitPollEvent();
 		void				_acceptIncomingConnections(size_t i);
 		bool				_receiveRequest(size_t i);
 		void				_prepareResponse(size_t i);
 		void				_prepareCgiResponse(size_t i);
-		void 				_sendResponse(size_t i);
+		bool 				_sendResponse(size_t i);
 		void				_closeConnection(size_t i, int type);
 		void				_closeAllConnections();
 		

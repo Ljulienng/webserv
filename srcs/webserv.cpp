@@ -8,7 +8,7 @@ void     sigintHandler(int sig)
 {
     (void)sig;
     std::cout << std::endl;
-    std::cout << "... Good bye world ..." << std::endl;
+    std::cout << GRN << "... Good bye world ..." << RESET << std::endl;
     g_run = false;
 }
 

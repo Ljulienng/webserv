@@ -40,10 +40,11 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 #include <sys/stat.h>
 
-#define BUF_SIZE 1024
-#define MAX_CONNECTIONS 100
+#define BUF_SIZE 2048
+#define MAX_CONNECTIONS 10000
 #define GOOD 0
 #define WAIT 1
 #define DISCONNECT 2

@@ -454,8 +454,8 @@ int			checkRequest(std::string &buffer)
 		else if (buffer.find("Content-Length") != std::string::npos)
 		{
 			// size_t j = buffer.find("Content-Length");
-			
-			// body.assign(buffer, i + 4, std::string::npos);
+
+			//body.assign(buffer, i + 4, std::string::npos);
 			// std::cout << " body = " << body;
 			// if (body.find("\r\n") == std::string::npos)
 			// 	return (WAIT);
