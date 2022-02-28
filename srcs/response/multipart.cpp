@@ -6,14 +6,6 @@ void    parseMultipart(Response* response, Request &request, std::string boundar
     size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str());
     size_t				        i = 0;
     
-    std::cerr << "content size = " << content.size() << "\n";
-    std::cerr << "contentLength = " << contentLength << "\n";
-    //std::cerr << "begin of body = " << std::string(request.getBody().begin(), request.getBody().begin() + 30) << "\n";
-    std::cerr << "boundary size = " << boundary.size() << "\n";
-    std::map<std::string,std::string>::iterator it = request.getHeaders().begin();
-    for ( ; it != request.getHeaders().end(); it++)
-        std::cerr << it->first << " : " << it->second << "\n";
-
     while (i + boundary.size() + 6 <= contentLength)
     {
         i += boundary.size() + 2;   // skip boundary

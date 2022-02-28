@@ -43,7 +43,7 @@
 #include <iomanip>
 #include <sys/stat.h>
 
-#define BUF_SIZE 2048
+#define BUF_SIZE 8192
 #define MAX_CONNECTIONS 10000
 #define GOOD 0
 #define WAIT 1
