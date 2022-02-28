@@ -9,7 +9,6 @@ void    parseMultipart(Response* response, Request &request, std::string boundar
     std::cerr << "content size = " << content.size() << "\n";
     std::cerr << "contentLength = " << contentLength << "\n";
     //std::cerr << "begin of body = " << std::string(request.getBody().begin(), request.getBody().begin() + 30) << "\n";
-    std::cerr << "boundary = " << boundary << "\n";
     std::cerr << "boundary size = " << boundary.size() << "\n";
     std::map<std::string,std::string>::iterator it = request.getHeaders().begin();
     for ( ; it != request.getHeaders().end(); it++)

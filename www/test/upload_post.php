@@ -4,14 +4,18 @@
     $target_dir = getcwd() . "/uploads";
     $target_file = $target_dir . "/" . basename($_FILES["file"]["name"]);
     $uploadOk = 1;
-    $fileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
-    // echo "Target file - " . $target_file . "<br>";  
-    echo "Size file - " . $_FILES["file"]["size"] . "<br>"; 
+    $fileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));   
     
+    if ($_FILES["file"]["size"] == 0)
+    {
+        echo "Your file cannot be upload by php.<br>";
+        $uploadOk = 0;
+    }
+
     // Check file size
     if ($_FILES["file"]["size"] > 100000)
     {
-        echo "Sorry, your file is too large.<br>";
+        echo "Your file is too large.<br>";
         $uploadOk = 0;
     }
 
@@ -25,7 +29,7 @@
     // Check if $uploadOk is set to 0 by an error
     if ($uploadOk == 0)
     {
-        echo "Sorry, your file was not uploaded.";
+        echo "Sorry, your file was not uploaded";
     // if everything is ok, try to upload file
     } 
     else
