@@ -467,8 +467,7 @@ int			checkRequest(std::string &buffer)
 					return GOOD;
 				return WAIT;
 			}
-		}
-		
+		}	
 	}
 	// std::cout << "requesttype = " << requestType << std::endl;
 	return (GOOD);

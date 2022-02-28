@@ -32,29 +32,29 @@ bool	File::canReadFile()
 	return true;
 }
 
-bool 	File::createFile(std::string filename)
-{
-	int fd;
+// bool 	File::createFile(std::string filename)
+// {
+// 	int fd;
 
-	if ((fd = open(filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, 0666)) < 0)
-		return false;
-	close(fd);
+// 	if ((fd = open(filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, 0666)) < 0)
+// 		return false;
+// 	close(fd);
 
-	return true;
-}
+// 	return true;
+// }
 
 // (! write pas dans poll())
-bool	File::createFile(std::string filename, std::string content)
-{
-	int fd;
+// bool	File::createFile(std::string filename, std::string content)
+// {
+// 	int fd;
 
-	if ((fd = open(filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, 0666)) < 0)
-		return false;
-	write(fd, content.c_str(), content.size());
-	close(fd);
+// 	if ((fd = open(filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, 0666)) < 0)
+// 		return false;
+// 	write(fd, content.c_str(), content.size());
+// 	close(fd);
 
-	return true;	
-}
+// 	return true;	
+// }
 
 /* build the list of files in a directory */
 std::list<std::string>		File::buildFilesList()
@@ -172,13 +172,13 @@ File &File::operator=(const File &src)
 }
 
 /* NON MEMBERS*/
-void 	appendToFile(const std::string &path, const char *content, size_t n)
-{
-	std::ofstream file;
-	file.open(path.c_str(), std::ofstream::binary);
-	file.write(content, n);
-	file.close();
-}
+// void 	appendToFile(const std::string &path, const char *content, size_t n)
+// {
+// 	std::ofstream file;
+// 	file.open(path.c_str(), std::ofstream::binary);
+// 	file.write(content, n);
+// 	file.close();
+// }
 
 std::string     getExtension(std::string filename)
 {

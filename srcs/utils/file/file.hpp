@@ -25,8 +25,8 @@ class File
 		bool						isRegularFile();
 		bool						isDirectory();
 		bool						canReadFile();
-		bool						createFile(std::string filename);
-		bool						createFile(std::string filename, std::string content);
+		// bool						createFile(std::string filename);
+		// bool						createFile(std::string filename, std::string content);
 		std::list<std::string>		buildFilesList();
 		std::string					findContentType(std::string extension);
 		void						openFile();
@@ -38,7 +38,7 @@ class File
 		struct stat					&getfileStat();
 };
 
-void 			appendToFile(const std::string &path, const char *content, size_t n);
+// void 			appendToFile(const std::string &path, const char *content, size_t n);
 std::string     getExtension(std::string filename);
 // bool			cmp_by_filename(const std::string &a, const std::string &b);
 
