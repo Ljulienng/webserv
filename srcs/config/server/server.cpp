@@ -1,8 +1,5 @@
 #include "server.hpp"
 
-#include "str.hpp"
-#include "file.hpp"
-
 void	Server::addLocation(Location location)
 {
 	_locations.push_back(location);
@@ -138,7 +135,6 @@ void	Server::setPort(std::string port)
 	_port = static_cast<unsigned short>(atoi(port.c_str()));
 }
 
-// gerer cas d'erreurs
 void	Server::setRoot(std::string root)
 {	
 	Str		s(root);
@@ -151,7 +147,6 @@ void	Server::setRoot(std::string root)
 	_root = root;
 }
 
-// gerer cas d'erreurs
 void	Server::setIndex(std::string index)
 {
 	Str		s(index);
@@ -170,6 +165,10 @@ void	Server::setMaxBodySize(std::string maxBodySize)
 
 void		Server::setUploadPath(std::string uploadPath)
 {
+	File	f(_root + uploadPath);
+
+	if (!f.isDirectory())
+		throw(std::string("Error [config file]: the upload_path directive is not a directory"));
 	_uploadPath = uploadPath;
 }
 

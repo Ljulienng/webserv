@@ -2,6 +2,7 @@
 # define LOCATION_HPP
 
 #include "webserv.hpp"
+#include "file.hpp"
 #include "str.hpp"
 
 class Location

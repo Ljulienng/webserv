@@ -51,6 +51,9 @@ std::string     getPathTranslated(std::string uri, t_configMatch &configMatch)
         else if (uri == pathRoot && configMatch.location.getIndex().empty() == false)
             path.insert(path.size(), configMatch.location.getIndex());
     }
+    std::cerr << "[getPathTranslated] uri = " << uri << "\n";
+    std::cerr << "[getPathTranslated] pathRoot = " << pathRoot << "\n";
+    std::cerr << "[getPathTranslated] path = " << path << "\n";
     return path;
 }
 

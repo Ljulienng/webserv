@@ -85,9 +85,9 @@ bool isDelim(char c, std::string delimiters)
 size_t		Str::getNum()
 {
 	if (_tokens.size() != 1)
-		throw (std::string("Error: need only one token"));
+		throw (std::string("Error [config file]: need only one token in string"));
 	if (_string.find_first_of("0123456789") == std::string::npos) 
-		throw (std::string("Error: data not well formatted"));
+		throw (std::string("Error [config file]: data not well formatted"));
 	return atoi(_string.c_str());
 }
 

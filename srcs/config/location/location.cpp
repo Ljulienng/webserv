@@ -19,7 +19,7 @@ void	Location::setLocationsDatas(std::map<std::string, std::string> mapLocation)
 		if ((ret = isValidExpression(it->first, locationExpression)) != -1)
 			(this->*setData[ret])(it->second);
 		else
-			throw (std::string("Error: unknown expression in configuration file : " + it->first));
+			throw (std::string("Error [config file]: unknown expression in configuration file : " + it->first));
 		it++;
 	}
 }
@@ -32,56 +32,60 @@ void	Location::setPath(std::string path)
 
 void	Location::setRoot(std::string root)
 {
-	Str	tmp(root);
-	
-	if (tmp.getTokens().size() != 1)
-		throw(std::string("Error: bad root name"));
+	Str		s(root);
+	File	f(root);
+
+	if (root == "" || s.getTokens().size() != 1)
+		throw(std::string("Error [config file]: incorrect format on root directive"));
+	if (!f.isDirectory())
+		throw(std::string("Error [config file]: the root directive is not a directory"));
 	_root = root;
 }
 
 void	Location::setMethods(std::string methods)
 {
-	Str	tmp(methods);
+	Str	s(methods);
 
-	if (tmp.getTokens().size() > 3)
+	if (s.getTokens().size() > 3)
 		throw(std::string("Error: bad method"));
-	for (size_t i = 0; i < tmp.getTokens().size(); i++)
-		_acceptedMethod.push_back(tmp.getTokens()[i]);
+	for (size_t i = 0; i < s.getTokens().size(); i++)
+		_acceptedMethod.push_back(s.getTokens()[i]);
 }
 
 void	Location::setIndex(std::string index)
 {
-	Str	tmp(index);
+	Str	s(index);
 	
-	if (tmp.getTokens().size() != 1)
-		throw(std::string("Error: bad default_file name"));
+	if (index == "" || s.getTokens().size() != 1)
+		throw(std::string("Error [config file]: incorrect format on index directive"));
 	_index = index;
 }
 
 void	Location::setAutoindex(std::string autoIndex)
 {
 	if (autoIndex != "on" && autoIndex != "off")
-		throw(std::string("Error: bad autoindex"));
+		throw(std::string("Error [config file]: incorrect autoindex directive"));
 	_autoindex = (autoIndex == "on");
 }
 
 void	Location::setMaxBodySize(std::string maxBodySize)
 {
 	Str val(maxBodySize);
+
 	_maxBodySize = val.getNum();
 }
 
 void	Location::setRedirection(std::string redirection)
 {
-	Str	tmp(redirection);
+	Str	s(redirection);
 
-	if (tmp.getTokens().size() != 2)
-		throw (std::string("Error: bad redirection format"));
-	int statusCode = atoi(tmp.getTokens()[0].c_str());
+	if (s.getTokens().size() != 2)
+		throw (std::string("Error [config file]: incorrect redirection directive"));
+	int statusCode = atoi(s.getTokens()[0].c_str());
 	if (statusCode < 300 || statusCode > 399)
-		throw (std::string("Error: bad redirection format"));
-	_redirection.first = atoi(tmp.getTokens()[0].c_str());
-	_redirection.second = tmp.getTokens()[1];
+		throw (std::string("Error [config file]: incorrect redirection directive"));
+	_redirection.first = atoi(s.getTokens()[0].c_str());
+	_redirection.second = s.getTokens()[1];
 }
 
 /* GETTERS */

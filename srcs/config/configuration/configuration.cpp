@@ -3,16 +3,14 @@
 void 		Configuration::parseConfigPath(std::string configFile)
 {
 	_configFile = configFile;
-
 	File 	file(_configFile);
 
 	if (_configFile.find(".conf") != _configFile.size() - 5 || _configFile.size() < 6)
-		throw std::string("Error : the configuration file must be a <something.conf> file");
-	
+		throw std::string("Error [config file]: must be a <something.conf> file");
 	if (file.isRegularFile() == false)
-		throw std::string("Error : the configuration file is not a regular file");
+		throw std::string("Error [config file]:  not a regular file");
 	if (file.canReadFile() == false)
-		throw std::string("Error : can't read configuration file");
+		throw std::string("Error [config file]: can't read configuration file");
 }
 
 /*
@@ -57,7 +55,7 @@ size_t	Configuration::_parseNextPair(str_ite it, str_ite ite, std::map<std::stri
 		it += 3;
 	}
 	else
-		throw (std::string("Error: config file : " + std::string(it, it + 5)));
+		throw (std::string("Error [config file]: " + std::string(it, it + 5)));
 	start = it;
 	while (*it != '"' && it != ite)
 		it++;
@@ -199,9 +197,9 @@ void	Configuration::parse()
 	str_ite 							ite = buf.end();
 
 	if (!_checkConfigScope(it, ite))
-		throw std::string("Error: bad format : config scope");
+		throw std::string("Error [config file]: incorrect format (global scope)");
 	if (*it++ != '{')
-		throw std::string("Error: bad format : config scope");
+		throw std::string("Error [config file]: incorrect format (global scope)");
 	while (it != ite)
 	{
 		if (*it == '"')
