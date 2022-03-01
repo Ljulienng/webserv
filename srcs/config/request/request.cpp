@@ -460,11 +460,8 @@ int			checkRequest(std::string &buffer)
 
 			size_t m = buffer.find("Content-Type") + 14;
 			if (m != std::string::npos && std::string(&buffer[m], 19) == "multipart/form-data")
-			{
-				if (std::string(buffer.end() - 4, buffer.end()) == "--\r\n")
-					return GOOD;
-				return WAIT;
-			}
+				if (std::string(buffer.end() - 4, buffer.end()) != "--\r\n")
+					return WAIT;
 		}	
 	}
 	// std::cout << "requesttype = " << requestType << std::endl;
