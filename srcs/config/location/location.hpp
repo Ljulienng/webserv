@@ -63,7 +63,6 @@ static const char* serverExpression[] = {
 	"ip",
 	"port",
 	"root",
-	"index",
 	"max_body_size",
 	"upload_path",
 	"cgi",

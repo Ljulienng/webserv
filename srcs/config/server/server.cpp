@@ -78,11 +78,10 @@ void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 	std::map<std::string, std::string>::iterator ite = mapServer.end();
 	int ret;
 	typedef void (Server::* funcPtr)(std::string);
-	funcPtr setData[8] = {	&Server::setName,
+	funcPtr setData[7] = {	&Server::setName,
 							&Server::setIp,
 							&Server::setPort,
 							&Server::setRoot,
-							&Server::setIndex,
 							&Server::setMaxBodySize,
 							&Server::setUploadPath,
 							&Server::setCgi };
@@ -147,15 +146,6 @@ void	Server::setRoot(std::string root)
 	_root = root;
 }
 
-void	Server::setIndex(std::string index)
-{
-	Str		s(index);
-
-	if (index == "" || s.getTokens().size() != 1)
-		throw(std::string("Error [config file]: incorrect format on index directive"));
-	_index = index;
-}
-
 void	Server::setMaxBodySize(std::string maxBodySize)
 {
 	Str val(maxBodySize);
@@ -201,9 +191,6 @@ unsigned short		&Server::getPort()
 std::string				&Server::getRoot()
 { return _root; }
 
-std::string				&Server::getIndex()
-{ return _index; }
-
 std::vector<Location>	&Server::getLocations()
 { return _locations; }
 
@@ -223,7 +210,6 @@ Server::Server() : 	_name(),
 					_ip(),
 					_port(),
 					_root(),
-					_index(),
 					_maxBodySize(100000),
 					_uploadPath(),
 					_locations(),
@@ -246,7 +232,6 @@ Server &Server::operator=(const Server &src)
 		_ip = src._ip;
 		_port = src._port;
 		_root = src._root;
-		_index = src._index;
 		_maxBodySize = src._maxBodySize;
 		_uploadPath = src._uploadPath;
 		_locations = src._locations;
@@ -263,7 +248,6 @@ void	Server::debug(size_t index)
 	std::cout << "\t - ip = " << _ip << "\n";
 	std::cout << "\t - port = " << _port << "\n";
 	std::cout << "\t - root = " << _root << "\n";
-	std::cout << "\t - index = " << _index << "\n";
 	std::cout << "\t - maxBodySize = " << _maxBodySize << "\n";
 	std::cout << "\t - uploadPath = " << _uploadPath << "\n";
 	std::cout << "\t - cgi =  1->" << _cgi.first << "  2->" << _cgi.second << "\n";

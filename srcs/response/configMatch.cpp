@@ -48,12 +48,10 @@ std::string     getPathTranslated(std::string uri, t_configMatch &configMatch)
     {
         if ((uri == "/" || path.find_last_of('/') + 1 == path.length()) && configMatch.index.empty() == false)
             path.insert(path.size(), configMatch.index);
-        else if (uri == pathRoot && configMatch.location.getIndex().empty() == false)
-            path.insert(path.size(), configMatch.location.getIndex());
+        else if (uri == pathRoot && configMatch.index.empty() == false)
+            path.insert(path.size(), configMatch.index);
     }
-    std::cerr << "[getPathTranslated] uri = " << uri << "\n";
-    std::cerr << "[getPathTranslated] pathRoot = " << pathRoot << "\n";
-    std::cerr << "[getPathTranslated] path = " << path << "\n";
+
     return path;
 }
 
@@ -64,14 +62,11 @@ t_configMatch	getConfigMatch(Request &request, std::string serverName)
 {
     t_configMatch   configMatch;
 
-
     configMatch.server = Configuration::getInstance().findServer(serverName);
     configMatch.location = configMatch.server.findLocation(request.getPath());
-    // std::cout << "server = " << configMatch.server.getRoot() << std::endl;
-    // std::cout << "location = " << configMatch.location.getRoot() << std::endl;
     configMatch.server.getRoot().empty() ? configMatch.root = configMatch.location.getRoot() : configMatch.root = configMatch.server.getRoot();
-    configMatch.location.getIndex().empty() ? configMatch.index = configMatch.server.getIndex() : configMatch.index = configMatch.location.getIndex();
+    configMatch.location.getIndex().empty() ? configMatch.index = "" : configMatch.index = configMatch.location.getIndex();
     configMatch.pathTranslated = getPathTranslated(request.getUri().getPath(), configMatch); // transform the uri request to match file in the server
-    // std::cerr << "configmatch.pathTranslated = " << configMatch.pathTranslated << "\n";
+
     return configMatch;
 }
