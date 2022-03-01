@@ -58,7 +58,7 @@ void	Hub::_storeFdToPoll()
 		_arr[_nfds]->_index = _nfds - _listenSockets.size();
 	}
 	for (std::vector<CgiSocketFromCgi*>::iterator it = _cgiSocketsFromCgi.begin(); it != _cgiSocketsFromCgi.end(); it++, _nfds++)
-	{ 
+	{
 		_fds[_nfds] = (*it)->getPollFd();
 		_arr.push_back(*it);
 		_arr[_nfds]->_index = _nfds - _listenSockets.size() - _clientSockets.size();
@@ -89,7 +89,6 @@ int		Hub::_waitPollEvent()
 
 	_storeFdToPoll();
 	pollRet = poll(_fds, _nfds, 1000);
-	
 	return pollRet;
 }
 
