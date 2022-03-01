@@ -94,26 +94,26 @@ void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 		if ((ret = isValidExpression(it->first, serverExpression)) != -1)
 			(this->*setData[ret])(it->second);
 		else
-			throw (std::string("Error: unknown expression in configuration file : " + it->first));
+			throw (std::string("Error [config file]: unknown expression in configuration file : " + it->first));
 		it++;
 	}
 }
 
 void	Server::setName(std::string name)
 {
-	Str	tmp(name);
+	Str	s(name);
 
-	if (name == "" || tmp.getTokens().size() != 1)
-		throw(std::string("Error: bad server name"));
+	if (name == "" || s.getTokens().size() != 1)
+		throw(std::string("Error [config file]: incorrect format on server name"));
 	_name = name;
 }
 
 void	Server::setIp(std::string ip)
 {
 	if (ip.find_first_not_of("0123456789.") != std::string::npos)
-		throw (std::string("Error: the ip is not well formatted"));
+		throw (std::string("Error [config file]: incorrect format on IP"));
 	if (std::count(ip.begin(), ip.end(), '.') != 3)
-		throw (std::string("Error: the ip is not well formatted"));
+		throw (std::string("Error [config file]: incorrect format on IP"));
 	std::string::iterator it = ip.begin();
 	for (; it != ip.end(); it++)
 	{
@@ -122,7 +122,7 @@ void	Server::setIp(std::string ip)
 			it++;
 		int nb = atoi(std::string(start, it).c_str());
 		if (nb < 0 || nb > 254)
-			throw (std::string("Error: the ip is not well formatted"));
+			throw (std::string("Error: incorrect format on IP"));
 		if (it == ip.end())
 			break ;
 	}
@@ -132,19 +132,32 @@ void	Server::setIp(std::string ip)
 void	Server::setPort(std::string port)
 {
 	if (port.find_first_not_of("0123456789") != std::string::npos)
-		throw (std::string("Error: the port number has to be ... a number"));
+		throw (std::string("Error [config file]: incorrect format on port number"));
+	if (port.length() > 5)
+		throw (std::string("Error [config file]: incorrect format on port number"));
 	_port = static_cast<unsigned short>(atoi(port.c_str()));
 }
 
 // gerer cas d'erreurs
 void	Server::setRoot(std::string root)
-{
+{	
+	Str		s(root);
+	File	f(root);
+
+	if (root == "" || s.getTokens().size() != 1)
+		throw(std::string("Error [config file]: incorrect format on root directive"));
+	if (!f.isDirectory())
+		throw(std::string("Error [config file]: the root directive is not a directory"));
 	_root = root;
 }
 
 // gerer cas d'erreurs
 void	Server::setIndex(std::string index)
 {
+	Str		s(index);
+
+	if (index == "" || s.getTokens().size() != 1)
+		throw(std::string("Error [config file]: incorrect format on index directive"));
 	_index = index;
 }
 
@@ -165,14 +178,14 @@ void	Server::setCgi(std::string cgi)
 	Str	cgiElements(cgi);
 	
 	if (cgiElements.getTokens().size() != 2 || cgiElements.getTokens()[0][0] != '.')
-		throw (std::string("Error: bad cgi format in configuration file"));
+		throw (std::string("Error [config file]: incorrect format on CGI"));
 	_cgi.first = cgiElements.getTokens()[0];
 	_cgi.second = cgiElements.getTokens()[1];
 
 	File cgiExec(_cgi.second);
 	
 	if (!cgiExec.isRegularFile())
-		throw (std::string("Error : cgi executable is not a regular file"));
+		throw (std::string("Error [config file]: incorrect format on CGI"));
 }
 
 /* GETTERS */
