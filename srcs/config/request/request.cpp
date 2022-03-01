@@ -219,9 +219,7 @@ void		Request::parseChunkedBody(const std::string &request)
 	size_t			i = 0;
 	std::string		chunks = request.substr(request.find("\r\n\r\n") + 4, request.find("0\r\n\r\n") + 5);
 	long			chunkSize = strtol(chunks.substr(i, chunks.find("\r\n", i) + 2).c_str(), NULL, 16);
-
-	// std::cout << request << std::endl;
-	// std::cout << "Chunksize = " << chunkSize << " CHUNKS = " << chunks << std::endl;
+	
 	while (chunkSize > 0)
 	{
 		i = chunks.find("\r\n", i) + 2;
@@ -452,15 +450,22 @@ int			checkRequest(std::string &buffer)
 				return (WAIT);
 		}
 		else if (buffer.find("Content-Length") != std::string::npos)
-		{
-			// size_t j = buffer.find("Content-Length");
+		{	
+			// size_t j = buffer.find("Content-Length") + 16;
 
 			//body.assign(buffer, i + 4, std::string::npos);
 			// std::cout << " body = " << body;
 			// if (body.find("\r\n") == std::string::npos)
 			// 	return (WAIT);
-		}
-		
+
+			size_t m = buffer.find("Content-Type") + 14;
+			if (m != std::string::npos && std::string(&buffer[m], 19) == "multipart/form-data")
+			{
+				if (std::string(buffer.end() - 4, buffer.end()) == "--\r\n")
+					return GOOD;
+				return WAIT;
+			}
+		}	
 	}
 	// std::cout << "requesttype = " << requestType << std::endl;
 	return (GOOD);

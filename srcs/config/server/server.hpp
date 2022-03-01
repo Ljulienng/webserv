@@ -4,10 +4,9 @@
 #include "webserv.hpp"
 #include "location.hpp"
 #include "socket.hpp"
+#include "str.hpp"
+#include "file.hpp"
 
-/*
-** information from the configuration file : server_name, ip, port, maxBodySize, a list of location(s) ...
-*/
 class Server
 {
     private :
@@ -16,9 +15,9 @@ class Server
 		std::string							_ip;
 		unsigned short						_port;
 		std::string							_root;
-		std::string							_index; //defaultFile
+		// std::string							_index;
 		size_t								_maxBodySize; 
-		std::string							_uploadPath; // path to upload content with POST
+		std::string							_uploadPath;
 		std::vector<Location>				_locations;
 		std::pair<std::string, std::string>	_cgi;
 		
@@ -42,7 +41,6 @@ class Server
 		void		setIp(std::string ip);
 		void		setPort(std::string port);
 		void		setRoot(std::string root);
-		void		setIndex(std::string index);
 		void		setMaxBodySize(std::string maxBodySize);
 		void		setUploadPath(std::string uploadPath);
 		void		setCgi(std::string cgi);
@@ -52,7 +50,6 @@ class Server
 		std::string								&getIp();
 		unsigned short							&getPort();
 		std::string								&getRoot();
-		std::string								&getIndex();
 		size_t									&getMaxBodySize();
 		std::string								&getUploadPath();
 		std::vector<Location>					&getLocations();

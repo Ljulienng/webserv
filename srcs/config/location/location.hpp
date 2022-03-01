@@ -2,6 +2,7 @@
 # define LOCATION_HPP
 
 #include "webserv.hpp"
+#include "file.hpp"
 #include "str.hpp"
 
 class Location
@@ -62,7 +63,6 @@ static const char* serverExpression[] = {
 	"ip",
 	"port",
 	"root",
-	"index",
 	"max_body_size",
 	"upload_path",
 	"cgi",

@@ -1,8 +1,5 @@
 #include "server.hpp"
 
-#include "str.hpp"
-#include "file.hpp"
-
 void	Server::addLocation(Location location)
 {
 	_locations.push_back(location);
@@ -81,11 +78,10 @@ void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 	std::map<std::string, std::string>::iterator ite = mapServer.end();
 	int ret;
 	typedef void (Server::* funcPtr)(std::string);
-	funcPtr setData[8] = {	&Server::setName,
+	funcPtr setData[7] = {	&Server::setName,
 							&Server::setIp,
 							&Server::setPort,
 							&Server::setRoot,
-							&Server::setIndex,
 							&Server::setMaxBodySize,
 							&Server::setUploadPath,
 							&Server::setCgi };
@@ -94,26 +90,26 @@ void		Server::setServerDatas(std::map<std::string, std::string> mapServer)
 		if ((ret = isValidExpression(it->first, serverExpression)) != -1)
 			(this->*setData[ret])(it->second);
 		else
-			throw (std::string("Error: unknown expression in configuration file : " + it->first));
+			throw (std::string("Error [config file]: unknown expression in configuration file : " + it->first));
 		it++;
 	}
 }
 
 void	Server::setName(std::string name)
 {
-	Str	tmp(name);
+	Str	s(name);
 
-	if (name == "" || tmp.getTokens().size() != 1)
-		throw(std::string("Error: bad server name"));
+	if (name == "" || s.getTokens().size() != 1)
+		throw(std::string("Error [config file]: incorrect format on server name"));
 	_name = name;
 }
 
 void	Server::setIp(std::string ip)
 {
 	if (ip.find_first_not_of("0123456789.") != std::string::npos)
-		throw (std::string("Error: the ip is not well formatted"));
+		throw (std::string("Error [config file]: incorrect format on IP"));
 	if (std::count(ip.begin(), ip.end(), '.') != 3)
-		throw (std::string("Error: the ip is not well formatted"));
+		throw (std::string("Error [config file]: incorrect format on IP"));
 	std::string::iterator it = ip.begin();
 	for (; it != ip.end(); it++)
 	{
@@ -122,7 +118,7 @@ void	Server::setIp(std::string ip)
 			it++;
 		int nb = atoi(std::string(start, it).c_str());
 		if (nb < 0 || nb > 254)
-			throw (std::string("Error: the ip is not well formatted"));
+			throw (std::string("Error: incorrect format on IP"));
 		if (it == ip.end())
 			break ;
 	}
@@ -132,20 +128,22 @@ void	Server::setIp(std::string ip)
 void	Server::setPort(std::string port)
 {
 	if (port.find_first_not_of("0123456789") != std::string::npos)
-		throw (std::string("Error: the port number has to be ... a number"));
+		throw (std::string("Error [config file]: incorrect format on port number"));
+	if (port.length() > 5)
+		throw (std::string("Error [config file]: incorrect format on port number"));
 	_port = static_cast<unsigned short>(atoi(port.c_str()));
 }
 
-// gerer cas d'erreurs
 void	Server::setRoot(std::string root)
-{
-	_root = root;
-}
+{	
+	Str		s(root);
+	File	f(root);
 
-// gerer cas d'erreurs
-void	Server::setIndex(std::string index)
-{
-	_index = index;
+	if (root == "" || s.getTokens().size() != 1)
+		throw(std::string("Error [config file]: incorrect format on root directive"));
+	if (!f.isDirectory())
+		throw(std::string("Error [config file]: the root directive is not a directory"));
+	_root = root;
 }
 
 void	Server::setMaxBodySize(std::string maxBodySize)
@@ -157,6 +155,10 @@ void	Server::setMaxBodySize(std::string maxBodySize)
 
 void		Server::setUploadPath(std::string uploadPath)
 {
+	File	f(_root + uploadPath);
+
+	if (!f.isDirectory())
+		throw(std::string("Error [config file]: the upload_path directive is not a directory"));
 	_uploadPath = uploadPath;
 }
 
@@ -165,14 +167,14 @@ void	Server::setCgi(std::string cgi)
 	Str	cgiElements(cgi);
 	
 	if (cgiElements.getTokens().size() != 2 || cgiElements.getTokens()[0][0] != '.')
-		throw (std::string("Error: bad cgi format in configuration file"));
+		throw (std::string("Error [config file]: incorrect format on CGI"));
 	_cgi.first = cgiElements.getTokens()[0];
 	_cgi.second = cgiElements.getTokens()[1];
 
 	File cgiExec(_cgi.second);
 	
 	if (!cgiExec.isRegularFile())
-		throw (std::string("Error : cgi executable is not a regular file"));
+		throw (std::string("Error [config file]: incorrect format on CGI"));
 }
 
 /* GETTERS */
@@ -188,9 +190,6 @@ unsigned short		&Server::getPort()
 
 std::string				&Server::getRoot()
 { return _root; }
-
-std::string				&Server::getIndex()
-{ return _index; }
 
 std::vector<Location>	&Server::getLocations()
 { return _locations; }
@@ -211,7 +210,6 @@ Server::Server() : 	_name(),
 					_ip(),
 					_port(),
 					_root(),
-					_index(),
 					_maxBodySize(100000),
 					_uploadPath(),
 					_locations(),
@@ -234,7 +232,6 @@ Server &Server::operator=(const Server &src)
 		_ip = src._ip;
 		_port = src._port;
 		_root = src._root;
-		_index = src._index;
 		_maxBodySize = src._maxBodySize;
 		_uploadPath = src._uploadPath;
 		_locations = src._locations;
@@ -251,7 +248,6 @@ void	Server::debug(size_t index)
 	std::cout << "\t - ip = " << _ip << "\n";
 	std::cout << "\t - port = " << _port << "\n";
 	std::cout << "\t - root = " << _root << "\n";
-	std::cout << "\t - index = " << _index << "\n";
 	std::cout << "\t - maxBodySize = " << _maxBodySize << "\n";
 	std::cout << "\t - uploadPath = " << _uploadPath << "\n";
 	std::cout << "\t - cgi =  1->" << _cgi.first << "  2->" << _cgi.second << "\n";

@@ -5,7 +5,6 @@ void    CgiSocketToCgi::writeToCgi()
     size_t  bytes;
 
     // std::cerr << "write to Cgi = \n";
-	// std::cerr << _request.getBody() << "\n";
     bytes = write(_pollFd.fd, _request.getBody().c_str(), _request.getBody().size());
 }
 

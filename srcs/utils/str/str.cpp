@@ -1,29 +1,29 @@
 #include "str.hpp"
 
-std::vector<char>::iterator	lastChar(std::vector<char> &str)
-{
-	// std::vector<char>::iterator it;
-	// for (it = str.begin(); *it != 0; it++);
-	// return (it);
+// std::vector<char>::iterator	lastChar(std::vector<char> &str)
+// {
+// 	// std::vector<char>::iterator it;
+// 	// for (it = str.begin(); *it != 0; it++);
+// 	// return (it);
 
-	std::vector<char>::iterator it = str.end();
-	it--;
-	for ( ; it != str.begin(); it--)
-		if (*it != 0)
-			break ;
-	return (++it);
-}
+// 	std::vector<char>::iterator it = str.end();
+// 	it--;
+// 	for ( ; it != str.begin(); it--)
+// 		if (*it != 0)
+// 			break ;
+// 	return (++it);
+// }
 
-char	lastChar(std::string &str)
-{
-	size_t i;
-	// for (i = 0; str[i] != 0; i++);
-	// return (str[i - 1]);
+// char	lastChar(std::string &str)
+// {
+// 	size_t i;
+// 	// for (i = 0; str[i] != 0; i++);
+// 	// return (str[i - 1]);
 
-	for (i = str.length(); str[i] != 0 || i == 0; i--);
-	return str[i];
+// 	for (i = str.length(); str[i] != 0 || i == 0; i--);
+// 	return str[i];
 
-}
+// }
 
 std::vector<std::string>	splitString(std::string &str, char c)
 {
@@ -85,9 +85,9 @@ bool isDelim(char c, std::string delimiters)
 size_t		Str::getNum()
 {
 	if (_tokens.size() != 1)
-		throw (std::string("Error: need only one token"));
+		throw (std::string("Error [config file]: need only one token in string"));
 	if (_string.find_first_of("0123456789") == std::string::npos) 
-		throw (std::string("Error: data not well formatted"));
+		throw (std::string("Error [config file]: data not well formatted"));
 	return atoi(_string.c_str());
 }
 

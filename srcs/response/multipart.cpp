@@ -5,7 +5,7 @@ void    parseMultipart(Response* response, Request &request, std::string boundar
     std::vector<unsigned char>  content(request.getBody().begin(), request.getBody().end());
     size_t                      contentLength = atoi(request.getHeader("Content-Length").c_str());
     size_t				        i = 0;
-
+    
     while (i + boundary.size() + 6 <= contentLength)
     {
         i += boundary.size() + 2;   // skip boundary

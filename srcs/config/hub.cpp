@@ -95,19 +95,11 @@ int		Hub::_waitPollEvent()
 
 bool	Hub::_cgiClosed(size_t i, size_t *cgiCount)
 {
-	static size_t timer[MAX_CGI_RUNNING] = {0};
-
-	timer[i]++;
-	if (timer[i] > 1)
-	{
-		_prepareCgiResponse(_arr[i]->_index);
-		_closeConnection(_arr[i]->_index, Socket::cgiFrom);
-		_closeConnection(_arr[i]->_index, Socket::cgiTo);
-		cgiCount[i] = 0;
-		timer[i] = 0;
-		return true;
-	}
-	return false;
+	_prepareCgiResponse(_arr[i]->_index);
+	_closeConnection(_arr[i]->_index, Socket::cgiFrom);
+	_closeConnection(_arr[i]->_index, Socket::cgiTo);
+	cgiCount[i] = 0;
+	return true;
 }
 
 void	Hub::process()
@@ -223,10 +215,9 @@ bool		Hub::_receiveRequest(size_t i)
 	}
 	else
 	{
-		client->getBuffer().append(buffer.begin(), lastChar(buffer));
+		client->getBuffer().append(buffer.begin(), buffer.begin() + bytes);
 		if ((checkRet = checkRequest(client->getBuffer())) == GOOD && bytes < BUF_SIZE)
-		// if (bytes < BUF_SIZE)
-		{	//std::cerr << "[_receiveRequest] buffer :\n" << std::string(client->getBuffer().begin(), client->getBuffer().begin() + 100) << "\n";
+		{
 			client->addRequest();
 			if (client->getRequests().back().getBody().size() > servers[indexServer(*client)].getMaxBodySize())
 				client->getRequests().back().getHttpStatus().setStatus(413);
