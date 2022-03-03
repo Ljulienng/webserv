@@ -267,6 +267,7 @@ void		Hub::_prepareResponse(size_t i)
 				Response* 		response = new Response();
 				errorResponse(response, configMatch, it->getHttpStatus().getCode());
 				client->getResponses().push_back(response);
+				client->getPollFd().events = POLLIN | POLLOUT; // add
 			}
 			else if (_needCgi(*it, configMatch))
 			{
@@ -280,14 +281,15 @@ void		Hub::_prepareResponse(size_t i)
 				Response* 		response = new Response();
 				constructResponse(response, *it, configMatch);
 				client->getResponses().push_back(response);
+				client->getPollFd().events = POLLIN | POLLOUT; // add
 			}
 			requests.erase(it++);
 		}
 	}
 
 	// the socket is now ready to write in addition to reading because we have added a response
-	if (client->getResponses().empty() == false)
-		client->getPollFd().events = POLLIN | POLLOUT;
+	// if (client->getResponses().empty() == false)
+	// 	client->getPollFd().events = POLLIN | POLLOUT;
 }
 
 void		Hub::_prepareCgiResponse(size_t i)

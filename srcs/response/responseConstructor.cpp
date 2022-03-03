@@ -136,7 +136,7 @@ Response*    cgiResponse(Response* response, std::string cgiResponse, t_configMa
     return response;
 }
 
-Response*    getMethodResponse(Response *response, t_configMatch &configMatch)
+Response*    getMethodResponse(Response* response, t_configMatch &configMatch)
 {
     File        path(configMatch.pathTranslated);
 

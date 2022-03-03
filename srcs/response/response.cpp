@@ -78,7 +78,8 @@ void 	Response::deleteFile()
     std::vector<struct pollfd *>::iterator it = g_fileArr.begin();
     while (*it != &_pollFdFile)
         it++;
-    g_fileArr.erase(it);
+    if (*it == &_pollFdFile)
+        g_fileArr.erase(it);
 }
 
 void                Response::endToReadorWrite() 
@@ -189,8 +190,6 @@ int   &Response::getStateFile()
 int  &Response::getIndexFile()
 { return _indexFile; }
 
-
-
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 Response::Response() : 
         _headers(),
@@ -220,6 +219,9 @@ Response::~Response()
     std::list<t_multipart*>::iterator it = _multiparts.begin();
     for ( ; it != _multiparts.end(); it++)
         delete *it;
+
+    if (_pollFdFile.fd != 0)
+        deleteFile();
 }
 
 Response    &Response::operator=(const Response &src)
