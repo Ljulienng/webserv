@@ -118,7 +118,7 @@ void		CgiExecutor::execCgi()
 		// chdir("/home/user42/Documents/Projects/12-Webserv/ourwebserv_");
 		if ((execve(_cgiPath.c_str(), _argArray, _envArray)) == -1)
 			std::cerr << "Can't execute the script" << std::endl;
-		exit(errno);
+		exit(EXIT_SUCCESS);
 	}
 	else if (pid > 0)
 	{

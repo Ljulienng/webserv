@@ -13,6 +13,13 @@ void	Hub::start()
 		_addListeningSocket(servers[i]);
 }
 
+void	Hub::clean()
+{
+	for (std::vector<ListeningSocket*>::iterator it = _listenSockets.begin(); it != _listenSockets.end(); it++)
+		delete *it;
+	_listenSockets.clear();
+}
+
 void	Hub::_addListeningSocket(Server& server)
 {
 	ListeningSocket* 	newListenSocket = new ListeningSocket(server.getName());
@@ -21,7 +28,11 @@ void	Hub::_addListeningSocket(Server& server)
 	newPollFd.fd = socket(AF_INET, SOCK_STREAM, 0);;
 	newPollFd.events = POLLIN;
 	newListenSocket->setPollFd(newPollFd);
-	newListenSocket->start(server.getIp(), server.getPort());
+	if (newListenSocket->start(server.getIp(), server.getPort()))
+	{
+		_listenSockets.push_back(newListenSocket);
+		throw (std::string("Can't start the listening socket"));
+	}
 	_listenSockets.push_back(newListenSocket);
 	log::logEvent("Listen on " + server.getIp() + ":" + myItoa(server.getPort()), newListenSocket->getFd(), Socket::server);
 }
@@ -114,9 +125,9 @@ void	Hub::process()
 	{
 		// only way found to detect end of cgi POLLIN to send response to the client
 		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && cgiCount[i] > 0)
-		{	
-			if (_cgiClosed(i, cgiCount))
-				break ;
+		{
+			_cgiClosed(i, cgiCount);
+			break ;
 		}
 		else if (_fds[i].revents == 0)
 			continue;

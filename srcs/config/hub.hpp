@@ -59,6 +59,7 @@ class Hub
 
 		void	start();
 		void	process();
+		void	clean();
 		
 };
 
