@@ -13,10 +13,16 @@ void	Hub::start()
 		_addListeningSocket(servers[i]);
 }
 
+/*
+** if start of listening Socket fails, need to delete it and close its fd
+*/
 void	Hub::clean()
 {
 	for (std::vector<ListeningSocket*>::iterator it = _listenSockets.begin(); it != _listenSockets.end(); it++)
+	{
+		close((*it)->getFd());
 		delete *it;
+	}
 	_listenSockets.clear();
 }
 
@@ -51,6 +57,10 @@ void	Hub::_addClientSocket(int acceptRet, Socket* listenSocket)
 	_clientSockets.push_back(newClientSocket);
 }
 
+/*
+** before calling poll()
+** need to put each fd (sockets and files) in a single array (_fds[])
+*/
 void	Hub::_storeFdToPoll()
 {
 	memset(_fds, 0, sizeof(_fds));
@@ -94,6 +104,10 @@ void	Hub::_storeFdToPoll()
 	}
 }
 
+/*
+** wait for an event on a fd
+** query poll each second
+*/
 int		Hub::_waitPollEvent()
 {
 	int	pollRet = 0;
@@ -103,6 +117,10 @@ int		Hub::_waitPollEvent()
 	return pollRet;
 }
 
+/*
+** if there is nothing more to read on a cgifrom fd
+** prepare response and close both connections
+*/
 bool	Hub::_cgiClosed(size_t i, size_t *cgiCount)
 {
 	_prepareCgiResponse(_arr[i]->_index);
@@ -278,7 +296,8 @@ void		Hub::_prepareResponse(size_t i)
 				Response* 		response = new Response();
 				errorResponse(response, configMatch, it->getHttpStatus().getCode());
 				client->getResponses().push_back(response);
-				client->getPollFd().events = POLLIN | POLLOUT; // add
+				// the socket is now ready to write in addition to reading because we have added a response
+				client->getPollFd().events = POLLIN | POLLOUT;
 			}
 			else if (_needCgi(*it, configMatch))
 			{
@@ -292,7 +311,8 @@ void		Hub::_prepareResponse(size_t i)
 				Response* 		response = new Response();
 				constructResponse(response, *it, configMatch);
 				client->getResponses().push_back(response);
-				client->getPollFd().events = POLLIN | POLLOUT; // add
+				// the socket is now ready to write in addition to reading because we have added a response
+				client->getPollFd().events = POLLIN | POLLOUT;
 			}
 			requests.erase(it++);
 		}

@@ -221,7 +221,10 @@ Response::~Response()
         delete *it;
 
     if (_pollFdFile.fd != 0)
+    {
+        close(_pollFdFile.fd);
         deleteFile();
+    }
 }
 
 Response    &Response::operator=(const Response &src)
