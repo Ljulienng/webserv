@@ -1,5 +1,17 @@
 #include "listeningSocket.hpp"
 
+std::string	ListeningSocket::_printError()
+{
+	switch (_state)
+	{
+		case NONBLOCK : return "Error: failed to set non blocking connection";
+		case SETSOCKOPT : return "Error: failed to set socket options";
+		case BIND : return "Error: failed to bind";
+		case LISTEN : return "Error: failed to listen on socket";
+		default: return "no error";
+	}
+}
+
 int 	ListeningSocket::start(std::string ip, unsigned short port)
 {
 	setNonBlock();
@@ -8,16 +20,15 @@ int 	ListeningSocket::start(std::string ip, unsigned short port)
 	bindSocket();
 	listenSocket();
 	_pollFd.events = POLLIN;
+	if (_state != NONE)
+		std::cerr << _printError() << std::endl;
 	return _state;
 }
 
 int	ListeningSocket::setNonBlock()
 {
 	if (fcntl(_pollFd.fd, F_SETFL, O_NONBLOCK) < 0)
-	{
-		std::cerr << RED << "Error: failed to set non blocking connection" << std::endl;
 		return (_state = NONBLOCK);
-	}
 	return (EXIT_SUCCESS);
 }
 
@@ -29,30 +40,21 @@ int 	ListeningSocket::setSocketOptions()
 {
 	int option = 1;
 	if (setsockopt(_pollFd.fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) != 0)
-	{
-		std::cerr << RED << "Error: to set socket options" << std::endl;
 		return (_state = SETSOCKOPT);
-	}
 	return (EXIT_SUCCESS);
 }
 
 int	ListeningSocket::bindSocket()
 {
 	if (bind(_pollFd.fd, (struct sockaddr *)&_addr, sizeof(_addr)) < 0)
-	{
-		std::cerr << RED << "Error: failed to bind" << std::endl;
 		return (_state = BIND);
-	}
 	return (EXIT_SUCCESS);
 }
 
 int	ListeningSocket::listenSocket()
 {
 	if (listen(_pollFd.fd, MAX_CONNECTIONS) < 0) // Maximum can be higher, to be tested
-	{
-		std::cerr << RED << "Error: failed to listen on socket" << std::endl;
 		return (_state = LISTEN);
-	}
 	return (EXIT_SUCCESS);
 }
 

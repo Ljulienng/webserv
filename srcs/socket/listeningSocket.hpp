@@ -18,10 +18,12 @@ class ListeningSocket : public Socket
             LISTEN
         };
     
-    
+
     private :
 
-        int     _state;
+        int         _state;
+        std::string	_printError();
+
         ListeningSocket();
 
 
