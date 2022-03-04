@@ -123,6 +123,8 @@ int		Hub::_waitPollEvent()
 */
 bool	Hub::_cgiClosed(size_t i, size_t *cgiCount)
 {
+	// check if the pointer on client is not null before to prepare cgi response
+	// if (_cgiSocketsFromCgi[_arr[i]->_index]->getClient() != NULL)
 	_prepareCgiResponse(_arr[i]->_index);
 	_closeConnection(_arr[i]->_index, Socket::cgiFrom);
 	_closeConnection(_arr[i]->_index, Socket::cgiTo);
@@ -237,7 +239,7 @@ bool		Hub::_receiveRequest(size_t i)
 
 	bytes = recv(client->getFd(), &buffer[0], BUF_SIZE, 0);
 	if (bytes <= 0)
-	{
+	{	
 		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
 		return false;
 	}
@@ -295,7 +297,7 @@ void		Hub::_prepareResponse(size_t i)
 			{
 				Response* 		response = new Response();
 				errorResponse(response, configMatch, it->getHttpStatus().getCode());
-				client->getResponses().push_back(response);
+				client->addResponse(response);
 				// the socket is now ready to write in addition to reading because we have added a response
 				client->getPollFd().events = POLLIN | POLLOUT;
 			}
@@ -310,7 +312,7 @@ void		Hub::_prepareResponse(size_t i)
 			{
 				Response* 		response = new Response();
 				constructResponse(response, *it, configMatch);
-				client->getResponses().push_back(response);
+				client->addResponse(response);
 				// the socket is now ready to write in addition to reading because we have added a response
 				client->getPollFd().events = POLLIN | POLLOUT;
 			}
@@ -331,7 +333,7 @@ void		Hub::_prepareCgiResponse(size_t i)
 	configMatch = getConfigMatch(_cgiSocketsFromCgi[i]->getRequest(), _cgiSocketsFromCgi[i]->getClient().getServerName());
 	cgiResponse(response, _cgiSocketsFromCgi[i]->getBuffer(), configMatch);
 	
-	_cgiSocketsFromCgi[i]->getClient().getResponses().push_back(response);
+	_cgiSocketsFromCgi[i]->getClient().addResponse(response);
 	_cgiSocketsFromCgi[i]->getClient().getPollFd().events = POLLIN | POLLOUT;
 }
 
@@ -354,6 +356,10 @@ bool 		Hub::_sendResponse(size_t i)
 	// we process the responses one by one and append them to the client buffer
 	for (std::list<Response*>::iterator it = responses.begin(); it != responses.end(); it++)
 	{
+		endOfResponse = false;
+		endToReadFile = false;
+		endToWriteFile = false;
+
 		if ((*it)->getHeader("Connection") == "close")
 		{
 			_closeConnection(_arr[i]->_index, _arr[i]->getType());
@@ -393,8 +399,8 @@ bool 		Hub::_sendResponse(size_t i)
 		log::logEvent("Response sent", client->getFd(), Socket::client);
 		if (bytes <= 0)
 		{
-			_closeAllConnections();
-			exit(EXIT_FAILURE);
+			_closeConnection(_arr[i]->_index, _arr[i]->getType());
+			return false;
 		}
 		buffer.erase(buffer.begin(), buffer.begin() + bytes);
 		if (buffer.empty()) // finished to write so we are now waiting for reading
