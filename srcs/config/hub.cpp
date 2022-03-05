@@ -123,8 +123,6 @@ int		Hub::_waitPollEvent()
 */
 bool	Hub::_cgiClosed(size_t i, size_t *cgiCount)
 {
-	// check if the pointer on client is not null before to prepare cgi response
-	// if (_cgiSocketsFromCgi[_arr[i]->_index]->getClient() != NULL)
 	_prepareCgiResponse(_arr[i]->_index);
 	_closeConnection(_arr[i]->_index, Socket::cgiFrom);
 	_closeConnection(_arr[i]->_index, Socket::cgiTo);
@@ -202,6 +200,7 @@ void		Hub::_acceptIncomingConnections(size_t i)
 	{
 		if (_clientSockets.size() == MAX_CONNECTIONS)
 		{
+			_closeCgiConnections(_clientSockets[0]);
 			_closeConnection(0, Socket::client); // disconnect the first client
 			return ;
 		}
@@ -227,18 +226,6 @@ static size_t	indexServer(ClientSocket client)
 	return i;
 }
 
-void 	Hub::_closeCgiConnections(ClientSocket* client)
-{
-	for (size_t i = 0; i < _cgiSocketsFromCgi.size(); i++)
-	{
-		if (_cgiSocketsFromCgi[i]->getClient() == client)
-		{
-			_closeConnection(i, Socket::cgiFrom);
-			_closeConnection(i, Socket::cgiTo);
-		}
-	}
-}
-
 /*
 ** receive and parse the request
 */
@@ -252,8 +239,6 @@ bool		Hub::_receiveRequest(size_t i)
 	bytes = recv(client->getFd(), &buffer[0], BUF_SIZE, 0);
 	if (bytes <= 0)
 	{	
-		std::cerr << "[_receiveRequest] bytes = " << bytes << "\n";
-		// ATTENTION : si le cgi etait en cours, il faut fermer les 2 cgiSockets egalement !
 		_closeCgiConnections(client);
 		_closeConnection(_arr[i]->_index, Socket::client); // disconnect the client
 		return false;
@@ -377,7 +362,8 @@ bool 		Hub::_sendResponse(size_t i)
 
 		if ((*it)->getHeader("Connection") == "close")
 		{
-			_closeConnection(_arr[i]->_index, _arr[i]->getType());
+			_closeCgiConnections(client);
+			_closeConnection(_arr[i]->_index, Socket::client);
 			return false;
 		}
 
@@ -405,7 +391,7 @@ bool 		Hub::_sendResponse(size_t i)
 			responses.erase(it++);
 		}
 	}
-	
+
 	// responses have been processed, we can send to the client
 	if (responses.empty() && !buffer.empty())
 	{
@@ -414,7 +400,8 @@ bool 		Hub::_sendResponse(size_t i)
 		log::logEvent("Response sent", client->getFd(), Socket::client);
 		if (bytes <= 0)
 		{
-			_closeConnection(_arr[i]->_index, _arr[i]->getType());
+			_closeCgiConnections(client);
+			_closeConnection(_arr[i]->_index, Socket::client);
 			return false;
 		}
 		buffer.erase(buffer.begin(), buffer.begin() + bytes);
@@ -422,6 +409,22 @@ bool 		Hub::_sendResponse(size_t i)
 			client->getPollFd().events = POLLIN;
 	}
 	return true;
+}
+
+/*
+** before closing a client check if cgiSockets have been created for this client
+** if so, close them first
+*/
+void 	Hub::_closeCgiConnections(ClientSocket* client)
+{
+	for (size_t i = 0; i < _cgiSocketsFromCgi.size(); i++)
+	{
+		if (_cgiSocketsFromCgi[i]->getClient() == client)
+		{
+			_closeConnection(i, Socket::cgiFrom);
+			_closeConnection(i, Socket::cgiTo);
+		}
+	}
 }
 
 void		Hub::_closeConnection(size_t i, int type)
