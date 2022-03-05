@@ -227,6 +227,18 @@ static size_t	indexServer(ClientSocket client)
 	return i;
 }
 
+void 	Hub::_closeCgiConnections(ClientSocket* client)
+{
+	for (size_t i = 0; i < _cgiSocketsFromCgi.size(); i++)
+	{
+		if (_cgiSocketsFromCgi[i]->getClient() == client)
+		{
+			_closeConnection(i, Socket::cgiFrom);
+			_closeConnection(i, Socket::cgiTo);
+		}
+	}
+}
+
 /*
 ** receive and parse the request
 */
@@ -240,7 +252,10 @@ bool		Hub::_receiveRequest(size_t i)
 	bytes = recv(client->getFd(), &buffer[0], BUF_SIZE, 0);
 	if (bytes <= 0)
 	{	
-		_closeConnection(_arr[i]->_index, _arr[i]->getType()); // disconnect the client
+		std::cerr << "[_receiveRequest] bytes = " << bytes << "\n";
+		// ATTENTION : si le cgi etait en cours, il faut fermer les 2 cgiSockets egalement !
+		_closeCgiConnections(client);
+		_closeConnection(_arr[i]->_index, Socket::client); // disconnect the client
 		return false;
 	}
 	else
@@ -304,7 +319,7 @@ void		Hub::_prepareResponse(size_t i)
 			else if (_needCgi(*it, configMatch))
 			{
 				// execute cgi and create 2 cgi sockets (in and out)
-				CgiExecutor cgi(*it, *client, configMatch); // copy the request to have an empty pool of request and leave the loop
+				CgiExecutor cgi(*it, client, configMatch); // copy the request to have an empty pool of request and leave the loop
 				_cgiSocketsFromCgi.push_back(cgi.getCgiSocketFromCgi());
 				_cgiSocketsToCgi.push_back(cgi.getCgiSocketToCgi()); 
 			}
@@ -330,11 +345,11 @@ void		Hub::_prepareCgiResponse(size_t i)
 	Response*		response = new Response();
 	t_configMatch 	configMatch;
 
-	configMatch = getConfigMatch(_cgiSocketsFromCgi[i]->getRequest(), _cgiSocketsFromCgi[i]->getClient().getServerName());
+	configMatch = getConfigMatch(_cgiSocketsFromCgi[i]->getRequest(), _cgiSocketsFromCgi[i]->getClient()->getServerName());
 	cgiResponse(response, _cgiSocketsFromCgi[i]->getBuffer(), configMatch);
 	
-	_cgiSocketsFromCgi[i]->getClient().addResponse(response);
-	_cgiSocketsFromCgi[i]->getClient().getPollFd().events = POLLIN | POLLOUT;
+	_cgiSocketsFromCgi[i]->getClient()->addResponse(response);
+	_cgiSocketsFromCgi[i]->getClient()->getPollFd().events = POLLIN | POLLOUT;
 }
 
 /*
