@@ -51,7 +51,6 @@ class Response
         void 	                addFile();
         void 	                deleteFile();
         void                    endToReadorWrite();
-        
 
         // SETTERS
         void                    setHeader(std::string key, std::string value);

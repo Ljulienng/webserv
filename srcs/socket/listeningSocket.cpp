@@ -1,6 +1,18 @@
 #include "listeningSocket.hpp"
 
-void 	ListeningSocket::start(std::string ip, unsigned short port)
+std::string	ListeningSocket::_printError()
+{
+	switch (_state)
+	{
+		case NONBLOCK : return "Error: failed to set non blocking connection";
+		case SETSOCKOPT : return "Error: failed to set socket options";
+		case BIND : return "Error: failed to bind";
+		case LISTEN : return "Error: failed to listen on socket";
+		default: return "no error";
+	}
+}
+
+int 	ListeningSocket::start(std::string ip, unsigned short port)
 {
 	setNonBlock();
 	setSocketOptions();
@@ -8,45 +20,47 @@ void 	ListeningSocket::start(std::string ip, unsigned short port)
 	bindSocket();
 	listenSocket();
 	_pollFd.events = POLLIN;
+	if (_state != NONE)
+		std::cerr << _printError() << std::endl;
+	return _state;
 }
 
-void	ListeningSocket::setNonBlock()
+int	ListeningSocket::setNonBlock()
 {
 	if (fcntl(_pollFd.fd, F_SETFL, O_NONBLOCK) < 0)
-		throw(std::string("Error: Failed to set non blocking connection"));
+		return (_state = NONBLOCK);
+	return (EXIT_SUCCESS);
 }
 
 /*
 ** set that the address is a reusable local address
 ** throw if the options can't be set to the socket.
 */
-void 	ListeningSocket::setSocketOptions()
+int 	ListeningSocket::setSocketOptions()
 {
 	int option = 1;
 	if (setsockopt(_pollFd.fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) != 0)
-		throw(std::string("Error: to set socket options"));
+		return (_state = SETSOCKOPT);
+	return (EXIT_SUCCESS);
 }
 
-void	ListeningSocket::bindSocket()
+int	ListeningSocket::bindSocket()
 {
 	if (bind(_pollFd.fd, (struct sockaddr *)&_addr, sizeof(_addr)) < 0)
-		throw(std::string("Error: Failed to bind"));
+		return (_state = BIND);
+	return (EXIT_SUCCESS);
 }
 
-void	ListeningSocket::listenSocket()
+int	ListeningSocket::listenSocket()
 {
 	if (listen(_pollFd.fd, MAX_CONNECTIONS) < 0) // Maximum can be higher, to be tested
-		throw(std::string("Error: Failed to listen on socket"));
+		return (_state = LISTEN);
+	return (EXIT_SUCCESS);
 }
+
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-ListeningSocket::ListeningSocket() : Socket()
-			// to be completed if new attributes
-{
-	_type = server;
-}
-
-ListeningSocket::ListeningSocket(std::string serverName) : Socket()
+ListeningSocket::ListeningSocket(std::string serverName) : Socket(), _state(NONE)
 			// to be completed if new attributes
 {
 	_type = server;
@@ -65,6 +79,7 @@ ListeningSocket &ListeningSocket::operator=(const ListeningSocket &src)
 	if (&src != this)
 	{
         Socket::operator=(src);
+		_state = src._state;
 		// to be completed if new attributes
 	}
 	return (*this);

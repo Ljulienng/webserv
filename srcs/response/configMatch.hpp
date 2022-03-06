@@ -9,10 +9,6 @@
 #include "location.hpp"
 #include "request.hpp"
 
-// class Configuration;
-// class Location;
-// class Server;
-
 typedef struct  s_configMatch
 {
     Server      server;             // which server bloc matches to the request ?

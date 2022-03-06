@@ -7,22 +7,39 @@
 
 class ListeningSocket : public Socket
 {
-    protected :
+    public:
+
+        enum errors
+        {
+            NONE,
+            NONBLOCK,
+            SETSOCKOPT,
+            BIND,
+            LISTEN
+        };
     
 
-    public :
+    private :
+
+        int         _state;
+        std::string	_printError();
+
         ListeningSocket();
+
+
+    public :
+        
         ListeningSocket(std::string serverName);
         ListeningSocket(const ListeningSocket &src);
         virtual ~ListeningSocket();		
         ListeningSocket    &operator=(const ListeningSocket &src);
       
-        void 		start(std::string ip, unsigned short port);
-		void		closeSocket();
-		void		bindSocket();
-		void		setSocketOptions();
-		void		setNonBlock();
-		void		listenSocket();
+        int 	start(std::string ip, unsigned short port);
+		int		closeSocket();
+		int		bindSocket();
+		int		setSocketOptions();
+		int		setNonBlock();
+		int		listenSocket();
 };
 
 #endif
