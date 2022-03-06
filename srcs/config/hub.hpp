@@ -43,11 +43,11 @@ class Hub
 		void				_storeFdToPoll();
 		int					_waitPollEvent();
 		void				_acceptIncomingConnections(size_t i);
-		void 				_closeCgiConnections(ClientSocket* client);
 		bool				_receiveRequest(size_t i);
 		void				_prepareResponse(size_t i);
 		void				_prepareCgiResponse(size_t i);
 		bool 				_sendResponse(size_t i);
+		void 				_closeCgiConnections(ClientSocket* client);
 		void				_closeConnection(size_t i, int type);
 		void				_closeAllConnections();
 		
