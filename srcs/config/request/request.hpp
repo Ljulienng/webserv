@@ -15,8 +15,6 @@
 class Request
 {
 private:
-	// const std::string 	&_rawRequest;
-
 	std::string									_method;
 	std::string									_path;
 	Uri											_uri;
