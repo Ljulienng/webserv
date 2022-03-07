@@ -281,7 +281,6 @@ int				Request::verifBuffer(const std::string &buffer)
 {
 	if (buffer.find("\r\n\r\n") == std::string::npos)
 		return (1);
-	// std::cout	<< "size = " << buffer.size() << std::endl;
 	if (buffer.find("Content-Length: ") == std::string::npos)
 	{
 		if (buffer.find("Transfer-Encoding: chunked") != std::string::npos)
@@ -345,20 +344,6 @@ int									Request::getRet()
 { return (_ret); }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-
-// Request::Request() :
-// 	_rawRequest(""), _method(""), _version(""), _headers(""), _body(""), _port(80), _ret(0)
-// {
-// }	
-
-/* MEMO
-200 OK
-201 Created
-202 Accepted
-203 Non-Authoritative Information (since HTTP/1.1)
-204 No Content
-205 Reset Content
-*/
 
 Request::Request(const std::string &request) :
 	_method(""), _path(""), _version(""), _headers(), _body(""), _httpStatus(200), _ret(200)
@@ -464,6 +449,5 @@ int			checkRequest(std::string &buffer)
 					return WAIT;
 		}	
 	}
-	// std::cout << "requesttype = " << requestType << std::endl;
 	return (GOOD);
 }

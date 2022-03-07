@@ -1,34 +1,325 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <title>Index</title>
+        <!-- <link rel="stylesheet" type="text/css" href="style.css"/> -->
+        <!-- <link rel="stylesheet" type="text/css" href="style.css" /> -->
         <style>
-            body
-            {
-                background-color:#abc1c9;
-                padding: 3%;
+            body {
+            background-color: #272727;
+            padding: 10px;
             }
-            h1 
-            {
-                font-family:Arial, Helvetica, sans-serif;
-                font-size: 30px;
+
+            .background {
+            display: flex;
+            min-height: 100vh;
             }
             
-            .mylinks li { margin: 10px 15px; list-style-type:"-    "; }
-            .mylinks li:hover { text-decoration: underline; list-style-type:"> "}
-            .mylinks a { color:black; text-decoration: none;}
-            .mylinks a:hover { color:rgb(20, 60, 20); }
+            .container {
+            flex: 0 1 700px;
+            margin: auto;
+            padding: 10px;
+            /* box-shadow: 0 20px 40px rgba(0, 0, 0, .4); */
+            }
+
+            .fakeButtons {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            border: 1px solid #000;
+            position: relative;
+            top: 6px;
+            left: 6px;
+            background-color: #ff3b47;
+            border-color: #9d252b;
+            display: inline-block;
+            }
+
+            .fakeMinimize {
+            left: 11px;
+            background-color: #ffc100;
+            border-color: #9d802c;
+            }
+
+            .fakeZoom {
+            left: 16px;
+            background-color: #00d742;
+            border-color: #049931;
+            }
+
+            .consoleName {
+            position: relative;
+            left: 35%;
+            top: 6px;
+            display: inline-block;
+            border-radius: 50%;
+            font-size: 1.5em;
+            font-family: monospace;
+            white-space: normal;
+            }
+
+            .fakeMenu {
+            width: 110%;
+            box-sizing: border-box;
+            height: 30px;
+            background-color: #bbb;
+            margin: 0 auto;
+            border-top-right-radius: 5px;
+            border-top-left-radius: 5px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, .4);
+            }
+
+            .fakeScreen {
+            background-color: #151515;
+            box-sizing: border-box;
+            width: 110%;
+            margin: 0 auto;
+            padding: 20px;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, .4);
+            }
+
+            a {
+            text-decoration: none;
+            }
+
+            p {
+            position: relative;
+            /* left: 3%; */
+            /* margin-left: -8.5em; */
+            text-align: left;
+            font-size: 1.25em;
+            font-family: monospace;
+            white-space: normal;
+            overflow: hidden;
+            width: 0;
+            }
+
+            a:hover {
+            text-decoration: underline;
+            }
+
+            a.fill-div {
+            display: block;
+            height: 100%;
+            width: 100%;
+            text-decoration: none;
+            }
+
+            p {
+            position: relative;
+            left: 3%;
+            /* margin-left: -8.5em; */
+            text-align: left;
+            font-size: 1.25em;
+            font-family: monospace;
+            white-space: normal;
+            overflow: hidden;
+            width: 0;
+            }
+
+            span {
+            color: #fff;
+            font-weight: bold;
+            }
+
+            .line1 {
+            color: #9CD9F0;
+            -webkit-animation: type .5s 0.5s steps(20, end) forwards;
+            -moz-animation: type .5s 0.5s steps(20, end) forwards;
+            -o-animation: type .5s 0.5s steps(20, end) forwards;
+            animation: type .5s 0.5s steps(20, end) forwards;
+            }
+
+            .cursor1 {
+            -webkit-animation: blink 0.25s 0.5s 2 forwards;
+            -moz-animation: blink 0.25s 0.5s 2 forwards;
+            -o-animation: blink 0.25s 0.5s 2 forwards;
+            animation: blink 0.25s 0.5s 2 forwards;
+            }
+
+            .line2 {
+            -webkit-animation: type .5s 1s steps(20, end) forwards;
+            -moz-animation: type .5s 1s steps(20, end) forwards;
+            -o-animation: type .5s 1s steps(20, end) forwards;
+            animation: type .5s 1s steps(20, end) forwards;
+            }
+
+            .cursor2 {
+            -webkit-animation: blink 0.5s 1s 2 forwards;
+            -moz-animation: blink 0.5s 1s 2 forwards;
+            -o-animation: blink 0.5s 1s 2 forwards;
+            animation: blink 0.5s 1s 2 forwards;
+            }
+
+            .line3 {
+            color: #E09690;
+            -webkit-animation: type .5s 1.5s steps(20, end) forwards;
+            -moz-animation: type .5s 1.5s steps(20, end) forwards;
+            -o-animation: type .5s 1.5s steps(20, end) forwards;
+            animation: type .5s 1.5s steps(20, end) forwards;
+            }
+
+            .cursor3 {
+            -webkit-animation: blink 0.5s 1s 2 forwards;
+            -moz-animation: blink 0.5s 1s 2 forwards;
+            -o-animation: blink 0.5s 1s 2 forwards;
+            animation: blink 0.5s 1s 2 forwards;
+            }
+
+            .line4 {
+            color: #9CD9F0;
+            -webkit-animation: type .5s 2s steps(20, end) forwards;
+            -moz-animation: type .5s 2s steps(20, end) forwards;
+            -o-animation: type .5s 2s steps(20, end) forwards;
+            animation: type .5s 2s steps(20, end) forwards;
+            }
+
+            .cursor4 {
+            -webkit-animation: blink 1.5s 2s forwards;
+            -moz-animation: blink 1.5s 2s forwards;
+            -o-animation: blink 1.5s 2s forwards;
+            animation: blink 1.5s 2s forwards;
+            }
+
+            .line5 {
+            color: #FFF;
+            -webkit-animation: type .5s 3s steps(20, end) forwards;
+            -moz-animation: type .5s 3s steps(20, end) forwards;
+            -o-animation: type .5s 3s steps(20, end) forwards;
+            animation: type .5s 3s steps(20, end) forwards;
+            }
+
+            .cursor5 {
+            -webkit-animation: blink 1s 2s infinite;
+            -moz-animation: blink 1s 2s infinite;
+            -o-animation: blink 1s 2s infinite;
+            animation: blink 1s 2s infinite;
+            }
+
+
+            @-webkit-keyframes blink {
+            0% {
+                opacity: 0;
+            }
+            40% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+            }
+
+            @-moz-keyframes blink {
+            0% {
+                opacity: 0;
+            }
+            40% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+            }
+
+            @-o-keyframes blink {
+            0% {
+                opacity: 0;
+            }
+            40% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+            }
+
+            @keyframes blink {
+            0% {
+                opacity: 0;
+            }
+            40% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+            }
+
+            @-webkit-keyframes type {
+            to {
+                width: 17em;
+            }
+            }
+
+            @-moz-keyframes type {
+            to {
+                width: 17em;
+            }
+            }
+
+            @-o-keyframes type {
+            to {
+                width: 17em;
+            }
+            }
+
+            @keyframes type {
+            to {
+                width: 17em;
+            }
+            }
         </style>
-        <title>Index</title>
     </head>
 
     <body>
-        <h1> WEBSERV INDEX</h1><br>
-        <ul class="mylinks">
-            <li><a href="/uploads/">Uploads directory</a></li>
-            <li><a href="/test/">Test directory</a></li>
+        <!-- <ul class="mylinks">
+            <li><a href="/uploads/">Uploads director</a></li>
+            <li><a href="/test/">Test directory</a></li>y
             <li><a href="test/get.html">Send a form [get method]</a></li>
             <li><a href="test/post.html">Send a form or upload a file [post method]</a></li>
-        </ul>
-        
+        </ul> -->
+        <div class="background">
+            <div class="container">
+                <div class="fakeMenu">
+                    <div class="fakeButtons fakeClose"><a href="error404" class="fill-div"> </a></div>
+                    <div class="fakeButtons fakeMinimize"></div>
+                    <div class="fakeButtons fakeZoom"></div>
+                    <div class="consoleName"> WEBSERV INDEX</div>
+                </div>
+                <div class="fakeScreen">
+                    <p class="line1"><a href="/uploads/">> Uploads directory</a><span class="cursor1">_</span></p>
+                    <p class="line2"><a href="/test/" style="color: #CDEE69">> Test directory</a><span class="cursor2">_</span></p>
+                    <p class="line3"><a href="test/get.html" style="color: #E09690;">> Send a form [get method]</a><span class="cursor3">_</span></p>
+                    <p class="line4"><a href="test/post.html" style="color: #9CD9F0">> Send a form or upload a file [post method]</a><span class="cursor4">_</span></p>
+                    <p class="line5">> By Eteillet & Jnguyen<span class="cursor5">_</span></p>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
