@@ -72,8 +72,12 @@ ClientSocket::ClientSocket(const ClientSocket &src) : Socket()
 
 ClientSocket::~ClientSocket()
 {
-	if (_responses.size())
-		std::cout << "not empty list\n";
+	std::list<Response*>::iterator it = _responses.begin();
+    for ( ; it != _responses.end(); it++)
+    {
+		delete *it;
+		*it = NULL;
+	}
 }
 
 ClientSocket &ClientSocket::operator=(const ClientSocket &src)
