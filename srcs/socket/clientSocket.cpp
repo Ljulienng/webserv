@@ -71,7 +71,10 @@ ClientSocket::ClientSocket(const ClientSocket &src) : Socket()
 }
 
 ClientSocket::~ClientSocket()
-{}
+{
+	if (_responses.size())
+		std::cout << "not empty list\n";
+}
 
 ClientSocket &ClientSocket::operator=(const ClientSocket &src)
 {
