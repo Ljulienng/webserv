@@ -31,6 +31,7 @@ class HttpStatus
         std::string     &getMessage();
 };
 
+
 enum Status
 {
     NOSTATUS                                = 0,

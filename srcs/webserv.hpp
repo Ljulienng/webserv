@@ -50,6 +50,8 @@
 #define DISCONNECT 2
 #define OTHER 3
 
+#define ERROR -1
+
 // colors
 #define RED  	"\033[31m"
 #define GRN  	"\033[32m"

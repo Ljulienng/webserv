@@ -23,7 +23,7 @@ class CgiSocketFromCgi : public Socket
         CgiSocketFromCgi(int fd[2], ClientSocket* client, Request request);
         virtual ~CgiSocketFromCgi();	
 
-        void            readFromCgi();
+        int            readFromCgi();
 
         std::string     getBuffer();
         ClientSocket    *getClient();

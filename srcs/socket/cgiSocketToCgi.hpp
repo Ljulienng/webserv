@@ -17,8 +17,8 @@ class CgiSocketToCgi : public Socket
         CgiSocketToCgi(int fd[2], Request request);
         virtual ~CgiSocketToCgi();
 
-        void            writeToCgi();
-        int             &getFdUseless();
+        int            writeToCgi();
+        int            &getFdUseless();
 };
 
 #endif

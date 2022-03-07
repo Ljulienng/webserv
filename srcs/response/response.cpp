@@ -19,7 +19,7 @@ void    Response::_updateMessage()
     _message += "\r\n";
     
     // append content
-    _message += std::string(_content.begin(), _content.end());
+    _message += std::string(_content.begin(), _content.end()); 
 }
 
 
@@ -28,10 +28,12 @@ void                Response::addMultipart(t_multipart* part)
     _multiparts.push_back(part);
 }
 
-void    Response::readFile(bool *endOfResponse, bool *endToReadFile)
+int    Response::readFile(bool *endOfResponse, bool *endToReadFile)
 {
     char bufFile[BUF_SIZE];
     size_t bytes = read(_pollFdFile.fd, bufFile, BUF_SIZE);
+    if (bytes < 0)
+        return ERROR;
     if (bytes > 0)
         for (size_t i = 0; i < bytes; i++)
             _content.push_back(bufFile[i]);
@@ -40,18 +42,22 @@ void    Response::readFile(bool *endOfResponse, bool *endToReadFile)
         *endOfResponse = true;
         *endToReadFile = true;
     }
+    return GOOD;
 }
 
-void    Response::writeFile(bool *endOfResponse, bool *endToWriteFile)
+int    Response::writeFile(bool *endOfResponse, bool *endToWriteFile)
 {
+    size_t bytes;
     if (_isMultipart)
     {
         if (!_multiparts.empty())
         {
             std::list<t_multipart*>::iterator it = _multiparts.begin();
-            write(_pollFdFile.fd, &(*it)->content[0], (*it)->length);
+            bytes = write(_pollFdFile.fd, &(*it)->content[0], (*it)->length);
             delete *it;
             _multiparts.erase(it);
+            if (bytes <= 0)
+                return ERROR;
 
         }
         if (_multiparts.empty())
@@ -62,10 +68,13 @@ void    Response::writeFile(bool *endOfResponse, bool *endToWriteFile)
     }
     else
     {
-        write(_pollFdFile.fd, &_contentToCopyInFile[0], _contentToCopyInFile.length());
+        bytes = write(_pollFdFile.fd, &_contentToCopyInFile[0], _contentToCopyInFile.length());
         *endOfResponse = true;
         *endToWriteFile = true;
-    } 
+        if (bytes <= 0)
+            return ERROR;
+    }
+    return GOOD;
 }
 
 void 	Response::addFile()

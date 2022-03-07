@@ -207,11 +207,11 @@ std::pair<std::string, std::string>		&Server::getCgi()
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 
 Server::Server() : 	_name(),
-					_ip(),
+					_ip("127.0.0.1"),
 					_port(),
-					_root(),
+					_root("./www"),
 					_maxBodySize(100000),
-					_uploadPath(),
+					_uploadPath("/uploads"),
 					_locations(),
 					_cgi()
 					// to be completed if new attributes

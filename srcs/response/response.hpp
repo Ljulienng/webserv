@@ -46,8 +46,8 @@ class Response
         Response &operator=(const Response &src);	
 
         void                    addMultipart(t_multipart* part);
-        void                    readFile(bool *endOfResponse, bool *endToReadFile);
-        void                    writeFile(bool *endOfResponse, bool *endToWriteFile);
+        int                     readFile(bool *endOfResponse, bool *endToReadFile);
+        int                     writeFile(bool *endOfResponse, bool *endToWriteFile);
         void 	                addFile();
         void 	                deleteFile();
         void                    endToReadorWrite();

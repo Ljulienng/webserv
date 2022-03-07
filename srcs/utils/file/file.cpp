@@ -97,48 +97,48 @@ bool	File::fileIsInDirectory(std::string filename)
 std::string		&File::getFilePath()
 { return _filePath; }
 
-std::vector<unsigned char>	&File::getFileContent()
-{
-	if (isRegularFile())
-		openFile();
-	return _fileContent;
-}
+// std::vector<unsigned char>	&File::getFileContent()
+// {
+// 	if (isRegularFile())
+// 		openFile();
+// 	return _fileContent;
+// }
 
 struct stat		&File::getfileStat()
 { return _fileStat; }
 
-void	File::openFile()
-{
-	// char	buf[BUF_SIZE + 1] = {0};
-	// int 	fd;
-	// size_t	i;
-	// size_t	ret;
+// void	File::openFile()
+// {
+// 	// char	buf[BUF_SIZE + 1] = {0};
+// 	// int 	fd;
+// 	// size_t	i;
+// 	// size_t	ret;
 	
-	// fd = open(_filePath.c_str(), O_RDONLY);
-	// if (fd < 0)
-	// 	return ;
-	// while ((ret = read(fd, buf, BUF_SIZE)) > 0)
-	// {
-	// 	for (size_t j = 0; j < ret; ++j)
-	// 		_fileContent.push_back(buf[j]);
-	// 	i = 0;
-	// 	while (i < BUF_SIZE)
-	// 		buf[i++] = 0;
-	// }
-	// if (ret < 0)
-	// 	return ;
-	// close(fd);
+// 	// fd = open(_filePath.c_str(), O_RDONLY);
+// 	// if (fd < 0)
+// 	// 	return ;
+// 	// while ((ret = read(fd, buf, BUF_SIZE)) > 0)
+// 	// {
+// 	// 	for (size_t j = 0; j < ret; ++j)
+// 	// 		_fileContent.push_back(buf[j]);
+// 	// 	i = 0;
+// 	// 	while (i < BUF_SIZE)
+// 	// 		buf[i++] = 0;
+// 	// }
+// 	// if (ret < 0)
+// 	// 	return ;
+// 	// close(fd);
 
-	std::ifstream 	file;
-	file.open(_filePath.c_str(), std::ios::binary);
-	if (file.is_open())
-	{
-		while (file.good())
-			_fileContent.push_back(file.get());
-		_fileContent.pop_back(); // erase only the last char (don't ask why ...)
-		file.close();
-	}
-}
+// 	std::ifstream 	file;
+// 	file.open(_filePath.c_str(), std::ios::binary);
+// 	if (file.is_open())
+// 	{
+// 		while (file.good())
+// 			_fileContent.push_back(file.get());
+// 		_fileContent.pop_back(); // erase only the last char (don't ask why ...)
+// 		file.close();
+// 	}
+// }
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 File::File() :
