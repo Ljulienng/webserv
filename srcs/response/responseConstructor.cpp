@@ -19,7 +19,7 @@ Response*    errorResponse(Response* response, t_configMatch  &configMatch, int 
         File    errorPath(configMatch.root + errorPage->second);
         if (errorPath.isRegularFile())
         {
-            // new version : just create file before to pass in poll() to read the fd 
+            // just create the file before going to poll() to read the fd 
             response->setPollFdFileToRead((configMatch.root + errorPage->second).c_str());
             response->addFile();
             response->setContentType("text/html");           
@@ -44,18 +44,6 @@ Response*    autoIndexResponse(Response* response, std::string path)
     return response;
 }
 
-// plus besoin : on l'a dans la path_translated donc on passe dans une getResponse
-// Response*    indexResponse(Response* response,std::string path, std::string index)
-// {
-//     File indexFile(path + index);
-//     Mime indexExtension(getExtension(index));
-
-//     response->setStatus(OK);
-//     response->setContent(indexFile.getFileContent(), indexExtension.getMime());
-    
-//     return response;
-// }
-
 Response*    redirectionResponse(Response* response, std::pair<int, std::string> redirection)
 {
     response->setStatus(redirection.first);
@@ -66,34 +54,33 @@ Response*    redirectionResponse(Response* response, std::pair<int, std::string>
 }
 
 /*
+** test to handle relative redirection path
 ** transform http://./wordpress/wp-admin/ in htpp://127.0.0.1:8080/wordpress/wp-admin/
-** A CREUSER -> pb constate avec redirections wordpress
 */
-std::string     treatRelativePath(std::string path)
-{
-    std::string newPath;
-    std::string block;
-    
-    if (path.substr(0, 7) == "http://")
-        if (path[7] == '.')
-            newPath += "http://127.0.0.1:8080/";
-    for (size_t i = 7; i < path.size(); i++)
-    {
-        block += path[i];
-        if (path[i] == '/' || i == (path.size() - 1))
-        {
-            if (block == "./" || block == ".")
-            {
-                block.clear();
-                continue;
-            }
-            else 
-                newPath += block;
-            block.clear();
-        }
-    }
-    return newPath;
-}
+// std::string     treatRelativePath(std::string path)
+// {
+//     std::string newPath;
+//     std::string block;
+//     if (path.substr(0, 7) == "http://")
+//         if (path[7] == '.')
+//             newPath += "http://127.0.0.1:8080/";
+//     for (size_t i = 7; i < path.size(); i++)
+//     {
+//         block += path[i];
+//         if (path[i] == '/' || i == (path.size() - 1))
+//         {
+//             if (block == "./" || block == ".")
+//             {
+//                 block.clear();
+//                 continue;
+//             }
+//             else 
+//                 newPath += block;
+//             block.clear();
+//         }
+//     }
+//     return newPath;
+// }
 
 Response*    cgiResponse(Response* response, std::string cgiResponse, t_configMatch  &configMatch)
 {
@@ -124,12 +111,9 @@ Response*    cgiResponse(Response* response, std::string cgiResponse, t_configMa
     
     if (response->getHttpStatus().getCode() >= 400)
         return errorResponse(response, configMatch, response->getHttpStatus().getCode());
-    if (response->getHttpStatus().getCode() >= 300)
-    {
-        // std::cerr << "status code = " << response.getHttpStatus().getCode() << "\n";
-        // std::cerr << "Location = " << response.getHeader("Location") << "\n";
-        return redirectionResponse(response, std::make_pair<int, std::string>(response->getHttpStatus().getCode(), treatRelativePath(response->getHeader("Location"))));
-    }
+    if (response->getHttpStatus().getCode() >= 300) // only handle absolute redirection path
+        return redirectionResponse(response, std::make_pair<int, std::string>(response->getHttpStatus().getCode(), response->getHeader("Location")));
+    
     std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
     response->setContent(body, response->getHeader("Content-Type"));
 
@@ -139,7 +123,7 @@ Response*    cgiResponse(Response* response, std::string cgiResponse, t_configMa
 Response*    getMethodResponse(Response* response, t_configMatch &configMatch)
 {
     File        path(configMatch.pathTranslated);
-
+    
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "GET"))
         return errorResponse(response, configMatch, METHOD_NOT_ALLOWED);
 
@@ -148,24 +132,22 @@ Response*    getMethodResponse(Response* response, t_configMatch &configMatch)
         Mime    extension(getExtension(configMatch.pathTranslated));
         
         response->setStatus(OK);
-        // new version : just create file before to pass in poll() to read the fd 
+
+        // just create the file before going to poll() to read the fd 
         if (response->setPollFdFileToRead(path.getFilePath().c_str()) == false)
             return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
         response->addFile();
-        response->setContentType(extension.getMime());
+        if (getExtension(configMatch.pathTranslated) == "php")
+            response->setContentType("text/plain");
+        else
+            response->setContentType(extension.getMime());
         
         return response;
     }
     else if (path.isDirectory() && configMatch.location.getAutoindex())
         return autoIndexResponse(response, configMatch.pathTranslated);
-    // a traiter en amont en recuperant la pathTranslated car cgi a executer si .php
-    // else if (path.isDirectory() && !configMatch.index.empty() && path.fileIsInDirectory(configMatch.index)/* && (configMatch.location.getPath() == "/")*/)
-    // {
-    //     std::cerr << "Directory -> index\n";     
-    //     return indexResponse(response, configMatch.pathTranslated, configMatch.index);
-    // }
     else
-        return errorResponse(response, configMatch, NOT_FOUND);
+        return errorResponse(response, configMatch, NOT_FOUND);       
 }
 
 Response*    postMethodResponse(Response* response, Request &request, t_configMatch &configMatch)
@@ -182,12 +164,11 @@ Response*    postMethodResponse(Response* response, Request &request, t_configMa
     if (configMatch.server.getUploadPath() == "")
         return errorResponse(response, configMatch, FORBIDDEN);
 
-    // upload file
+    // [upload file]
     if (request.getHeader("Content-Type").find("multipart/form-data") != std::string::npos)
         return multipart(response, request, configMatch, request.getHeader("Content-Type"));
 
-    // new version : just create file before to pass in poll() to write the fd 
-    // upload message/text
+    // [upload message/text]
     if (response->setPollFdFileToWrite(pathToUpload.c_str(), false, request.getBody()) == false)
         return errorResponse(response, configMatch, INTERNAL_SERVER_ERROR);
     response->addFile();
@@ -195,7 +176,7 @@ Response*    postMethodResponse(Response* response, Request &request, t_configMa
     response->setStatus(CREATED);
 
     // indicate the url of the resource we created thanks to "location" header
-    response->setHeader("Location", request.getUri().getUrl()); // need to send the full uri : http://127.0.0.1:8080/file.php   
+    response->setHeader("Location", request.getUri().getUrl()); // need to send the full absolute uri : http://127.0.0.1:8080/file.php   
     response->setContent(html::buildRedirectionPage(std::pair<int, std::string>(201, pathToUpload)), "text/html");
    
     return response;
@@ -233,7 +214,7 @@ Response*    deleteMethodResponse(Response* response, t_configMatch &configMatch
 Response*    constructResponse(Response* response, Request &request, t_configMatch configMatch)
 {
     File    path(configMatch.pathTranslated);
-
+    
     if (path.isDirectory() && configMatch.pathTranslated[configMatch.pathTranslated.size() - 1] != '/')
         return redirectionResponse(response, std::pair<int, std::string>(MOVED_PERMANENTLY, request.getPath() + "/"));
     else if (configMatch.location.getRedirection().first > 0 && !configMatch.location.getRedirection().second.empty())

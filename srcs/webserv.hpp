@@ -49,7 +49,6 @@
 #define WAIT 1
 #define DISCONNECT 2
 #define OTHER 3
-
 #define ERROR -1
 
 // colors

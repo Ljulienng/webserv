@@ -365,9 +365,6 @@ bool 		Hub::_sendResponse(size_t i)
 		endToReadFile = false;
 		endToWriteFile = false;
 
-		if ((*it)->getHeader("Connection") == "close")
-			return _closeClientConnection(client, _arr[i]->_index);
-
 		if ((*it)->getIndexFile() == -1)						// not a file (directory for example)
 			endOfResponse = true;			
 		else if (_fds[(*it)->getIndexFile()].revents & POLLIN) 	// getRequest
