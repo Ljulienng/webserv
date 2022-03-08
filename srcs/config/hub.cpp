@@ -303,7 +303,7 @@ void		Hub::_prepareResponse(size_t i)
 				Response* 		response = new Response();
 				errorResponse(response, configMatch, it->getHttpStatus().getCode());
 				client->addResponse(response);
-				// the socket is now ready to write in addition to reading because we have added a response
+				// client is now ready to write in addition to reading because we have added a response
 				client->getPollFd().events = POLLIN | POLLOUT;
 			}
 			else if (_needCgi(*it, configMatch))
@@ -318,7 +318,7 @@ void		Hub::_prepareResponse(size_t i)
 				Response* 		response = new Response();
 				constructResponse(response, *it, configMatch);
 				client->addResponse(response);
-				// the socket is now ready to write in addition to reading because we have added a response
+				// client is now ready to write in addition to reading because we have added a response
 				client->getPollFd().events = POLLIN | POLLOUT;
 			}
 			requests.erase(it++);
