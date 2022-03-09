@@ -4,8 +4,9 @@
 ** parse configuration file
 ** start socket for each server of the configuration file
 */
-void	Hub::start()
+void	Hub::start(std::string configFile)
 {
+	Configuration::getInstance().parseConfigPath(configFile);
 	Configuration::getInstance().parse();
 	
 	std::vector<Server> &servers = Configuration::getInstance().getServers();
@@ -104,6 +105,20 @@ void	Hub::_storeFdToPoll()
 	}
 }
 
+void	Hub::_checkTimeout()
+{
+	size_t i = 0;
+	for (std::vector<ClientSocket*>::iterator it = _clientSockets.begin(); it != _clientSockets.end(); it++)
+	{
+		if ((*it)->getTimeout())
+		{
+			std::cerr << "Timeout\n";
+			_closeClientConnection(*it, i);
+			break ;
+		}
+		i++;
+	}
+}
 /*
 ** wait for an event on a fd
 ** query poll each second
@@ -112,6 +127,7 @@ int		Hub::_waitPollEvent()
 {
 	int	pollRet = 0;
 
+	_checkTimeout();
 	_storeFdToPoll();
 	pollRet = poll(_fds, _nfds, 1000);
 	return pollRet;
@@ -164,8 +180,7 @@ void	Hub::process()
 				cgiCount[i]++;
 				if (_cgiSocketsFromCgi[_arr[i]->_index]->readFromCgi() == ERROR)
 				{
-					size_t clientIndex = _cgiSocketsFromCgi[_arr[i]->_index]->getClient()->_index;
-					_closeClientConnection(_cgiSocketsFromCgi[_arr[i]->_index]->getClient(), clientIndex);
+					_closeClientConnection(_cgiSocketsFromCgi[_arr[i]->_index]->getClient(), _cgiSocketsFromCgi[_arr[i]->_index]->getClient()->_index);
 					break ;
 				}
 			}
@@ -181,8 +196,7 @@ void	Hub::process()
 			{
 				if (_cgiSocketsToCgi[_arr[i]->_index]->writeToCgi() == ERROR)
 				{
-					size_t clientIndex = _cgiSocketsFromCgi[_arr[i]->_index]->getClient()->_index;
-					_closeClientConnection(_cgiSocketsFromCgi[_arr[i]->_index]->getClient(), clientIndex);
+					_closeClientConnection(_cgiSocketsFromCgi[_arr[i]->_index]->getClient(), _cgiSocketsFromCgi[_arr[i]->_index]->getClient()->_index);
 					break ;
 				}
 			}
@@ -244,12 +258,13 @@ bool		Hub::_receiveRequest(size_t i)
 	std::vector<char>	buffer(BUF_SIZE);
 	ClientSocket* 		client = _clientSockets[_arr[i]->_index];
 	std::vector<Server> servers = Configuration::getInstance().getServers();
-
+	
 	bytes = recv(client->getFd(), &buffer[0], BUF_SIZE, 0);
 	if (bytes <= 0)
 		return _closeClientConnection(client, _arr[i]->_index);
 	else
 	{
+		client->setTimeout();
 		client->getBuffer().append(buffer.begin(), buffer.begin() + bytes);
 		if ((checkRet = checkRequest(client->getBuffer())) == GOOD && bytes < BUF_SIZE)
 		{
@@ -358,6 +373,7 @@ bool 		Hub::_sendResponse(size_t i)
 	std::string				buffer = client->getBuffer();
 	bool					endOfResponse = false, endToReadFile = false, endToWriteFile = false;
 
+	client->setTimeout();
 	// we process the responses one by one and append them to the client buffer
 	for (std::list<Response*>::iterator it = responses.begin(); it != responses.end(); it++)
 	{
@@ -486,7 +502,7 @@ void		Hub::_closeAllConnections()
 
 
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
-Hub::Hub(std::string configFile) : 
+Hub::Hub() : 
 		_nfds(),
 		_clientSockets(),
 		_listenSockets(),
@@ -494,7 +510,6 @@ Hub::Hub(std::string configFile) :
 		_cgiSocketsToCgi(),
 		_arr()
 {
-	Configuration::getInstance().parseConfigPath(configFile);
 	memset(_fds, 0, sizeof(_fds));
 }
 

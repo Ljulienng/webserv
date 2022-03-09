@@ -13,6 +13,7 @@ class ClientSocket : public Socket
         std::list<Request>      _requests;
         std::list<Response*>    _responses;
         std::string             _serverName;
+        struct timespec         _lastEvent;
 
     public :
         ClientSocket();
@@ -28,6 +29,7 @@ class ClientSocket : public Socket
         void                    setBuffer(std::string buffer);
         void                    setRequests(std::list<Request> requests);
         void                    setServerName(std::string serverName);
+        void                    setTimeout();
 
         // GETTERS
         unsigned short          &getPort();
@@ -35,6 +37,7 @@ class ClientSocket : public Socket
         std::list<Request>	    &getRequests();
         std::list<Response*>    &getResponses();
         std::string             &getServerName();
+        bool                    getTimeout();
 };
 
 #endif

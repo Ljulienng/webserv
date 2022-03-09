@@ -41,6 +41,7 @@ class Hub
 		void				_addClientSocket(int acceptRet, Socket* socket);
 		bool				_cgiClosed(size_t i, size_t *cgiCount);
 		void				_storeFdToPoll();
+		void				_checkTimeout();
 		int					_waitPollEvent();
 		bool				_acceptIncomingConnections(size_t i);
 		bool				_receiveRequest(size_t i);
@@ -52,14 +53,13 @@ class Hub
 		void				_closeConnection(size_t i, int type);
 		void				_closeAllConnections();
 		
-		Hub();
 
     public :
 	
-		Hub(std::string configFile);
+		Hub();
 		~Hub();		
 
-		void	start();
+		void	start(std::string configFile);
 		void	process();
 		void	clean();
 		

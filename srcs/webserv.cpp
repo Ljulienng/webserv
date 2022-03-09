@@ -19,15 +19,15 @@ int     main(int ac, char **argv)
     signal(SIGINT, sigintHandler);
     if (ac == 2)
     {
-        Hub hub(argv[1]);
+        Hub hub;
         try
         {
-            hub.start(); // parse and setup
+            hub.start(argv[1]); // parse and setup
             while (g_run)
                 hub.process();           
         }
         catch(std::string error)
-        {   
+        {
             hub.clean();
 			std::cerr << RED << error << RESET << std::endl;
         }

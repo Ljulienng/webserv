@@ -36,6 +36,11 @@ void            ClientSocket::setServerName(std::string serverName)
 	_serverName = serverName;
 }
 
+void	ClientSocket::setTimeout()
+{
+	clock_gettime(CLOCK_MONOTONIC, &_lastEvent);
+}
+
 /* GETTERS */ 
 unsigned short		&ClientSocket::getPort()
 { return _port; }
@@ -52,6 +57,18 @@ std::list<Response*>    &ClientSocket::getResponses()
 std::string			&ClientSocket::getServerName()
 { return _serverName; }
 
+bool	ClientSocket::getTimeout()
+{
+	struct timespec t;
+	double			elapsedTime;
+	
+	clock_gettime(CLOCK_MONOTONIC, &t);
+	elapsedTime = (t.tv_sec - _lastEvent.tv_sec) * 1e9;
+	elapsedTime = (elapsedTime + (t.tv_nsec - _lastEvent.tv_nsec)) * 1e-9;
+
+	return (elapsedTime > 120);
+}	
+
 /* CONSTRUCTORS, DESTRUCTOR AND OVERLOADS */
 ClientSocket::ClientSocket() :
 			Socket(),
@@ -63,6 +80,7 @@ ClientSocket::ClientSocket() :
 			// to be completed if new attributes
 {
 	_type = client;
+	setTimeout();
 }
 
 ClientSocket::ClientSocket(const ClientSocket &src) : Socket()
