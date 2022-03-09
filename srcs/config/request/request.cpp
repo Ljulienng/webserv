@@ -117,6 +117,8 @@ int		Request::parseFirstLine(std::string line)
 	}
 	trimChar(arg);
 	_path = arg;
+	if (*(_path.begin()) != '/')
+		return ((_ret = 400));
 
 	// ASSIGNING VERSION
 	i = line.find_first_of('\n');
