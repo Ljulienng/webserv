@@ -383,12 +383,12 @@ bool 		Hub::_sendResponse(size_t i)
 
 		if ((*it)->getIndexFile() == -1)						// not a file (directory for example)
 			endOfResponse = true;			
-		else if (_fds[(*it)->getIndexFile()].revents & POLLIN) 	// getRequest
+		else if (_fds[(*it)->getIndexFile()].revents & POLLIN) 	// GET
 		{														// data to read in a file	
 			if((*it)->readFile(&endOfResponse, &endToReadFile) == ERROR) 
 				return _closeClientConnection(client, _arr[i]->_index);
 		}
-		else if (_fds[(*it)->getIndexFile()].revents & POLLOUT) // postRequest
+		else if (_fds[(*it)->getIndexFile()].revents & POLLOUT) // POST
 		{														// data to write in a file
 			if ((*it)->writeFile(&endOfResponse, &endToWriteFile) == ERROR)	
 				return _closeClientConnection(client, _arr[i]->_index);
@@ -425,6 +425,7 @@ bool 		Hub::_sendResponse(size_t i)
 		if (buffer.empty()) // finished to write so we are now waiting for reading
 			client->getPollFd().events = POLLIN;
 	}
+
 	return true;
 }
 

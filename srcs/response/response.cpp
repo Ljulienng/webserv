@@ -32,6 +32,7 @@ int    Response::readFile(bool *endOfResponse, bool *endToReadFile)
 {
     char bufFile[BUF_SIZE];
     size_t bytes = read(_pollFdFile.fd, bufFile, BUF_SIZE);
+
     if (bytes < 0)
         return ERROR;
     if (bytes > 0)
