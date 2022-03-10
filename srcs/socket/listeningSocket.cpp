@@ -63,7 +63,7 @@ int	ListeningSocket::bindSocket()
 */
 int	ListeningSocket::listenSocket()
 {
-	if (listen(_pollFd.fd, MAX_CONNECTIONS) < 0) // Maximum can be higher, to be tested
+	if (listen(_pollFd.fd, MAX_CONNECTIONS) < 0)
 		return (_state = LISTEN);
 	return (EXIT_SUCCESS);
 }
