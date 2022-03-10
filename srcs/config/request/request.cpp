@@ -174,7 +174,13 @@ void		Request::storeKeyValue(const std::string &line)
 
 	// Assigning value to the right key
 	if (_headers.count(key))
-		_headers[key] = value;
+	{
+		if (_headers[key] == "")
+			_headers[key] = value;
+		else
+			_ret = 400;
+	}
+		
 }
 
 int			Request::parseHeader(const std::string &request, size_t &i)
@@ -185,6 +191,8 @@ int			Request::parseHeader(const std::string &request, size_t &i)
 	line = nextLine(request, i);
 	while (request.size() != 0 && _ret != 400 && line != "\r" && line.size())
 	{
+		if (line.size() > 8000)
+			_ret = 413;
 		storeKeyValue(line);
 		line = nextLine(request, i);
 	}
