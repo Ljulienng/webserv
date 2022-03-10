@@ -375,7 +375,9 @@ bool 		Hub::_sendResponse(size_t i)
 
 	client->setTimeout();
 	// we process the responses one by one and append them to the client buffer
-	for (std::list<Response*>::iterator it = responses.begin(); it != responses.end(); it++)
+	std::list<Response*>::iterator it = responses.begin();
+	if (it != responses.end())
+	// for (std::list<Response*>::iterator it = responses.begin(); it != responses.end(); it++)
 	{
 		endOfResponse = false;
 		endToReadFile = false;
@@ -408,7 +410,8 @@ bool 		Hub::_sendResponse(size_t i)
 			std::string	message = (*it)->getMessage();
 			buffer.insert(buffer.end(), message.begin(), message.end());
 			delete (*it);
-			responses.erase(it++);
+			// responses.erase(it++);
+			responses.erase(it);
 		}
 	}
 
