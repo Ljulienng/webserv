@@ -24,6 +24,7 @@ private:
 	std::string									_body;
 	HttpStatus                        			_httpStatus;
 	int											_ret;
+	struct timespec         					_startTime; //test
 
 public: 
 	Request();
