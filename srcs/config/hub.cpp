@@ -32,7 +32,7 @@ void	Hub::_addListeningSocket(Server& server)
 	ListeningSocket* 	newListenSocket = new ListeningSocket(server.getName());
 	struct pollfd 		newPollFd;
 
-	newPollFd.fd = socket(AF_INET, SOCK_STREAM, 0);;
+	newPollFd.fd = socket(AF_INET, SOCK_STREAM, 0);
 	newPollFd.events = POLLIN;
 	newListenSocket->setPollFd(newPollFd);
 	if (newListenSocket->start(server.getIp(), server.getPort()))

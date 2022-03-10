@@ -25,6 +25,10 @@ int 	ListeningSocket::start(std::string ip, unsigned short port)
 	return _state;
 }
 
+/*
+** F_SETFL set the file status flags to the value specified by arg [O_NONBLOCK]
+** with O_NONBLOCK, system call fails (and without it, system call is blocked until the lock is removed)
+*/
 int	ListeningSocket::setNonBlock()
 {
 	if (fcntl(_pollFd.fd, F_SETFL, O_NONBLOCK) < 0)
@@ -33,8 +37,7 @@ int	ListeningSocket::setNonBlock()
 }
 
 /*
-** set that the address is a reusable local address
-** throw if the options can't be set to the socket.
+** SO_REUSEADDR is to allow to reuse the address even if the process crash or been killed
 */
 int 	ListeningSocket::setSocketOptions()
 {
@@ -44,6 +47,10 @@ int 	ListeningSocket::setSocketOptions()
 	return (EXIT_SUCCESS);
 }
 
+/*
+** assigns a name to the socket
+** must be a unique ip/port pair otherwise error (address already in use.)
+*/
 int	ListeningSocket::bindSocket()
 {
 	if (bind(_pollFd.fd, (struct sockaddr *)&_addr, sizeof(_addr)) < 0)
@@ -51,6 +58,9 @@ int	ListeningSocket::bindSocket()
 	return (EXIT_SUCCESS);
 }
 
+/*
+** listen for socket connections
+*/
 int	ListeningSocket::listenSocket()
 {
 	if (listen(_pollFd.fd, MAX_CONNECTIONS) < 0) // Maximum can be higher, to be tested
