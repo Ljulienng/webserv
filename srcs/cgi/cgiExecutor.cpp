@@ -44,11 +44,13 @@ void	CgiExecutor::initHeaders()
 	* Store the argument variables in an array for excve usage
 	*/
 	_argArray = new char *[3];
-
+	
 	_argArray[0] = new char[_cgiPath.size() + 1];
 	strcpy(_argArray[0], _cgiPath.c_str());
-	_argArray[1] = new char[newPath.size() + 1];
-	strcpy(_argArray[1], newPath.c_str());
+	// _argArray[1] = new char[newPath.size() + 1];
+	_argArray[1] = new char[_configMatch.pathTranslated.size() + 1];
+	// strcpy(_argArray[1], newPath.c_str());
+	strcpy(_argArray[1], _configMatch.pathTranslated.c_str());
 	_argArray[2] = NULL;
 
 	/*

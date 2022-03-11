@@ -226,7 +226,11 @@ bool		Hub::_acceptIncomingConnections(size_t i)
 	while (1)
 	{
 		if (_clientSockets.size() == MAX_CONNECTIONS)
-			return _closeClientConnection(_clientSockets[0], 0);
+		{	
+			std::cerr << "Exceed max number of fd - the server resets connections" << std::endl;
+			_closeAllConnections();
+			//return _closeClientConnection(_clientSockets[0], 0);
+		}
 
 		int acceptRet = accept(_arr[i]->getFd(), NULL, NULL);
 		if (acceptRet == -1) // no connection is present
@@ -283,7 +287,7 @@ static bool _needCgi(Request request, t_configMatch configMatch)
 {
 	File        path(configMatch.pathTranslated);
 
-	if (configMatch.server.getCgi().first == ".php"
+	if (configMatch.server.getCgi().first == ".php"   /////
 			// && request.getPath().find(configMatch.server.getCgi().first) != std::string::npos
 			&& configMatch.pathTranslated.find(configMatch.server.getCgi().first) != std::string::npos
 			&& (request.getMethod() == "GET" || request.getMethod() == "POST"))
