@@ -88,7 +88,7 @@ Response*    cgiResponse(Response* response, std::string cgiResponse, t_configMa
 
     while (cgiResponse.find("\r\n", i) != std::string::npos)
     {
-        if (cgiResponse.find("Content-type:", i) == i)
+        if (cgiResponse.find("Content-type:", i) == i || cgiResponse.find("Content-Type:", i) == i)
         {
             response->setHeader("Content-Type", cgiResponse.substr(i + 14, cgiResponse.find("\r\n", i) - i - 14));
         }
@@ -125,7 +125,7 @@ Response*    getMethodResponse(Response* response, t_configMatch &configMatch)
     File        path(configMatch.pathTranslated);
     
     if (!isAcceptedMethod(configMatch.location.getAcceptedMethod(), "GET"))
-        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED);
+        return errorResponse(response, configMatch, METHOD_NOT_ALLOWED); 
 
     if (path.isRegularFile())
     {

@@ -287,7 +287,7 @@ static bool _needCgi(Request request, t_configMatch configMatch)
 {
 	File        path(configMatch.pathTranslated);
 
-	if (configMatch.server.getCgi().first == ".php"   /////
+	if (configMatch.server.getCgi().first == "." + getExtension(configMatch.pathTranslated)
 			// && request.getPath().find(configMatch.server.getCgi().first) != std::string::npos
 			&& configMatch.pathTranslated.find(configMatch.server.getCgi().first) != std::string::npos
 			&& (request.getMethod() == "GET" || request.getMethod() == "POST"))
