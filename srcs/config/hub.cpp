@@ -139,9 +139,10 @@ int		Hub::_waitPollEvent()
 */
 bool	Hub::_cgiClosed(size_t i, size_t *cgiCount)
 {
-	_prepareCgiResponse(_arr[i]->_index);
-	_closeConnection(_arr[i]->_index, Socket::cgiFrom);
-	_closeConnection(_arr[i]->_index, Socket::cgiTo);
+	size_t cgiIndex = _arr[i]->_index;
+	_prepareCgiResponse(cgiIndex);
+	_closeConnection(cgiIndex, Socket::cgiFrom);
+	_closeConnection(cgiIndex, Socket::cgiTo);
 	cgiCount[i] = 0;
 	return true;
 }
