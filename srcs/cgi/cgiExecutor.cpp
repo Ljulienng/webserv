@@ -5,7 +5,7 @@ void	CgiExecutor::initHeaders()
 	char *buf = NULL;
 	buf = getcwd(buf, 0);
 	std::string cwd = static_cast<std::string>(buf) + "/";
-	std::string newPath = _configMatch.root + _request->getUri().getPath();
+	// std::string newPath = _configMatch.root + _request->getUri().getPath();
 
 	if (_request->getHeader("auth-scheme") != "")
 		_env["AUTH_TYPE"] = _request->getHeader("Authorization");
