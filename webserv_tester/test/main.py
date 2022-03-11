@@ -48,26 +48,26 @@ else:
     os._exit(1)
 
 try:
-    # if not skip("STARTING LINE"):
-        # starting_line.higher_version_test(port)
-        # starting_line.lower_version_test(port)
-        # starting_line.version_error_test(port)
-        # starting_line.no_version_test(port)
-        # starting_line.not_a_uri_test(port)
-        # starting_line.no_uri_test(port)
-        # starting_line.unknown_method_test(port)
-        # starting_line.no_method_test(port)
-        # starting_line.no_starting_line_test(port)
-        # starting_line.four_elems_test(port)
+    if not skip("STARTING LINE"):
+        starting_line.higher_version_test(port)
+        starting_line.lower_version_test(port)
+        starting_line.version_error_test(port)
+        starting_line.no_version_test(port)
+        starting_line.not_a_uri_test(port)
+        starting_line.no_uri_test(port)
+        starting_line.unknown_method_test(port)
+        starting_line.no_method_test(port)
+        starting_line.no_starting_line_test(port)
+        starting_line.four_elems_test(port)
     if not skip("HEADERS"):
-        # headers.no_host_test(port)
-        # headers.unknown_test(port)
-        # headers.malformed_test(port)
-        # headers.no_space_test(port)
-        # headers.too_long_test(port)
-        # headers.two_hosts_test(port)
-        # if timeout:
-        #     headers.timeout_test(port)
+        headers.no_host_test(port)
+        headers.unknown_test(port)
+        headers.malformed_test(port)
+        headers.no_space_test(port)
+        headers.too_long_test(port)
+        headers.two_hosts_test(port)
+        if timeout:
+            headers.timeout_test(port)
         headers.char_by_char_test(port)
     if not skip("GET"):
         get.classic_test(port)

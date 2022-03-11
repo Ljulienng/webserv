@@ -415,8 +415,8 @@ int			checkRequest(std::string &buffer)
 {
 	int requestType = 0;
 
-	if (buffer.find(" ") == std::string::npos && buffer.find("\r\n\r\n") == std::string::npos)
-		return WAIT;
+	// if (buffer.find(" ") == std::string::npos && buffer.find("\r\n\r\n") == std::string::npos)
+	// 	return WAIT;
 	if (buffer.find("GET") == 0)
 		requestType = GET;
 	else if (buffer.find("POST") == 0)
@@ -427,6 +427,8 @@ int			checkRequest(std::string &buffer)
 		requestType = HEAD;
 	else if (buffer.find("PUT") == 0)
 		requestType = PUT;
+	else if (buffer.find("\r\n\r\n") == std::string::npos)
+		return WAIT;
 	if (requestType == GET || requestType == DELETE || requestType == HEAD)
 	{
 		if (buffer.find("\r\n\r\n") == std::string::npos)
