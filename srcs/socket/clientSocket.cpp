@@ -96,6 +96,11 @@ ClientSocket::~ClientSocket()
 		delete *it;
 		*it = NULL;
 	}
+	if (_pollFd.fd != 0)
+	{
+		close(_pollFd.fd);
+		_pollFd.fd = 0;
+	}
 }
 
 ClientSocket &ClientSocket::operator=(const ClientSocket &src)

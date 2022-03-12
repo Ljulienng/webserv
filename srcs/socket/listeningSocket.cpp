@@ -82,7 +82,14 @@ ListeningSocket::ListeningSocket(const ListeningSocket &src) : Socket()
 	*this = src;
 }
 
-ListeningSocket::~ListeningSocket() {}
+ListeningSocket::~ListeningSocket()
+{
+	if (_pollFd.fd != 0)
+	{
+		close(_pollFd.fd);
+		_pollFd.fd = 0;
+	}
+}
 
 ListeningSocket &ListeningSocket::operator=(const ListeningSocket &src)
 {

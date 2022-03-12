@@ -64,6 +64,7 @@ void	CgiExecutor::initHeaders()
 	for	(std::map<std::string, std::string>::iterator it = _env.begin(); it != _env.end(); it++)
 	{
 		str = it->first + "=" + it->second;
+		// std::cerr << it->first << " = " << it->second << "\n";
 		_envArray[i] = new char[str.size() + 1];
 		strcpy(_envArray[i], str.c_str());
 		i++;

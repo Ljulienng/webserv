@@ -49,4 +49,16 @@ CgiSocketFromCgi::CgiSocketFromCgi(int fd[2], ClientSocket* client, Request requ
     _pollFd.events = POLLIN;
 }
 
-CgiSocketFromCgi::~CgiSocketFromCgi() {}
+CgiSocketFromCgi::~CgiSocketFromCgi() 
+{
+    if (_pollFd.fd != 0)
+    {
+        close(_pollFd.fd);
+        _pollFd.fd = 0;
+    }
+    if (_fdUseless != 0)
+    {
+        close(_fdUseless);
+        _fdUseless = 0;
+    }
+}

@@ -157,7 +157,7 @@ void	Hub::process()
 
 	static size_t cgiCount[MAX_CGI_RUNNING] = {0};
 	for (size_t i = 0; i < _nfds - g_fileArr.size(); i++) 
-	{
+	{	
 		// only way found to detect end of cgi POLLIN to send response to the client
 		if (_fds[i].revents == 0 && _arr[i]->getType() == Socket::cgiFrom && cgiCount[i] > 0)
 		{
@@ -292,6 +292,7 @@ static bool _needCgi(Request request, t_configMatch configMatch)
 			&& configMatch.pathTranslated.find(configMatch.server.getCgi().first) != std::string::npos
 			&& (request.getMethod() == "GET" || request.getMethod() == "POST"))
 		return true;
+
 	return false;
 }
 
@@ -331,7 +332,7 @@ void		Hub::_prepareResponse(size_t i)
 				// execute cgi and create 2 cgi sockets (in and out)
 				CgiExecutor cgi(*it, client, configMatch); // copy the request to have an empty pool of request and leave the loop
 				_cgiSocketsFromCgi.push_back(cgi.getCgiSocketFromCgi());
-				_cgiSocketsToCgi.push_back(cgi.getCgiSocketToCgi()); 
+				_cgiSocketsToCgi.push_back(cgi.getCgiSocketToCgi());
 			}
 			else
 			{
@@ -465,32 +466,24 @@ void		Hub::_closeConnection(size_t i, int type)
 	if (type == Socket::server)
 	{
 		log::logEvent("Connection closed", _listenSockets[i]->getFd(), Socket::server);
-		close(_listenSockets[i]->getFd());
 		delete _listenSockets[i];
 		_listenSockets.erase(_listenSockets.begin() + i);
 	}
 	else if (type == Socket::client)
 	{
 		log::logEvent("Connection closed", _clientSockets[i]->getFd(), Socket::client);
-		close(_clientSockets[i]->getFd());
 		delete _clientSockets[i];
 		_clientSockets.erase(_clientSockets.begin() + i);
 	}
 	else if (type == Socket::cgiFrom)
 	{
 		log::logEvent("Connection closed", _cgiSocketsFromCgi[i]->getFd(), Socket::cgiFrom);
-		close(_cgiSocketsFromCgi[i]->getFd());
-		_cgiSocketsFromCgi[i]->getFd() = 0;
-		close(_cgiSocketsFromCgi[i]->getFdUseless());
 		delete _cgiSocketsFromCgi[i];
 		_cgiSocketsFromCgi.erase(_cgiSocketsFromCgi.begin() + i);
 	}
 	else if (type == Socket::cgiTo)
 	{
 		log::logEvent("Connection closed", _cgiSocketsToCgi[i]->getFd(), Socket::cgiTo);
-		close(_cgiSocketsToCgi[i]->getFd());
-		_cgiSocketsToCgi[i]->getFd() = 0;
-		close(_cgiSocketsToCgi[i]->getFdUseless());
 		delete _cgiSocketsToCgi[i];
 		_cgiSocketsToCgi.erase(_cgiSocketsToCgi.begin() + i);
 	}
