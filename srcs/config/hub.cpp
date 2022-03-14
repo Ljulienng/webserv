@@ -42,6 +42,7 @@ void	Hub::_addListeningSocket(Server& server)
 	}
 	_listenSockets.push_back(newListenSocket);
 	log::logEvent("Listen on " + server.getIp() + ":" + myItoa(server.getPort()), newListenSocket->getFd(), Socket::server);
+	_storeFdToPoll();
 }
 
 void	Hub::_addClientSocket(int acceptRet, Socket* listenSocket)
@@ -229,6 +230,7 @@ bool		Hub::_acceptIncomingConnections(size_t i)
 		{	
 			std::cerr << "Exceed max number of fd - the server resets connections" << std::endl;
 			_closeAllConnections();
+			return false;
 			//return _closeClientConnection(_clientSockets[0], 0);
 		}
 
@@ -494,12 +496,15 @@ void		Hub::_closeConnection(size_t i, int type)
 
 void		Hub::_closeAllConnections()
 {	
+	
 	size_t tmp = _nfds - g_fileArr.size();
-	tmp = _listenSockets.size() + _clientSockets.size() + _cgiSocketsFromCgi.size() + _cgiSocketsToCgi.size();
-	for (size_t i = 0; i < tmp; i++)
-		_closeConnection(0, _arr[0]->getType());
-	for (size_t i = 0; i < g_fileArr.size(); i++)
-		close(g_fileArr[i]->fd);
+	if (tmp)
+	{
+		for (size_t i = 0; i < tmp; i++)
+			_closeConnection(0, _arr[0]->getType());
+		for (size_t i = 0; i < g_fileArr.size(); i++)
+			close(g_fileArr[i]->fd);
+	}
 }
 
 
