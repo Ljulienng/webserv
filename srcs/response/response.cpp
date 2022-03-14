@@ -229,7 +229,6 @@ Response::~Response()
     std::list<t_multipart*>::iterator it = _multiparts.begin();
     for ( ; it != _multiparts.end(); it++)
         delete *it;
-
     if (_pollFdFile.fd != 0)
     {
         close(_pollFdFile.fd);

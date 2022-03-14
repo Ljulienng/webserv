@@ -57,6 +57,7 @@ void	Hub::_addClientSocket(int acceptRet, Socket* listenSocket)
 	newPollFd.events = POLLIN;
 	newClientSocket->setPollFd(newPollFd);
 	_clientSockets.push_back(newClientSocket);
+	_storeFdToPoll();
 }
 
 /*
@@ -170,7 +171,10 @@ void	Hub::process()
 		else if ((_fds[i].revents & POLLIN) == POLLIN)
 		{
 			if (_arr[i]->getType() == Socket::server)
+			{
 				_acceptIncomingConnections(i);
+				break ;
+			}
 			else if (_arr[i]->getType() == Socket::client)
 			{
 				if (!_receiveRequest(i)) // client disconnected
@@ -496,8 +500,7 @@ void		Hub::_closeConnection(size_t i, int type)
 
 void		Hub::_closeAllConnections()
 {	
-	
-	size_t tmp = _nfds - g_fileArr.size();
+	size_t tmp = _listenSockets.size() + _clientSockets.size() + _cgiSocketsFromCgi.size() + _cgiSocketsToCgi.size();
 	if (tmp)
 	{
 		for (size_t i = 0; i < tmp; i++)
