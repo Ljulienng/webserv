@@ -114,6 +114,7 @@ Response*    cgiResponse(Response* response, std::string cgiResponse, t_configMa
     if (response->getHttpStatus().getCode() >= 300) // only handle absolute redirection path
         return redirectionResponse(response, std::make_pair<int, std::string>(response->getHttpStatus().getCode(), response->getHeader("Location")));
     
+    response->setStatus(OK);
     std::vector<unsigned char> body(cgiResponse.begin() + i, cgiResponse.end());
     response->setContent(body, response->getHeader("Content-Type"));
 
