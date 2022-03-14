@@ -53,8 +53,4 @@ fclean: clean
 
 re:	fclean all		
 
-docker: 	all
-			docker build -t webserver -f Dockerfile .
-			docker run --rm -it -p 8080:8080 webserver bash
-
-.PHONY:	all clean fclean re docker
+.PHONY:	all clean fclean re
